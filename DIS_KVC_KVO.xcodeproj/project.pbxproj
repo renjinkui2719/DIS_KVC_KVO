@@ -339,28 +339,28 @@
 		916EC4EB1E667511001E7595 /* Getter */ = {
 			isa = PBXGroup;
 			children = (
-				916EC4EC1E667511001E7595 /* NSKeyValueCollectionGetter.h */,
-				916EC4ED1E667511001E7595 /* NSKeyValueCollectionGetter.m */,
-				916EC4EE1E667511001E7595 /* NSKeyValueFastMutableCollection1Getter.h */,
-				916EC4EF1E667511001E7595 /* NSKeyValueFastMutableCollection1Getter.m */,
-				916EC4F01E667511001E7595 /* NSKeyValueFastMutableCollection2Getter.h */,
-				916EC4F11E667511001E7595 /* NSKeyValueFastMutableCollection2Getter.m */,
 				916EC4F21E667511001E7595 /* NSKeyValueGetter.h */,
 				916EC4F31E667511001E7595 /* NSKeyValueGetter.m */,
 				916EC4F41E667511001E7595 /* NSKeyValueIvarGetter.h */,
 				916EC4F51E667511001E7595 /* NSKeyValueIvarGetter.m */,
-				916EC4F61E667511001E7595 /* NSKeyValueIvarMutableCollectionGetter.h */,
-				916EC4F71E667511001E7595 /* NSKeyValueIvarMutableCollectionGetter.m */,
 				916EC4F81E667511001E7595 /* NSKeyValueMethodGetter.h */,
 				916EC4F91E667511001E7595 /* NSKeyValueMethodGetter.m */,
-				916EC4FA1E667511001E7595 /* NSKeyValueNotifyingMutableCollectionGetter.h */,
-				916EC4FB1E667511001E7595 /* NSKeyValueNotifyingMutableCollectionGetter.m */,
-				916EC4FC1E667511001E7595 /* NSKeyValueProxyGetter.h */,
-				916EC4FD1E667511001E7595 /* NSKeyValueProxyGetter.m */,
-				916EC4FE1E667511001E7595 /* NSKeyValueSlowMutableCollectionGetter.h */,
-				916EC4FF1E667511001E7595 /* NSKeyValueSlowMutableCollectionGetter.m */,
 				916EC5001E667511001E7595 /* NSKeyValueUndefinedGetter.h */,
 				916EC5011E667511001E7595 /* NSKeyValueUndefinedGetter.m */,
+				916EC4EC1E667511001E7595 /* NSKeyValueCollectionGetter.h */,
+				916EC4ED1E667511001E7595 /* NSKeyValueCollectionGetter.m */,
+				916EC4FC1E667511001E7595 /* NSKeyValueProxyGetter.h */,
+				916EC4FD1E667511001E7595 /* NSKeyValueProxyGetter.m */,
+				916EC4F61E667511001E7595 /* NSKeyValueIvarMutableCollectionGetter.h */,
+				916EC4F71E667511001E7595 /* NSKeyValueIvarMutableCollectionGetter.m */,
+				916EC4FA1E667511001E7595 /* NSKeyValueNotifyingMutableCollectionGetter.h */,
+				916EC4FB1E667511001E7595 /* NSKeyValueNotifyingMutableCollectionGetter.m */,
+				916EC4FE1E667511001E7595 /* NSKeyValueSlowMutableCollectionGetter.h */,
+				916EC4FF1E667511001E7595 /* NSKeyValueSlowMutableCollectionGetter.m */,
+				916EC4EE1E667511001E7595 /* NSKeyValueFastMutableCollection1Getter.h */,
+				916EC4EF1E667511001E7595 /* NSKeyValueFastMutableCollection1Getter.m */,
+				916EC4F01E667511001E7595 /* NSKeyValueFastMutableCollection2Getter.h */,
+				916EC4F11E667511001E7595 /* NSKeyValueFastMutableCollection2Getter.m */,
 			);
 			path = Getter;
 			sourceTree = "<group>";
@@ -667,6 +667,7 @@
 				916EC4E81E6674FE001E7595 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
