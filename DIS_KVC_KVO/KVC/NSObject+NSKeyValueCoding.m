@@ -161,6 +161,52 @@ CF_EXPORT CFStringEncoding __CFStringComputeEightBitStringEncoding(void);
     }
 }
 
+- (void)setValue:(id)value forKeyPath:(NSString *)keyPath {
+    if(keyPath) {
+        CFStringEncoding encoding = __CFDefaultEightBitStringEncoding;
+        if(encoding == kCFStringEncodingInvalidId) {
+            encoding = __CFStringComputeEightBitStringEncoding();
+        }
+        const char *cStr = CFStringGetCStringPtr((CFStringRef)keyPath, encoding);
+        if(cStr) {
+            const char *firstDotPointer = memchr(cStr, '.', keyPath.length);
+            if(firstDotPointer) {
+                NSString *subKey =  [[keyPath substringWithRange:NSMakeRange(0, firstDotPointer - cStr)] retain];
+                NSString *subKeyPathLeft =  [[keyPath substringWithRange:NSMakeRange(firstDotPointer - cStr + 1, keyPath.length -  (firstDotPointer - cStr + 1))] retain];
+                
+                id value = [[self valueForKey:subKey] valueForKeyPath:subKeyPathLeft];
+                
+                [subKey release];
+                [subKeyPathLeft release];
+                
+                return value;
+            }
+            else {
+                //loc_47056
+                return [self valueForKeyPath:keyPath];
+            }
+        }
+    }
+    //loc_46F99
+    NSRange range = [keyPath rangeOfString:@"." options:NSLiteralSearch range:NSMakeRange(0, keyPath.length)];
+    if(range.length) {
+        NSString *subKey =  [[keyPath substringWithRange:NSMakeRange(0, range.location)] retain];
+        NSString *subKeyPathLeft =  [[keyPath substringWithRange:NSMakeRange(range.location + 1, keyPath.length -  (range.location + 1))] retain];
+        
+        id value = [[self valueForKey:subKey] valueForKeyPath:subKeyPathLeft];
+        
+        [subKey release];
+        [subKeyPathLeft release];
+        
+        return value;
+    }
+    else {
+        //loc_47056
+        return [self valueForKeyPath:keyPath];
+    }
+
+}
+
 + (BOOL)accessInstanceVariablesDirectly {
     return YES;
 }
