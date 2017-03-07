@@ -7,8 +7,10 @@
 //
 
 #import <Foundation/Foundation.h>
-@class NSKeyValueGetter;
 
+extern CFMutableSetRef NSKeyValueCachedMutableArrayGetters;
+
+@class NSKeyValueGetter;
 @interface NSObject (NSKeyValueCoding)
 
 - (id)valueForKey:(NSString *)key;

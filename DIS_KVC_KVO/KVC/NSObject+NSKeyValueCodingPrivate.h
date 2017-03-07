@@ -10,15 +10,8 @@
 @class NSKeyValueGetter;
 @class NSKeyValueSetter;
 
-@interface NSObject (NSKeyValueCodingPrivate)
-+ (NSKeyValueGetter *)_createValueGetterWithContainerClassID:(id)containerClassID key:(NSString *)key;
-+ (NSKeyValueGetter *)_createValuePrimitiveGetterWithContainerClassID:(id)containerClassID key:(NSString *)key;
-
-+ (NSKeyValueSetter *)_createValueSetterWithContainerClassID:(id)containerClassID key:(NSString *)key;
-+ (NSKeyValueSetter *)_createValuePrimitiveSetterWithContainerClassID:(id)containerClassID key:(NSString *)key;
-
-+ (NSKeyValueGetter *)_createMutableOrderedSetValueGetterWithContainerClassID:(id)containerClassID key:(NSString *)key;
-@end
+extern CFMutableSetRef  NSKeyValueCachedMutableOrderedSetGetters;
+extern CFMutableSetRef NSKeyValueCachedMutableSetGetters;
 
 id _NSGetUsingKeyValueGetter(id object, NSKeyValueGetter *getter) ;
 void _NSSetUsingKeyValueSetter(id object, NSKeyValueSetter *setter, id value);
@@ -30,3 +23,16 @@ Method NSKeyValueMethodForPattern(Class class, const char *pattern,const char *p
 Ivar NSKeyValueIvarForPattern(Class class, const char *pattern,const char *param);
 
 BOOL _NSKVONotifyingMutatorsShouldNotifyForIsaAndKey(Class isa, NSString *key);
+
+@interface NSObject (NSKeyValueCodingPrivate)
++ (NSKeyValueGetter *)_createValueGetterWithContainerClassID:(id)containerClassID key:(NSString *)key;
++ (NSKeyValueGetter *)_createValuePrimitiveGetterWithContainerClassID:(id)containerClassID key:(NSString *)key;
+
++ (NSKeyValueSetter *)_createValueSetterWithContainerClassID:(id)containerClassID key:(NSString *)key;
++ (NSKeyValueSetter *)_createValuePrimitiveSetterWithContainerClassID:(id)containerClassID key:(NSString *)key;
+
++ (NSKeyValueGetter *)_createMutableOrderedSetValueGetterWithContainerClassID:(id)containerClassID key:(NSString *)key;
++ (NSKeyValueGetter *)_createMutableSetValueGetterWithContainerClassID:(id)containerClassID key:(NSString *)key;
+@end
+
+

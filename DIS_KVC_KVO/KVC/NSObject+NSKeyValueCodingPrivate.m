@@ -36,7 +36,8 @@
 #import "NSKeyValueContainerClass.h"
 #import <pthread.h>
 
-
+CFMutableSetRef NSKeyValueCachedMutableOrderedSetGetters = NULL;
+CFMutableSetRef NSKeyValueCachedMutableSetGetters = NULL;
 
 extern CFMutableSetRef NSKeyValueCachedGetters;
 extern CFMutableSetRef NSKeyValueCachedSetters;
@@ -336,11 +337,9 @@ BOOL _NSKVONotifyingMutatorsShouldNotifyForIsaAndKey(Class isa, NSString *key) {
 }
 
 
-extern CFMutableSetRef NSKeyValueCachedMutableSetGetters;
-extern CFMutableSetRef NSKeyValueCachedGetters;
-extern CFMutableSetRef NSKeyValueCachedSetters;
 
-+ (id)_createMutableSetValueGetterWithContainerClassID:(id)containerClassID key:(NSString *)key {
+
++ (NSKeyValueGetter *)_createMutableSetValueGetterWithContainerClassID:(id)containerClassID key:(NSString *)key {
     if(_NSKVONotifyingMutatorsShouldNotifyForIsaAndKey(self,key)) {
         Class originClass = _NSKVONotifyingOriginalClassForIsa(self);
         if(!NSKeyValueCachedMutableSetGetters) {
@@ -482,7 +481,6 @@ extern CFMutableSetRef NSKeyValueCachedSetters;
     }
 }
 
-extern CFMutableSetRef  NSKeyValueCachedMutableOrderedSetGetters;
 
 + (NSKeyValueGetter *)_createMutableOrderedSetValueGetterWithContainerClassID:(id)containerClassID key:(NSString *)key {
     if(_NSKVONotifyingMutatorsShouldNotifyForIsaAndKey(self,key)) {
