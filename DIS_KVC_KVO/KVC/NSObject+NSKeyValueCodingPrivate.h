@@ -1,8 +1,8 @@
 //
 //  NSobject.h
-//  KVOIMP
+//  DIS_KVC_KVO
 //
-//  Created by JK on 2017/1/5.
+//  Created by renjinkui on 2017/1/5.
 //  Copyright © 2017年 JK. All rights reserved.
 //
 

@@ -1,8 +1,8 @@
 //
 //  NSSetValueForKeyInIvar.m
-//  KVOIMP
+//  DIS_KVC_KVO
 //
-//  Created by JK on 2017/1/10.
+//  Created by renjinkui on 2017/1/10.
 //  Copyright © 2017年 JK. All rights reserved.
 //
 

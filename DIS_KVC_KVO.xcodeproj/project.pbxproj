@@ -71,6 +71,8 @@
 		917788711E6F9FFD00715DA8 /* NSKeyValueSet.m in Sources */ = {isa = PBXBuildFile; fileRef = 917788531E6F9FFD00715DA8 /* NSKeyValueSet.m */; };
 		917788721E6F9FFD00715DA8 /* NSKeyValueSlowMutableArray.m in Sources */ = {isa = PBXBuildFile; fileRef = 917788551E6F9FFD00715DA8 /* NSKeyValueSlowMutableArray.m */; };
 		917788731E6F9FFD00715DA8 /* NSKeyValueSlowMutableSet.m in Sources */ = {isa = PBXBuildFile; fileRef = 917788571E6F9FFD00715DA8 /* NSKeyValueSlowMutableSet.m */; };
+		917788761E6FBC7B00715DA8 /* NSArray+NSKeyValueCoding.m in Sources */ = {isa = PBXBuildFile; fileRef = 917788751E6FBC7B00715DA8 /* NSArray+NSKeyValueCoding.m */; };
+		917788791E6FBC8C00715DA8 /* NSArray+NSKeyValueCodingPrivate.m in Sources */ = {isa = PBXBuildFile; fileRef = 917788781E6FBC8C00715DA8 /* NSArray+NSKeyValueCodingPrivate.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -214,6 +216,10 @@
 		917788551E6F9FFD00715DA8 /* NSKeyValueSlowMutableArray.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSKeyValueSlowMutableArray.m; sourceTree = "<group>"; };
 		917788561E6F9FFD00715DA8 /* NSKeyValueSlowMutableSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSKeyValueSlowMutableSet.h; sourceTree = "<group>"; };
 		917788571E6F9FFD00715DA8 /* NSKeyValueSlowMutableSet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSKeyValueSlowMutableSet.m; sourceTree = "<group>"; };
+		917788741E6FBC7B00715DA8 /* NSArray+NSKeyValueCoding.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSArray+NSKeyValueCoding.h"; sourceTree = "<group>"; };
+		917788751E6FBC7B00715DA8 /* NSArray+NSKeyValueCoding.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSArray+NSKeyValueCoding.m"; sourceTree = "<group>"; };
+		917788771E6FBC8C00715DA8 /* NSArray+NSKeyValueCodingPrivate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSArray+NSKeyValueCodingPrivate.h"; sourceTree = "<group>"; };
+		917788781E6FBC8C00715DA8 /* NSArray+NSKeyValueCodingPrivate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSArray+NSKeyValueCodingPrivate.m"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -263,6 +269,10 @@
 				916EC5461E667511001E7595 /* NSObject+NSKeyValueCoding.m */,
 				916EC5471E667511001E7595 /* NSObject+NSKeyValueCodingPrivate.h */,
 				916EC5481E667511001E7595 /* NSObject+NSKeyValueCodingPrivate.m */,
+				917788741E6FBC7B00715DA8 /* NSArray+NSKeyValueCoding.h */,
+				917788751E6FBC7B00715DA8 /* NSArray+NSKeyValueCoding.m */,
+				917788771E6FBC8C00715DA8 /* NSArray+NSKeyValueCodingPrivate.h */,
+				917788781E6FBC8C00715DA8 /* NSArray+NSKeyValueCodingPrivate.m */,
 			);
 			path = KVC;
 			sourceTree = "<group>";
@@ -537,6 +547,7 @@
 				916EC4E31E6674FE001E7595 /* main.m in Sources */,
 				917788591E6F9FFD00715DA8 /* NSKeyValueMutatingCollectionMethodSet.m in Sources */,
 				9177885D1E6F9FFD00715DA8 /* NSKeyValueNonmutatingCollectionMethodSet.m in Sources */,
+				917788761E6FBC7B00715DA8 /* NSArray+NSKeyValueCoding.m in Sources */,
 				916EC56C1E667511001E7595 /* NSKeyValueCollectionGetter.m in Sources */,
 				917788621E6F9FFD00715DA8 /* NSKeyValueArray.m in Sources */,
 				916EC5781E667511001E7595 /* NSGetValueWithMethod.m in Sources */,
@@ -553,6 +564,7 @@
 				916EC57D1E667511001E7595 /* NSKeyValueUndefinedSetter.m in Sources */,
 				917788721E6F9FFD00715DA8 /* NSKeyValueSlowMutableArray.m in Sources */,
 				916EC5761E667511001E7595 /* NSKeyValueUndefinedGetter.m in Sources */,
+				917788791E6FBC8C00715DA8 /* NSArray+NSKeyValueCodingPrivate.m in Sources */,
 				916EC5731E667511001E7595 /* NSKeyValueNotifyingMutableCollectionGetter.m in Sources */,
 				916EC5A31E667511001E7595 /* NSKeyValuePropertyCreate.m in Sources */,
 			);

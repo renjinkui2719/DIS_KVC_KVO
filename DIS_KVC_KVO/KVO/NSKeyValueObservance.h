@@ -1,8 +1,8 @@
 //
 //  NSKeyValueObservance.h
-//  KVOIMP
+//  DIS_KVC_KVO
 //
-//  Created by JK on 2016/12/31.
+//  Created by renjinkui on 2016/12/31.
 //  Copyright © 2016年 JK. All rights reserved.
 //
 
