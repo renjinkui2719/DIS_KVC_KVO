@@ -27,7 +27,7 @@ BOOL NSKeyValueAccessorIsEqual(NSKeyValueAccessor *lhs, NSKeyValueAccessor *rhs)
         
         NSUInteger hash = 0;
         if (key) {
-            hash = CFHash((__bridge CFTypeRef)key);
+            hash = CFHash(key);
         }
         hash ^= (NSUInteger)containerClassID;
         _hashValue = hash;

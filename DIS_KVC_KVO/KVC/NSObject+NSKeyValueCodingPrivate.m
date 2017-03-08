@@ -120,20 +120,6 @@ Ivar NSKeyValueIvarForPattern(Class class, const char *pattern,const char *param
 }
 
 
-BOOL _NSKVONotifyingMutatorsShouldNotifyForIsaAndKey(Class isa, NSString *key) {
-    IMP imp =  class_getMethodImplementation(isa, ISKVOASelector);
-    if(imp == (IMP)NSKVOIsAutonotifying) {
-        NSKeyValueNotifyingInfo *info = (NSKeyValueNotifyingInfo *)object_getIndexedIvars(isa);
-        pthread_mutex_lock(&info->mutex);
-        BOOL contains = CFSetContainsValue(info->keys, (CFTypeRef)key);
-        pthread_mutex_unlock(&info->mutex);
-        return contains;
-    }
-    return NO;
-}
-
-
-@class NSKeyValueNonmutatingOrderedSetMethodSet;
 
 @implementation NSObject (NSKeyValueCodingPrivate)
 

@@ -27,6 +27,7 @@ typedef struct NSKeyValueNotifyingInfo {
 NSKeyValueNotifyingInfo *_NSKVONotifyingCreateInfoWithOriginalClass(Class originalClass) ;
 NSKeyValueNotifyingInfo *_NSKeyValueContainerClassGetNotifyingInfo(NSKeyValueContainerClass *containerClass);
 Class _NSKVONotifyingOriginalClassForIsa(Class isa);
+BOOL _NSKVONotifyingMutatorsShouldNotifyForIsaAndKey(Class isa, NSString *key);
 NSKeyValueContainerClass * _NSKeyValueContainerClassForIsa(Class isa);
 BOOL NSKVOIsAutonotifying();
 
