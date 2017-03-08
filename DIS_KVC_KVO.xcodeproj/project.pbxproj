@@ -26,36 +26,8 @@
 		916EC57B1E667511001E7595 /* NSKeyValueMethodSetter.m in Sources */ = {isa = PBXBuildFile; fileRef = 916EC50C1E667511001E7595 /* NSKeyValueMethodSetter.m */; };
 		916EC57C1E667511001E7595 /* NSKeyValueSetter.m in Sources */ = {isa = PBXBuildFile; fileRef = 916EC50E1E667511001E7595 /* NSKeyValueSetter.m */; };
 		916EC57D1E667511001E7595 /* NSKeyValueUndefinedSetter.m in Sources */ = {isa = PBXBuildFile; fileRef = 916EC5101E667511001E7595 /* NSKeyValueUndefinedSetter.m */; };
-		916EC57E1E667511001E7595 /* NSKeyValueArray.m in Sources */ = {isa = PBXBuildFile; fileRef = 916EC5121E667511001E7595 /* NSKeyValueArray.m */; };
-		916EC57F1E667511001E7595 /* NSKeyValueFastMutableArray.m in Sources */ = {isa = PBXBuildFile; fileRef = 916EC5141E667511001E7595 /* NSKeyValueFastMutableArray.m */; };
-		916EC5801E667511001E7595 /* NSKeyValueFastMutableSet.m in Sources */ = {isa = PBXBuildFile; fileRef = 916EC5161E667511001E7595 /* NSKeyValueFastMutableSet.m */; };
-		916EC5811E667511001E7595 /* NSKeyValueIvarMutableArray.m in Sources */ = {isa = PBXBuildFile; fileRef = 916EC5181E667511001E7595 /* NSKeyValueIvarMutableArray.m */; };
-		916EC5821E667511001E7595 /* NSKeyValueIvarMutableSet.m in Sources */ = {isa = PBXBuildFile; fileRef = 916EC51A1E667511001E7595 /* NSKeyValueIvarMutableSet.m */; };
-		916EC5831E667511001E7595 /* NSKeyValueMutableArray.m in Sources */ = {isa = PBXBuildFile; fileRef = 916EC51C1E667511001E7595 /* NSKeyValueMutableArray.m */; };
-		916EC5841E667511001E7595 /* NSKeyValueMutableOrderedSet.m in Sources */ = {isa = PBXBuildFile; fileRef = 916EC51E1E667511001E7595 /* NSKeyValueMutableOrderedSet.m */; };
-		916EC5851E667511001E7595 /* NSKeyValueMutableSet.m in Sources */ = {isa = PBXBuildFile; fileRef = 916EC5201E667511001E7595 /* NSKeyValueMutableSet.m */; };
-		916EC5861E667511001E7595 /* NSKeyValueMutatingArrayMethodSet.m in Sources */ = {isa = PBXBuildFile; fileRef = 916EC5221E667511001E7595 /* NSKeyValueMutatingArrayMethodSet.m */; };
-		916EC5871E667511001E7595 /* NSKeyValueMutatingCollectionMethodSet.m in Sources */ = {isa = PBXBuildFile; fileRef = 916EC5241E667511001E7595 /* NSKeyValueMutatingCollectionMethodSet.m */; };
-		916EC5881E667511001E7595 /* NSKeyValueMutatingOrderedSetMethodSet.m in Sources */ = {isa = PBXBuildFile; fileRef = 916EC5261E667511001E7595 /* NSKeyValueMutatingOrderedSetMethodSet.m */; };
-		916EC5891E667511001E7595 /* NSKeyValueMutatingSetMethodSet.m in Sources */ = {isa = PBXBuildFile; fileRef = 916EC5281E667511001E7595 /* NSKeyValueMutatingSetMethodSet.m */; };
-		916EC58A1E667511001E7595 /* NSKeyValueNilSetEnumerator.m in Sources */ = {isa = PBXBuildFile; fileRef = 916EC52A1E667511001E7595 /* NSKeyValueNilSetEnumerator.m */; };
-		916EC58B1E667511001E7595 /* NSKeyValueNonmutatingArrayMethodSet.m in Sources */ = {isa = PBXBuildFile; fileRef = 916EC52C1E667511001E7595 /* NSKeyValueNonmutatingArrayMethodSet.m */; };
-		916EC58C1E667511001E7595 /* NSKeyValueNonmutatingCollectionMethodSet.m in Sources */ = {isa = PBXBuildFile; fileRef = 916EC52E1E667511001E7595 /* NSKeyValueNonmutatingCollectionMethodSet.m */; };
-		916EC58D1E667511001E7595 /* NSKeyValueNonmutatingOrderedSetMethodSet.m in Sources */ = {isa = PBXBuildFile; fileRef = 916EC5301E667511001E7595 /* NSKeyValueNonmutatingOrderedSetMethodSet.m */; };
-		916EC58E1E667511001E7595 /* NSKeyValueNonmutatingSetMethodSet.m in Sources */ = {isa = PBXBuildFile; fileRef = 916EC5321E667511001E7595 /* NSKeyValueNonmutatingSetMethodSet.m */; };
-		916EC58F1E667511001E7595 /* NSKeyValueNotifyingMutableArray.m in Sources */ = {isa = PBXBuildFile; fileRef = 916EC5341E667511001E7595 /* NSKeyValueNotifyingMutableArray.m */; };
-		916EC5901E667511001E7595 /* NSKeyValueNotifyingMutableOrderedSet.m in Sources */ = {isa = PBXBuildFile; fileRef = 916EC5361E667511001E7595 /* NSKeyValueNotifyingMutableOrderedSet.m */; };
-		916EC5911E667511001E7595 /* NSKeyValueNotifyingMutableSet.m in Sources */ = {isa = PBXBuildFile; fileRef = 916EC5381E667511001E7595 /* NSKeyValueNotifyingMutableSet.m */; };
-		916EC5921E667511001E7595 /* NSKeyValueOrderedSet.m in Sources */ = {isa = PBXBuildFile; fileRef = 916EC53A1E667511001E7595 /* NSKeyValueOrderedSet.m */; };
-		916EC5931E667511001E7595 /* NSKeyValueProxyCaching.m in Sources */ = {isa = PBXBuildFile; fileRef = 916EC53C1E667511001E7595 /* NSKeyValueProxyCaching.m */; };
-		916EC5941E667511001E7595 /* NSKeyValueProxyShareKey.m in Sources */ = {isa = PBXBuildFile; fileRef = 916EC53E1E667511001E7595 /* NSKeyValueProxyShareKey.m */; };
-		916EC5951E667511001E7595 /* NSKeyValueSet.m in Sources */ = {isa = PBXBuildFile; fileRef = 916EC5401E667511001E7595 /* NSKeyValueSet.m */; };
-		916EC5961E667511001E7595 /* NSKeyValueSlowMutableArray.m in Sources */ = {isa = PBXBuildFile; fileRef = 916EC5421E667511001E7595 /* NSKeyValueSlowMutableArray.m */; };
-		916EC5971E667511001E7595 /* NSKeyValueSlowMutableSet.m in Sources */ = {isa = PBXBuildFile; fileRef = 916EC5441E667511001E7595 /* NSKeyValueSlowMutableSet.m */; };
 		916EC5981E667511001E7595 /* NSObject+NSKeyValueCoding.m in Sources */ = {isa = PBXBuildFile; fileRef = 916EC5461E667511001E7595 /* NSObject+NSKeyValueCoding.m */; };
 		916EC5991E667511001E7595 /* NSObject+NSKeyValueCodingPrivate.m in Sources */ = {isa = PBXBuildFile; fileRef = 916EC5481E667511001E7595 /* NSObject+NSKeyValueCodingPrivate.m */; };
-		916EC59A1E667511001E7595 /* NSSetValueForKeyInIvar.m in Sources */ = {isa = PBXBuildFile; fileRef = 916EC54A1E667511001E7595 /* NSSetValueForKeyInIvar.m */; };
-		916EC59B1E667511001E7595 /* NSSetValueForKeyWithMethod.m in Sources */ = {isa = PBXBuildFile; fileRef = 916EC54C1E667511001E7595 /* NSSetValueForKeyWithMethod.m */; };
 		916EC59C1E667511001E7595 /* NSKeyValueChangeDictionary.m in Sources */ = {isa = PBXBuildFile; fileRef = 916EC54F1E667511001E7595 /* NSKeyValueChangeDictionary.m */; };
 		916EC59D1E667511001E7595 /* NSKeyValueComputedProperty.m in Sources */ = {isa = PBXBuildFile; fileRef = 916EC5511E667511001E7595 /* NSKeyValueComputedProperty.m */; };
 		916EC59E1E667511001E7595 /* NSKeyValueContainerClass.m in Sources */ = {isa = PBXBuildFile; fileRef = 916EC5531E667511001E7595 /* NSKeyValueContainerClass.m */; };
@@ -71,6 +43,34 @@
 		916EC5A81E667511001E7595 /* NSObject+NSKeyValueObserverRegistration.m in Sources */ = {isa = PBXBuildFile; fileRef = 916EC5671E667511001E7595 /* NSObject+NSKeyValueObserverRegistration.m */; };
 		916EC5A91E667511001E7595 /* NSObject+NSKeyValueObservingCustomization.m in Sources */ = {isa = PBXBuildFile; fileRef = 916EC5691E667511001E7595 /* NSObject+NSKeyValueObservingCustomization.m */; };
 		916EC5AA1E667511001E7595 /* NSObject+NSKeyValueObservingPrivate.m in Sources */ = {isa = PBXBuildFile; fileRef = 916EC56B1E667511001E7595 /* NSObject+NSKeyValueObservingPrivate.m */; };
+		917788581E6F9FFD00715DA8 /* NSKeyValueMutatingArrayMethodSet.m in Sources */ = {isa = PBXBuildFile; fileRef = 917788201E6F9FFD00715DA8 /* NSKeyValueMutatingArrayMethodSet.m */; };
+		917788591E6F9FFD00715DA8 /* NSKeyValueMutatingCollectionMethodSet.m in Sources */ = {isa = PBXBuildFile; fileRef = 917788221E6F9FFD00715DA8 /* NSKeyValueMutatingCollectionMethodSet.m */; };
+		9177885A1E6F9FFD00715DA8 /* NSKeyValueMutatingOrderedSetMethodSet.m in Sources */ = {isa = PBXBuildFile; fileRef = 917788241E6F9FFD00715DA8 /* NSKeyValueMutatingOrderedSetMethodSet.m */; };
+		9177885B1E6F9FFD00715DA8 /* NSKeyValueMutatingSetMethodSet.m in Sources */ = {isa = PBXBuildFile; fileRef = 917788261E6F9FFD00715DA8 /* NSKeyValueMutatingSetMethodSet.m */; };
+		9177885C1E6F9FFD00715DA8 /* NSKeyValueNonmutatingArrayMethodSet.m in Sources */ = {isa = PBXBuildFile; fileRef = 917788281E6F9FFD00715DA8 /* NSKeyValueNonmutatingArrayMethodSet.m */; };
+		9177885D1E6F9FFD00715DA8 /* NSKeyValueNonmutatingCollectionMethodSet.m in Sources */ = {isa = PBXBuildFile; fileRef = 9177882A1E6F9FFD00715DA8 /* NSKeyValueNonmutatingCollectionMethodSet.m */; };
+		9177885E1E6F9FFD00715DA8 /* NSKeyValueNonmutatingOrderedSetMethodSet.m in Sources */ = {isa = PBXBuildFile; fileRef = 9177882C1E6F9FFD00715DA8 /* NSKeyValueNonmutatingOrderedSetMethodSet.m */; };
+		9177885F1E6F9FFD00715DA8 /* NSKeyValueNonmutatingSetMethodSet.m in Sources */ = {isa = PBXBuildFile; fileRef = 9177882E1E6F9FFD00715DA8 /* NSKeyValueNonmutatingSetMethodSet.m */; };
+		917788601E6F9FFD00715DA8 /* NSSetValueForKeyInIvar.m in Sources */ = {isa = PBXBuildFile; fileRef = 917788301E6F9FFD00715DA8 /* NSSetValueForKeyInIvar.m */; };
+		917788611E6F9FFD00715DA8 /* NSSetValueForKeyWithMethod.m in Sources */ = {isa = PBXBuildFile; fileRef = 917788321E6F9FFD00715DA8 /* NSSetValueForKeyWithMethod.m */; };
+		917788621E6F9FFD00715DA8 /* NSKeyValueArray.m in Sources */ = {isa = PBXBuildFile; fileRef = 917788351E6F9FFD00715DA8 /* NSKeyValueArray.m */; };
+		917788631E6F9FFD00715DA8 /* NSKeyValueFastMutableArray.m in Sources */ = {isa = PBXBuildFile; fileRef = 917788371E6F9FFD00715DA8 /* NSKeyValueFastMutableArray.m */; };
+		917788641E6F9FFD00715DA8 /* NSKeyValueFastMutableSet.m in Sources */ = {isa = PBXBuildFile; fileRef = 917788391E6F9FFD00715DA8 /* NSKeyValueFastMutableSet.m */; };
+		917788651E6F9FFD00715DA8 /* NSKeyValueIvarMutableArray.m in Sources */ = {isa = PBXBuildFile; fileRef = 9177883B1E6F9FFD00715DA8 /* NSKeyValueIvarMutableArray.m */; };
+		917788661E6F9FFD00715DA8 /* NSKeyValueIvarMutableSet.m in Sources */ = {isa = PBXBuildFile; fileRef = 9177883D1E6F9FFD00715DA8 /* NSKeyValueIvarMutableSet.m */; };
+		917788671E6F9FFD00715DA8 /* NSKeyValueMutableArray.m in Sources */ = {isa = PBXBuildFile; fileRef = 9177883F1E6F9FFD00715DA8 /* NSKeyValueMutableArray.m */; };
+		917788681E6F9FFD00715DA8 /* NSKeyValueMutableOrderedSet.m in Sources */ = {isa = PBXBuildFile; fileRef = 917788411E6F9FFD00715DA8 /* NSKeyValueMutableOrderedSet.m */; };
+		917788691E6F9FFD00715DA8 /* NSKeyValueMutableSet.m in Sources */ = {isa = PBXBuildFile; fileRef = 917788431E6F9FFD00715DA8 /* NSKeyValueMutableSet.m */; };
+		9177886A1E6F9FFD00715DA8 /* NSKeyValueNilSetEnumerator.m in Sources */ = {isa = PBXBuildFile; fileRef = 917788451E6F9FFD00715DA8 /* NSKeyValueNilSetEnumerator.m */; };
+		9177886B1E6F9FFD00715DA8 /* NSKeyValueNotifyingMutableArray.m in Sources */ = {isa = PBXBuildFile; fileRef = 917788471E6F9FFD00715DA8 /* NSKeyValueNotifyingMutableArray.m */; };
+		9177886C1E6F9FFD00715DA8 /* NSKeyValueNotifyingMutableOrderedSet.m in Sources */ = {isa = PBXBuildFile; fileRef = 917788491E6F9FFD00715DA8 /* NSKeyValueNotifyingMutableOrderedSet.m */; };
+		9177886D1E6F9FFD00715DA8 /* NSKeyValueNotifyingMutableSet.m in Sources */ = {isa = PBXBuildFile; fileRef = 9177884B1E6F9FFD00715DA8 /* NSKeyValueNotifyingMutableSet.m */; };
+		9177886E1E6F9FFD00715DA8 /* NSKeyValueOrderedSet.m in Sources */ = {isa = PBXBuildFile; fileRef = 9177884D1E6F9FFD00715DA8 /* NSKeyValueOrderedSet.m */; };
+		9177886F1E6F9FFD00715DA8 /* NSKeyValueProxyCaching.m in Sources */ = {isa = PBXBuildFile; fileRef = 9177884F1E6F9FFD00715DA8 /* NSKeyValueProxyCaching.m */; };
+		917788701E6F9FFD00715DA8 /* NSKeyValueProxyShareKey.m in Sources */ = {isa = PBXBuildFile; fileRef = 917788511E6F9FFD00715DA8 /* NSKeyValueProxyShareKey.m */; };
+		917788711E6F9FFD00715DA8 /* NSKeyValueSet.m in Sources */ = {isa = PBXBuildFile; fileRef = 917788531E6F9FFD00715DA8 /* NSKeyValueSet.m */; };
+		917788721E6F9FFD00715DA8 /* NSKeyValueSlowMutableArray.m in Sources */ = {isa = PBXBuildFile; fileRef = 917788551E6F9FFD00715DA8 /* NSKeyValueSlowMutableArray.m */; };
+		917788731E6F9FFD00715DA8 /* NSKeyValueSlowMutableSet.m in Sources */ = {isa = PBXBuildFile; fileRef = 917788571E6F9FFD00715DA8 /* NSKeyValueSlowMutableSet.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -124,66 +124,10 @@
 		916EC50E1E667511001E7595 /* NSKeyValueSetter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSKeyValueSetter.m; sourceTree = "<group>"; };
 		916EC50F1E667511001E7595 /* NSKeyValueUndefinedSetter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSKeyValueUndefinedSetter.h; sourceTree = "<group>"; };
 		916EC5101E667511001E7595 /* NSKeyValueUndefinedSetter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSKeyValueUndefinedSetter.m; sourceTree = "<group>"; };
-		916EC5111E667511001E7595 /* NSKeyValueArray.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSKeyValueArray.h; sourceTree = "<group>"; };
-		916EC5121E667511001E7595 /* NSKeyValueArray.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSKeyValueArray.m; sourceTree = "<group>"; };
-		916EC5131E667511001E7595 /* NSKeyValueFastMutableArray.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSKeyValueFastMutableArray.h; sourceTree = "<group>"; };
-		916EC5141E667511001E7595 /* NSKeyValueFastMutableArray.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSKeyValueFastMutableArray.m; sourceTree = "<group>"; };
-		916EC5151E667511001E7595 /* NSKeyValueFastMutableSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSKeyValueFastMutableSet.h; sourceTree = "<group>"; };
-		916EC5161E667511001E7595 /* NSKeyValueFastMutableSet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSKeyValueFastMutableSet.m; sourceTree = "<group>"; };
-		916EC5171E667511001E7595 /* NSKeyValueIvarMutableArray.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSKeyValueIvarMutableArray.h; sourceTree = "<group>"; };
-		916EC5181E667511001E7595 /* NSKeyValueIvarMutableArray.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSKeyValueIvarMutableArray.m; sourceTree = "<group>"; };
-		916EC5191E667511001E7595 /* NSKeyValueIvarMutableSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSKeyValueIvarMutableSet.h; sourceTree = "<group>"; };
-		916EC51A1E667511001E7595 /* NSKeyValueIvarMutableSet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSKeyValueIvarMutableSet.m; sourceTree = "<group>"; };
-		916EC51B1E667511001E7595 /* NSKeyValueMutableArray.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSKeyValueMutableArray.h; sourceTree = "<group>"; };
-		916EC51C1E667511001E7595 /* NSKeyValueMutableArray.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSKeyValueMutableArray.m; sourceTree = "<group>"; };
-		916EC51D1E667511001E7595 /* NSKeyValueMutableOrderedSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSKeyValueMutableOrderedSet.h; sourceTree = "<group>"; };
-		916EC51E1E667511001E7595 /* NSKeyValueMutableOrderedSet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSKeyValueMutableOrderedSet.m; sourceTree = "<group>"; };
-		916EC51F1E667511001E7595 /* NSKeyValueMutableSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSKeyValueMutableSet.h; sourceTree = "<group>"; };
-		916EC5201E667511001E7595 /* NSKeyValueMutableSet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSKeyValueMutableSet.m; sourceTree = "<group>"; };
-		916EC5211E667511001E7595 /* NSKeyValueMutatingArrayMethodSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSKeyValueMutatingArrayMethodSet.h; sourceTree = "<group>"; };
-		916EC5221E667511001E7595 /* NSKeyValueMutatingArrayMethodSet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSKeyValueMutatingArrayMethodSet.m; sourceTree = "<group>"; };
-		916EC5231E667511001E7595 /* NSKeyValueMutatingCollectionMethodSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSKeyValueMutatingCollectionMethodSet.h; sourceTree = "<group>"; };
-		916EC5241E667511001E7595 /* NSKeyValueMutatingCollectionMethodSet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSKeyValueMutatingCollectionMethodSet.m; sourceTree = "<group>"; };
-		916EC5251E667511001E7595 /* NSKeyValueMutatingOrderedSetMethodSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSKeyValueMutatingOrderedSetMethodSet.h; sourceTree = "<group>"; };
-		916EC5261E667511001E7595 /* NSKeyValueMutatingOrderedSetMethodSet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSKeyValueMutatingOrderedSetMethodSet.m; sourceTree = "<group>"; };
-		916EC5271E667511001E7595 /* NSKeyValueMutatingSetMethodSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSKeyValueMutatingSetMethodSet.h; sourceTree = "<group>"; };
-		916EC5281E667511001E7595 /* NSKeyValueMutatingSetMethodSet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSKeyValueMutatingSetMethodSet.m; sourceTree = "<group>"; };
-		916EC5291E667511001E7595 /* NSKeyValueNilSetEnumerator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSKeyValueNilSetEnumerator.h; sourceTree = "<group>"; };
-		916EC52A1E667511001E7595 /* NSKeyValueNilSetEnumerator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSKeyValueNilSetEnumerator.m; sourceTree = "<group>"; };
-		916EC52B1E667511001E7595 /* NSKeyValueNonmutatingArrayMethodSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSKeyValueNonmutatingArrayMethodSet.h; sourceTree = "<group>"; };
-		916EC52C1E667511001E7595 /* NSKeyValueNonmutatingArrayMethodSet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSKeyValueNonmutatingArrayMethodSet.m; sourceTree = "<group>"; };
-		916EC52D1E667511001E7595 /* NSKeyValueNonmutatingCollectionMethodSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSKeyValueNonmutatingCollectionMethodSet.h; sourceTree = "<group>"; };
-		916EC52E1E667511001E7595 /* NSKeyValueNonmutatingCollectionMethodSet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSKeyValueNonmutatingCollectionMethodSet.m; sourceTree = "<group>"; };
-		916EC52F1E667511001E7595 /* NSKeyValueNonmutatingOrderedSetMethodSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSKeyValueNonmutatingOrderedSetMethodSet.h; sourceTree = "<group>"; };
-		916EC5301E667511001E7595 /* NSKeyValueNonmutatingOrderedSetMethodSet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSKeyValueNonmutatingOrderedSetMethodSet.m; sourceTree = "<group>"; };
-		916EC5311E667511001E7595 /* NSKeyValueNonmutatingSetMethodSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSKeyValueNonmutatingSetMethodSet.h; sourceTree = "<group>"; };
-		916EC5321E667511001E7595 /* NSKeyValueNonmutatingSetMethodSet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSKeyValueNonmutatingSetMethodSet.m; sourceTree = "<group>"; };
-		916EC5331E667511001E7595 /* NSKeyValueNotifyingMutableArray.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSKeyValueNotifyingMutableArray.h; sourceTree = "<group>"; };
-		916EC5341E667511001E7595 /* NSKeyValueNotifyingMutableArray.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSKeyValueNotifyingMutableArray.m; sourceTree = "<group>"; };
-		916EC5351E667511001E7595 /* NSKeyValueNotifyingMutableOrderedSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSKeyValueNotifyingMutableOrderedSet.h; sourceTree = "<group>"; };
-		916EC5361E667511001E7595 /* NSKeyValueNotifyingMutableOrderedSet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSKeyValueNotifyingMutableOrderedSet.m; sourceTree = "<group>"; };
-		916EC5371E667511001E7595 /* NSKeyValueNotifyingMutableSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSKeyValueNotifyingMutableSet.h; sourceTree = "<group>"; };
-		916EC5381E667511001E7595 /* NSKeyValueNotifyingMutableSet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSKeyValueNotifyingMutableSet.m; sourceTree = "<group>"; };
-		916EC5391E667511001E7595 /* NSKeyValueOrderedSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSKeyValueOrderedSet.h; sourceTree = "<group>"; };
-		916EC53A1E667511001E7595 /* NSKeyValueOrderedSet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSKeyValueOrderedSet.m; sourceTree = "<group>"; };
-		916EC53B1E667511001E7595 /* NSKeyValueProxyCaching.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSKeyValueProxyCaching.h; sourceTree = "<group>"; };
-		916EC53C1E667511001E7595 /* NSKeyValueProxyCaching.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSKeyValueProxyCaching.m; sourceTree = "<group>"; };
-		916EC53D1E667511001E7595 /* NSKeyValueProxyShareKey.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSKeyValueProxyShareKey.h; sourceTree = "<group>"; };
-		916EC53E1E667511001E7595 /* NSKeyValueProxyShareKey.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSKeyValueProxyShareKey.m; sourceTree = "<group>"; };
-		916EC53F1E667511001E7595 /* NSKeyValueSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSKeyValueSet.h; sourceTree = "<group>"; };
-		916EC5401E667511001E7595 /* NSKeyValueSet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSKeyValueSet.m; sourceTree = "<group>"; };
-		916EC5411E667511001E7595 /* NSKeyValueSlowMutableArray.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSKeyValueSlowMutableArray.h; sourceTree = "<group>"; };
-		916EC5421E667511001E7595 /* NSKeyValueSlowMutableArray.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSKeyValueSlowMutableArray.m; sourceTree = "<group>"; };
-		916EC5431E667511001E7595 /* NSKeyValueSlowMutableSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSKeyValueSlowMutableSet.h; sourceTree = "<group>"; };
-		916EC5441E667511001E7595 /* NSKeyValueSlowMutableSet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSKeyValueSlowMutableSet.m; sourceTree = "<group>"; };
 		916EC5451E667511001E7595 /* NSObject+NSKeyValueCoding.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSObject+NSKeyValueCoding.h"; sourceTree = "<group>"; };
 		916EC5461E667511001E7595 /* NSObject+NSKeyValueCoding.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSObject+NSKeyValueCoding.m"; sourceTree = "<group>"; };
 		916EC5471E667511001E7595 /* NSObject+NSKeyValueCodingPrivate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSObject+NSKeyValueCodingPrivate.h"; sourceTree = "<group>"; };
 		916EC5481E667511001E7595 /* NSObject+NSKeyValueCodingPrivate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSObject+NSKeyValueCodingPrivate.m"; sourceTree = "<group>"; };
-		916EC5491E667511001E7595 /* NSSetValueForKeyInIvar.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSSetValueForKeyInIvar.h; sourceTree = "<group>"; };
-		916EC54A1E667511001E7595 /* NSSetValueForKeyInIvar.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSSetValueForKeyInIvar.m; sourceTree = "<group>"; };
-		916EC54B1E667511001E7595 /* NSSetValueForKeyWithMethod.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSSetValueForKeyWithMethod.h; sourceTree = "<group>"; };
-		916EC54C1E667511001E7595 /* NSSetValueForKeyWithMethod.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSSetValueForKeyWithMethod.m; sourceTree = "<group>"; };
 		916EC54E1E667511001E7595 /* NSKeyValueChangeDictionary.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSKeyValueChangeDictionary.h; sourceTree = "<group>"; };
 		916EC54F1E667511001E7595 /* NSKeyValueChangeDictionary.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSKeyValueChangeDictionary.m; sourceTree = "<group>"; };
 		916EC5501E667511001E7595 /* NSKeyValueComputedProperty.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSKeyValueComputedProperty.h; sourceTree = "<group>"; };
@@ -214,6 +158,62 @@
 		916EC5691E667511001E7595 /* NSObject+NSKeyValueObservingCustomization.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSObject+NSKeyValueObservingCustomization.m"; sourceTree = "<group>"; };
 		916EC56A1E667511001E7595 /* NSObject+NSKeyValueObservingPrivate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSObject+NSKeyValueObservingPrivate.h"; sourceTree = "<group>"; };
 		916EC56B1E667511001E7595 /* NSObject+NSKeyValueObservingPrivate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSObject+NSKeyValueObservingPrivate.m"; sourceTree = "<group>"; };
+		9177881F1E6F9FFD00715DA8 /* NSKeyValueMutatingArrayMethodSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSKeyValueMutatingArrayMethodSet.h; sourceTree = "<group>"; };
+		917788201E6F9FFD00715DA8 /* NSKeyValueMutatingArrayMethodSet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSKeyValueMutatingArrayMethodSet.m; sourceTree = "<group>"; };
+		917788211E6F9FFD00715DA8 /* NSKeyValueMutatingCollectionMethodSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSKeyValueMutatingCollectionMethodSet.h; sourceTree = "<group>"; };
+		917788221E6F9FFD00715DA8 /* NSKeyValueMutatingCollectionMethodSet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSKeyValueMutatingCollectionMethodSet.m; sourceTree = "<group>"; };
+		917788231E6F9FFD00715DA8 /* NSKeyValueMutatingOrderedSetMethodSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSKeyValueMutatingOrderedSetMethodSet.h; sourceTree = "<group>"; };
+		917788241E6F9FFD00715DA8 /* NSKeyValueMutatingOrderedSetMethodSet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSKeyValueMutatingOrderedSetMethodSet.m; sourceTree = "<group>"; };
+		917788251E6F9FFD00715DA8 /* NSKeyValueMutatingSetMethodSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSKeyValueMutatingSetMethodSet.h; sourceTree = "<group>"; };
+		917788261E6F9FFD00715DA8 /* NSKeyValueMutatingSetMethodSet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSKeyValueMutatingSetMethodSet.m; sourceTree = "<group>"; };
+		917788271E6F9FFD00715DA8 /* NSKeyValueNonmutatingArrayMethodSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSKeyValueNonmutatingArrayMethodSet.h; sourceTree = "<group>"; };
+		917788281E6F9FFD00715DA8 /* NSKeyValueNonmutatingArrayMethodSet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSKeyValueNonmutatingArrayMethodSet.m; sourceTree = "<group>"; };
+		917788291E6F9FFD00715DA8 /* NSKeyValueNonmutatingCollectionMethodSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSKeyValueNonmutatingCollectionMethodSet.h; sourceTree = "<group>"; };
+		9177882A1E6F9FFD00715DA8 /* NSKeyValueNonmutatingCollectionMethodSet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSKeyValueNonmutatingCollectionMethodSet.m; sourceTree = "<group>"; };
+		9177882B1E6F9FFD00715DA8 /* NSKeyValueNonmutatingOrderedSetMethodSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSKeyValueNonmutatingOrderedSetMethodSet.h; sourceTree = "<group>"; };
+		9177882C1E6F9FFD00715DA8 /* NSKeyValueNonmutatingOrderedSetMethodSet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSKeyValueNonmutatingOrderedSetMethodSet.m; sourceTree = "<group>"; };
+		9177882D1E6F9FFD00715DA8 /* NSKeyValueNonmutatingSetMethodSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSKeyValueNonmutatingSetMethodSet.h; sourceTree = "<group>"; };
+		9177882E1E6F9FFD00715DA8 /* NSKeyValueNonmutatingSetMethodSet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSKeyValueNonmutatingSetMethodSet.m; sourceTree = "<group>"; };
+		9177882F1E6F9FFD00715DA8 /* NSSetValueForKeyInIvar.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSSetValueForKeyInIvar.h; sourceTree = "<group>"; };
+		917788301E6F9FFD00715DA8 /* NSSetValueForKeyInIvar.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSSetValueForKeyInIvar.m; sourceTree = "<group>"; };
+		917788311E6F9FFD00715DA8 /* NSSetValueForKeyWithMethod.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSSetValueForKeyWithMethod.h; sourceTree = "<group>"; };
+		917788321E6F9FFD00715DA8 /* NSSetValueForKeyWithMethod.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSSetValueForKeyWithMethod.m; sourceTree = "<group>"; };
+		917788341E6F9FFD00715DA8 /* NSKeyValueArray.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSKeyValueArray.h; sourceTree = "<group>"; };
+		917788351E6F9FFD00715DA8 /* NSKeyValueArray.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSKeyValueArray.m; sourceTree = "<group>"; };
+		917788361E6F9FFD00715DA8 /* NSKeyValueFastMutableArray.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSKeyValueFastMutableArray.h; sourceTree = "<group>"; };
+		917788371E6F9FFD00715DA8 /* NSKeyValueFastMutableArray.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSKeyValueFastMutableArray.m; sourceTree = "<group>"; };
+		917788381E6F9FFD00715DA8 /* NSKeyValueFastMutableSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSKeyValueFastMutableSet.h; sourceTree = "<group>"; };
+		917788391E6F9FFD00715DA8 /* NSKeyValueFastMutableSet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSKeyValueFastMutableSet.m; sourceTree = "<group>"; };
+		9177883A1E6F9FFD00715DA8 /* NSKeyValueIvarMutableArray.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSKeyValueIvarMutableArray.h; sourceTree = "<group>"; };
+		9177883B1E6F9FFD00715DA8 /* NSKeyValueIvarMutableArray.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSKeyValueIvarMutableArray.m; sourceTree = "<group>"; };
+		9177883C1E6F9FFD00715DA8 /* NSKeyValueIvarMutableSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSKeyValueIvarMutableSet.h; sourceTree = "<group>"; };
+		9177883D1E6F9FFD00715DA8 /* NSKeyValueIvarMutableSet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSKeyValueIvarMutableSet.m; sourceTree = "<group>"; };
+		9177883E1E6F9FFD00715DA8 /* NSKeyValueMutableArray.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSKeyValueMutableArray.h; sourceTree = "<group>"; };
+		9177883F1E6F9FFD00715DA8 /* NSKeyValueMutableArray.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSKeyValueMutableArray.m; sourceTree = "<group>"; };
+		917788401E6F9FFD00715DA8 /* NSKeyValueMutableOrderedSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSKeyValueMutableOrderedSet.h; sourceTree = "<group>"; };
+		917788411E6F9FFD00715DA8 /* NSKeyValueMutableOrderedSet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSKeyValueMutableOrderedSet.m; sourceTree = "<group>"; };
+		917788421E6F9FFD00715DA8 /* NSKeyValueMutableSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSKeyValueMutableSet.h; sourceTree = "<group>"; };
+		917788431E6F9FFD00715DA8 /* NSKeyValueMutableSet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSKeyValueMutableSet.m; sourceTree = "<group>"; };
+		917788441E6F9FFD00715DA8 /* NSKeyValueNilSetEnumerator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSKeyValueNilSetEnumerator.h; sourceTree = "<group>"; };
+		917788451E6F9FFD00715DA8 /* NSKeyValueNilSetEnumerator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSKeyValueNilSetEnumerator.m; sourceTree = "<group>"; };
+		917788461E6F9FFD00715DA8 /* NSKeyValueNotifyingMutableArray.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSKeyValueNotifyingMutableArray.h; sourceTree = "<group>"; };
+		917788471E6F9FFD00715DA8 /* NSKeyValueNotifyingMutableArray.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSKeyValueNotifyingMutableArray.m; sourceTree = "<group>"; };
+		917788481E6F9FFD00715DA8 /* NSKeyValueNotifyingMutableOrderedSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSKeyValueNotifyingMutableOrderedSet.h; sourceTree = "<group>"; };
+		917788491E6F9FFD00715DA8 /* NSKeyValueNotifyingMutableOrderedSet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSKeyValueNotifyingMutableOrderedSet.m; sourceTree = "<group>"; };
+		9177884A1E6F9FFD00715DA8 /* NSKeyValueNotifyingMutableSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSKeyValueNotifyingMutableSet.h; sourceTree = "<group>"; };
+		9177884B1E6F9FFD00715DA8 /* NSKeyValueNotifyingMutableSet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSKeyValueNotifyingMutableSet.m; sourceTree = "<group>"; };
+		9177884C1E6F9FFD00715DA8 /* NSKeyValueOrderedSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSKeyValueOrderedSet.h; sourceTree = "<group>"; };
+		9177884D1E6F9FFD00715DA8 /* NSKeyValueOrderedSet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSKeyValueOrderedSet.m; sourceTree = "<group>"; };
+		9177884E1E6F9FFD00715DA8 /* NSKeyValueProxyCaching.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSKeyValueProxyCaching.h; sourceTree = "<group>"; };
+		9177884F1E6F9FFD00715DA8 /* NSKeyValueProxyCaching.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSKeyValueProxyCaching.m; sourceTree = "<group>"; };
+		917788501E6F9FFD00715DA8 /* NSKeyValueProxyShareKey.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSKeyValueProxyShareKey.h; sourceTree = "<group>"; };
+		917788511E6F9FFD00715DA8 /* NSKeyValueProxyShareKey.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSKeyValueProxyShareKey.m; sourceTree = "<group>"; };
+		917788521E6F9FFD00715DA8 /* NSKeyValueSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSKeyValueSet.h; sourceTree = "<group>"; };
+		917788531E6F9FFD00715DA8 /* NSKeyValueSet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSKeyValueSet.m; sourceTree = "<group>"; };
+		917788541E6F9FFD00715DA8 /* NSKeyValueSlowMutableArray.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSKeyValueSlowMutableArray.h; sourceTree = "<group>"; };
+		917788551E6F9FFD00715DA8 /* NSKeyValueSlowMutableArray.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSKeyValueSlowMutableArray.m; sourceTree = "<group>"; };
+		917788561E6F9FFD00715DA8 /* NSKeyValueSlowMutableSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSKeyValueSlowMutableSet.h; sourceTree = "<group>"; };
+		917788571E6F9FFD00715DA8 /* NSKeyValueSlowMutableSet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSKeyValueSlowMutableSet.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -256,67 +256,13 @@
 		916EC4E91E667511001E7595 /* KVC */ = {
 			isa = PBXGroup;
 			children = (
+				9177881E1E6F9FFD00715DA8 /* MethodSet */,
+				917788331E6F9FFD00715DA8 /* ProxyCollection */,
 				916EC4EA1E667511001E7595 /* Accessor */,
-				916EC5111E667511001E7595 /* NSKeyValueArray.h */,
-				916EC5121E667511001E7595 /* NSKeyValueArray.m */,
-				916EC5131E667511001E7595 /* NSKeyValueFastMutableArray.h */,
-				916EC5141E667511001E7595 /* NSKeyValueFastMutableArray.m */,
-				916EC5151E667511001E7595 /* NSKeyValueFastMutableSet.h */,
-				916EC5161E667511001E7595 /* NSKeyValueFastMutableSet.m */,
-				916EC5171E667511001E7595 /* NSKeyValueIvarMutableArray.h */,
-				916EC5181E667511001E7595 /* NSKeyValueIvarMutableArray.m */,
-				916EC5191E667511001E7595 /* NSKeyValueIvarMutableSet.h */,
-				916EC51A1E667511001E7595 /* NSKeyValueIvarMutableSet.m */,
-				916EC51B1E667511001E7595 /* NSKeyValueMutableArray.h */,
-				916EC51C1E667511001E7595 /* NSKeyValueMutableArray.m */,
-				916EC51D1E667511001E7595 /* NSKeyValueMutableOrderedSet.h */,
-				916EC51E1E667511001E7595 /* NSKeyValueMutableOrderedSet.m */,
-				916EC51F1E667511001E7595 /* NSKeyValueMutableSet.h */,
-				916EC5201E667511001E7595 /* NSKeyValueMutableSet.m */,
-				916EC5211E667511001E7595 /* NSKeyValueMutatingArrayMethodSet.h */,
-				916EC5221E667511001E7595 /* NSKeyValueMutatingArrayMethodSet.m */,
-				916EC5231E667511001E7595 /* NSKeyValueMutatingCollectionMethodSet.h */,
-				916EC5241E667511001E7595 /* NSKeyValueMutatingCollectionMethodSet.m */,
-				916EC5251E667511001E7595 /* NSKeyValueMutatingOrderedSetMethodSet.h */,
-				916EC5261E667511001E7595 /* NSKeyValueMutatingOrderedSetMethodSet.m */,
-				916EC5271E667511001E7595 /* NSKeyValueMutatingSetMethodSet.h */,
-				916EC5281E667511001E7595 /* NSKeyValueMutatingSetMethodSet.m */,
-				916EC5291E667511001E7595 /* NSKeyValueNilSetEnumerator.h */,
-				916EC52A1E667511001E7595 /* NSKeyValueNilSetEnumerator.m */,
-				916EC52B1E667511001E7595 /* NSKeyValueNonmutatingArrayMethodSet.h */,
-				916EC52C1E667511001E7595 /* NSKeyValueNonmutatingArrayMethodSet.m */,
-				916EC52D1E667511001E7595 /* NSKeyValueNonmutatingCollectionMethodSet.h */,
-				916EC52E1E667511001E7595 /* NSKeyValueNonmutatingCollectionMethodSet.m */,
-				916EC52F1E667511001E7595 /* NSKeyValueNonmutatingOrderedSetMethodSet.h */,
-				916EC5301E667511001E7595 /* NSKeyValueNonmutatingOrderedSetMethodSet.m */,
-				916EC5311E667511001E7595 /* NSKeyValueNonmutatingSetMethodSet.h */,
-				916EC5321E667511001E7595 /* NSKeyValueNonmutatingSetMethodSet.m */,
-				916EC5331E667511001E7595 /* NSKeyValueNotifyingMutableArray.h */,
-				916EC5341E667511001E7595 /* NSKeyValueNotifyingMutableArray.m */,
-				916EC5351E667511001E7595 /* NSKeyValueNotifyingMutableOrderedSet.h */,
-				916EC5361E667511001E7595 /* NSKeyValueNotifyingMutableOrderedSet.m */,
-				916EC5371E667511001E7595 /* NSKeyValueNotifyingMutableSet.h */,
-				916EC5381E667511001E7595 /* NSKeyValueNotifyingMutableSet.m */,
-				916EC5391E667511001E7595 /* NSKeyValueOrderedSet.h */,
-				916EC53A1E667511001E7595 /* NSKeyValueOrderedSet.m */,
-				916EC53B1E667511001E7595 /* NSKeyValueProxyCaching.h */,
-				916EC53C1E667511001E7595 /* NSKeyValueProxyCaching.m */,
-				916EC53D1E667511001E7595 /* NSKeyValueProxyShareKey.h */,
-				916EC53E1E667511001E7595 /* NSKeyValueProxyShareKey.m */,
-				916EC53F1E667511001E7595 /* NSKeyValueSet.h */,
-				916EC5401E667511001E7595 /* NSKeyValueSet.m */,
-				916EC5411E667511001E7595 /* NSKeyValueSlowMutableArray.h */,
-				916EC5421E667511001E7595 /* NSKeyValueSlowMutableArray.m */,
-				916EC5431E667511001E7595 /* NSKeyValueSlowMutableSet.h */,
-				916EC5441E667511001E7595 /* NSKeyValueSlowMutableSet.m */,
 				916EC5451E667511001E7595 /* NSObject+NSKeyValueCoding.h */,
 				916EC5461E667511001E7595 /* NSObject+NSKeyValueCoding.m */,
 				916EC5471E667511001E7595 /* NSObject+NSKeyValueCodingPrivate.h */,
 				916EC5481E667511001E7595 /* NSObject+NSKeyValueCodingPrivate.m */,
-				916EC5491E667511001E7595 /* NSSetValueForKeyInIvar.h */,
-				916EC54A1E667511001E7595 /* NSSetValueForKeyInIvar.m */,
-				916EC54B1E667511001E7595 /* NSSetValueForKeyWithMethod.h */,
-				916EC54C1E667511001E7595 /* NSSetValueForKeyWithMethod.m */,
 			);
 			path = KVC;
 			sourceTree = "<group>";
@@ -417,6 +363,76 @@
 			path = KVO;
 			sourceTree = "<group>";
 		};
+		9177881E1E6F9FFD00715DA8 /* MethodSet */ = {
+			isa = PBXGroup;
+			children = (
+				9177881F1E6F9FFD00715DA8 /* NSKeyValueMutatingArrayMethodSet.h */,
+				917788201E6F9FFD00715DA8 /* NSKeyValueMutatingArrayMethodSet.m */,
+				917788211E6F9FFD00715DA8 /* NSKeyValueMutatingCollectionMethodSet.h */,
+				917788221E6F9FFD00715DA8 /* NSKeyValueMutatingCollectionMethodSet.m */,
+				917788231E6F9FFD00715DA8 /* NSKeyValueMutatingOrderedSetMethodSet.h */,
+				917788241E6F9FFD00715DA8 /* NSKeyValueMutatingOrderedSetMethodSet.m */,
+				917788251E6F9FFD00715DA8 /* NSKeyValueMutatingSetMethodSet.h */,
+				917788261E6F9FFD00715DA8 /* NSKeyValueMutatingSetMethodSet.m */,
+				917788271E6F9FFD00715DA8 /* NSKeyValueNonmutatingArrayMethodSet.h */,
+				917788281E6F9FFD00715DA8 /* NSKeyValueNonmutatingArrayMethodSet.m */,
+				917788291E6F9FFD00715DA8 /* NSKeyValueNonmutatingCollectionMethodSet.h */,
+				9177882A1E6F9FFD00715DA8 /* NSKeyValueNonmutatingCollectionMethodSet.m */,
+				9177882B1E6F9FFD00715DA8 /* NSKeyValueNonmutatingOrderedSetMethodSet.h */,
+				9177882C1E6F9FFD00715DA8 /* NSKeyValueNonmutatingOrderedSetMethodSet.m */,
+				9177882D1E6F9FFD00715DA8 /* NSKeyValueNonmutatingSetMethodSet.h */,
+				9177882E1E6F9FFD00715DA8 /* NSKeyValueNonmutatingSetMethodSet.m */,
+				9177882F1E6F9FFD00715DA8 /* NSSetValueForKeyInIvar.h */,
+				917788301E6F9FFD00715DA8 /* NSSetValueForKeyInIvar.m */,
+				917788311E6F9FFD00715DA8 /* NSSetValueForKeyWithMethod.h */,
+				917788321E6F9FFD00715DA8 /* NSSetValueForKeyWithMethod.m */,
+			);
+			path = MethodSet;
+			sourceTree = "<group>";
+		};
+		917788331E6F9FFD00715DA8 /* ProxyCollection */ = {
+			isa = PBXGroup;
+			children = (
+				917788341E6F9FFD00715DA8 /* NSKeyValueArray.h */,
+				917788351E6F9FFD00715DA8 /* NSKeyValueArray.m */,
+				917788361E6F9FFD00715DA8 /* NSKeyValueFastMutableArray.h */,
+				917788371E6F9FFD00715DA8 /* NSKeyValueFastMutableArray.m */,
+				917788381E6F9FFD00715DA8 /* NSKeyValueFastMutableSet.h */,
+				917788391E6F9FFD00715DA8 /* NSKeyValueFastMutableSet.m */,
+				9177883A1E6F9FFD00715DA8 /* NSKeyValueIvarMutableArray.h */,
+				9177883B1E6F9FFD00715DA8 /* NSKeyValueIvarMutableArray.m */,
+				9177883C1E6F9FFD00715DA8 /* NSKeyValueIvarMutableSet.h */,
+				9177883D1E6F9FFD00715DA8 /* NSKeyValueIvarMutableSet.m */,
+				9177883E1E6F9FFD00715DA8 /* NSKeyValueMutableArray.h */,
+				9177883F1E6F9FFD00715DA8 /* NSKeyValueMutableArray.m */,
+				917788401E6F9FFD00715DA8 /* NSKeyValueMutableOrderedSet.h */,
+				917788411E6F9FFD00715DA8 /* NSKeyValueMutableOrderedSet.m */,
+				917788421E6F9FFD00715DA8 /* NSKeyValueMutableSet.h */,
+				917788431E6F9FFD00715DA8 /* NSKeyValueMutableSet.m */,
+				917788441E6F9FFD00715DA8 /* NSKeyValueNilSetEnumerator.h */,
+				917788451E6F9FFD00715DA8 /* NSKeyValueNilSetEnumerator.m */,
+				917788461E6F9FFD00715DA8 /* NSKeyValueNotifyingMutableArray.h */,
+				917788471E6F9FFD00715DA8 /* NSKeyValueNotifyingMutableArray.m */,
+				917788481E6F9FFD00715DA8 /* NSKeyValueNotifyingMutableOrderedSet.h */,
+				917788491E6F9FFD00715DA8 /* NSKeyValueNotifyingMutableOrderedSet.m */,
+				9177884A1E6F9FFD00715DA8 /* NSKeyValueNotifyingMutableSet.h */,
+				9177884B1E6F9FFD00715DA8 /* NSKeyValueNotifyingMutableSet.m */,
+				9177884C1E6F9FFD00715DA8 /* NSKeyValueOrderedSet.h */,
+				9177884D1E6F9FFD00715DA8 /* NSKeyValueOrderedSet.m */,
+				9177884E1E6F9FFD00715DA8 /* NSKeyValueProxyCaching.h */,
+				9177884F1E6F9FFD00715DA8 /* NSKeyValueProxyCaching.m */,
+				917788501E6F9FFD00715DA8 /* NSKeyValueProxyShareKey.h */,
+				917788511E6F9FFD00715DA8 /* NSKeyValueProxyShareKey.m */,
+				917788521E6F9FFD00715DA8 /* NSKeyValueSet.h */,
+				917788531E6F9FFD00715DA8 /* NSKeyValueSet.m */,
+				917788541E6F9FFD00715DA8 /* NSKeyValueSlowMutableArray.h */,
+				917788551E6F9FFD00715DA8 /* NSKeyValueSlowMutableArray.m */,
+				917788561E6F9FFD00715DA8 /* NSKeyValueSlowMutableSet.h */,
+				917788571E6F9FFD00715DA8 /* NSKeyValueSlowMutableSet.m */,
+			);
+			path = ProxyCollection;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -476,68 +492,68 @@
 			buildActionMask = 2147483647;
 			files = (
 				916EC59C1E667511001E7595 /* NSKeyValueChangeDictionary.m in Sources */,
+				9177885E1E6F9FFD00715DA8 /* NSKeyValueNonmutatingOrderedSetMethodSet.m in Sources */,
 				916EC5A51E667511001E7595 /* NSKVOSetAndNotify.m in Sources */,
+				917788711E6F9FFD00715DA8 /* NSKeyValueSet.m in Sources */,
 				916EC5791E667511001E7595 /* NSKeyValueAccessor.m in Sources */,
-				916EC5931E667511001E7595 /* NSKeyValueProxyCaching.m in Sources */,
+				917788611E6F9FFD00715DA8 /* NSSetValueForKeyWithMethod.m in Sources */,
+				917788631E6F9FFD00715DA8 /* NSKeyValueFastMutableArray.m in Sources */,
+				9177885C1E6F9FFD00715DA8 /* NSKeyValueNonmutatingArrayMethodSet.m in Sources */,
 				916EC57C1E667511001E7595 /* NSKeyValueSetter.m in Sources */,
-				916EC5911E667511001E7595 /* NSKeyValueNotifyingMutableSet.m in Sources */,
-				916EC5961E667511001E7595 /* NSKeyValueSlowMutableArray.m in Sources */,
-				916EC5811E667511001E7595 /* NSKeyValueIvarMutableArray.m in Sources */,
 				916EC59F1E667511001E7595 /* NSKeyValueNestedProperty.m in Sources */,
-				916EC57F1E667511001E7595 /* NSKeyValueFastMutableArray.m in Sources */,
-				916EC5821E667511001E7595 /* NSKeyValueIvarMutableSet.m in Sources */,
+				9177886B1E6F9FFD00715DA8 /* NSKeyValueNotifyingMutableArray.m in Sources */,
 				916EC57A1E667511001E7595 /* NSKeyValueIvarSetter.m in Sources */,
-				916EC5881E667511001E7595 /* NSKeyValueMutatingOrderedSetMethodSet.m in Sources */,
-				916EC5841E667511001E7595 /* NSKeyValueMutableOrderedSet.m in Sources */,
 				916EC5A91E667511001E7595 /* NSObject+NSKeyValueObservingCustomization.m in Sources */,
-				916EC5921E667511001E7595 /* NSKeyValueOrderedSet.m in Sources */,
+				917788581E6F9FFD00715DA8 /* NSKeyValueMutatingArrayMethodSet.m in Sources */,
+				9177885B1E6F9FFD00715DA8 /* NSKeyValueMutatingSetMethodSet.m in Sources */,
 				916EC5981E667511001E7595 /* NSObject+NSKeyValueCoding.m in Sources */,
-				916EC58F1E667511001E7595 /* NSKeyValueNotifyingMutableArray.m in Sources */,
-				916EC5851E667511001E7595 /* NSKeyValueMutableSet.m in Sources */,
 				916EC5751E667511001E7595 /* NSKeyValueSlowMutableCollectionGetter.m in Sources */,
-				916EC58E1E667511001E7595 /* NSKeyValueNonmutatingSetMethodSet.m in Sources */,
 				916EC5771E667511001E7595 /* NSGetValueInIvar.m in Sources */,
+				9177886C1E6F9FFD00715DA8 /* NSKeyValueNotifyingMutableOrderedSet.m in Sources */,
+				9177886A1E6F9FFD00715DA8 /* NSKeyValueNilSetEnumerator.m in Sources */,
 				916EC59D1E667511001E7595 /* NSKeyValueComputedProperty.m in Sources */,
-				916EC58C1E667511001E7595 /* NSKeyValueNonmutatingCollectionMethodSet.m in Sources */,
 				916EC5A01E667511001E7595 /* NSKeyValueObservance.m in Sources */,
 				916EC5991E667511001E7595 /* NSObject+NSKeyValueCodingPrivate.m in Sources */,
-				916EC5941E667511001E7595 /* NSKeyValueProxyShareKey.m in Sources */,
+				917788731E6F9FFD00715DA8 /* NSKeyValueSlowMutableSet.m in Sources */,
+				917788641E6F9FFD00715DA8 /* NSKeyValueFastMutableSet.m in Sources */,
+				917788681E6F9FFD00715DA8 /* NSKeyValueMutableOrderedSet.m in Sources */,
 				916EC5A61E667511001E7595 /* NSKVOUtility.m in Sources */,
+				9177886F1E6F9FFD00715DA8 /* NSKeyValueProxyCaching.m in Sources */,
 				916EC5A41E667511001E7595 /* NSKeyValueUnnestedProperty.m in Sources */,
+				917788661E6F9FFD00715DA8 /* NSKeyValueIvarMutableSet.m in Sources */,
 				916EC5741E667511001E7595 /* NSKeyValueProxyGetter.m in Sources */,
-				916EC59A1E667511001E7595 /* NSSetValueForKeyInIvar.m in Sources */,
 				916EC56D1E667511001E7595 /* NSKeyValueFastMutableCollection1Getter.m in Sources */,
-				916EC5951E667511001E7595 /* NSKeyValueSet.m in Sources */,
-				916EC5831E667511001E7595 /* NSKeyValueMutableArray.m in Sources */,
+				9177885A1E6F9FFD00715DA8 /* NSKeyValueMutatingOrderedSetMethodSet.m in Sources */,
 				916EC5A81E667511001E7595 /* NSObject+NSKeyValueObserverRegistration.m in Sources */,
-				916EC5861E667511001E7595 /* NSKeyValueMutatingArrayMethodSet.m in Sources */,
-				916EC58A1E667511001E7595 /* NSKeyValueNilSetEnumerator.m in Sources */,
-				916EC59B1E667511001E7595 /* NSSetValueForKeyWithMethod.m in Sources */,
 				916EC5711E667511001E7595 /* NSKeyValueIvarMutableCollectionGetter.m in Sources */,
 				916EC5701E667511001E7595 /* NSKeyValueIvarGetter.m in Sources */,
 				916EC5A21E667511001E7595 /* NSKeyValueProperty.m in Sources */,
+				9177885F1E6F9FFD00715DA8 /* NSKeyValueNonmutatingSetMethodSet.m in Sources */,
+				917788671E6F9FFD00715DA8 /* NSKeyValueMutableArray.m in Sources */,
+				9177886E1E6F9FFD00715DA8 /* NSKeyValueOrderedSet.m in Sources */,
 				916EC59E1E667511001E7595 /* NSKeyValueContainerClass.m in Sources */,
+				917788691E6F9FFD00715DA8 /* NSKeyValueMutableSet.m in Sources */,
 				916EC57B1E667511001E7595 /* NSKeyValueMethodSetter.m in Sources */,
-				916EC58D1E667511001E7595 /* NSKeyValueNonmutatingOrderedSetMethodSet.m in Sources */,
 				916EC4E31E6674FE001E7595 /* main.m in Sources */,
-				916EC5891E667511001E7595 /* NSKeyValueMutatingSetMethodSet.m in Sources */,
+				917788591E6F9FFD00715DA8 /* NSKeyValueMutatingCollectionMethodSet.m in Sources */,
+				9177885D1E6F9FFD00715DA8 /* NSKeyValueNonmutatingCollectionMethodSet.m in Sources */,
 				916EC56C1E667511001E7595 /* NSKeyValueCollectionGetter.m in Sources */,
+				917788621E6F9FFD00715DA8 /* NSKeyValueArray.m in Sources */,
 				916EC5781E667511001E7595 /* NSGetValueWithMethod.m in Sources */,
-				916EC58B1E667511001E7595 /* NSKeyValueNonmutatingArrayMethodSet.m in Sources */,
+				917788601E6F9FFD00715DA8 /* NSSetValueForKeyInIvar.m in Sources */,
+				917788651E6F9FFD00715DA8 /* NSKeyValueIvarMutableArray.m in Sources */,
 				916EC5A71E667511001E7595 /* NSObject+NSKeyValueObserverNotification.m in Sources */,
+				9177886D1E6F9FFD00715DA8 /* NSKeyValueNotifyingMutableSet.m in Sources */,
 				916EC56F1E667511001E7595 /* NSKeyValueGetter.m in Sources */,
+				917788701E6F9FFD00715DA8 /* NSKeyValueProxyShareKey.m in Sources */,
 				916EC5A11E667511001E7595 /* NSKeyValueObservationInfo.m in Sources */,
 				916EC5AA1E667511001E7595 /* NSObject+NSKeyValueObservingPrivate.m in Sources */,
-				916EC57E1E667511001E7595 /* NSKeyValueArray.m in Sources */,
-				916EC5871E667511001E7595 /* NSKeyValueMutatingCollectionMethodSet.m in Sources */,
 				916EC5721E667511001E7595 /* NSKeyValueMethodGetter.m in Sources */,
 				916EC56E1E667511001E7595 /* NSKeyValueFastMutableCollection2Getter.m in Sources */,
-				916EC5801E667511001E7595 /* NSKeyValueFastMutableSet.m in Sources */,
 				916EC57D1E667511001E7595 /* NSKeyValueUndefinedSetter.m in Sources */,
+				917788721E6F9FFD00715DA8 /* NSKeyValueSlowMutableArray.m in Sources */,
 				916EC5761E667511001E7595 /* NSKeyValueUndefinedGetter.m in Sources */,
-				916EC5901E667511001E7595 /* NSKeyValueNotifyingMutableOrderedSet.m in Sources */,
 				916EC5731E667511001E7595 /* NSKeyValueNotifyingMutableCollectionGetter.m in Sources */,
-				916EC5971E667511001E7595 /* NSKeyValueSlowMutableSet.m in Sources */,
 				916EC5A31E667511001E7595 /* NSKeyValuePropertyCreate.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

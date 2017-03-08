@@ -473,10 +473,10 @@ CFMutableSetRef NSKeyValueCachedMutableArrayGetters = NULL;
     }
     else {
         NSUInteger keyLength = [key lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
-        char c_str[keyLength + 1];
-        [key getCString:c_str maxLength:keyLength + 1 encoding:NSUTF8StringEncoding];
+        char keyCStr[keyLength + 1];
+        [key getCString:keyCStr maxLength:keyLength + 1 encoding:NSUTF8StringEncoding];
         if(key.length) {
-            toupper(c_str[0]);
+            keyCStr[0] = toupper(keyCStr[0]);
         }
         if(!NSKeyValueCachedGetters) {
             CFSetCallBacks callbacks = {0};
@@ -491,7 +491,7 @@ CFMutableSetRef NSKeyValueCachedMutableArrayGetters = NULL;
         
         NSUInteger hashValue = 0;
         if(key) {
-           hashValue =  CFHash(key);
+           hashValue = CFHash(key);
         }
         hashValue ^= (NSUInteger)self;
         
@@ -499,6 +499,7 @@ CFMutableSetRef NSKeyValueCachedMutableArrayGetters = NULL;
         finder.containerClassID = self;
         finder.key = key;
         finder.hashValue = hashValue;
+        
         NSKeyValueGetter *getter =  CFSetGetValue(NSKeyValueCachedGetters,finder);
         if(!getter) {
             getter = [self _createValueGetterWithContainerClassID:self key:key];
@@ -506,10 +507,10 @@ CFMutableSetRef NSKeyValueCachedMutableArrayGetters = NULL;
             [getter release];
         }
         
-        Method insertObjectAtIndexMethod = NSKeyValueMethodForPattern(self,"insertObject:in%sAtIndex:", c_str);
-        Method insertObjectsAtIndexesMethod = NSKeyValueMethodForPattern(self,"insert%s:atIndexes:", c_str);
-        Method removeObjectAtIndexMethod = NSKeyValueMethodForPattern(self,"removeObjectFrom%sAtIndex:", c_str);
-        Method removeObjectsAtIndexesMethod = NSKeyValueMethodForPattern(self,"remove%sAtIndexes:", c_str);
+        Method insertObjectAtIndexMethod = NSKeyValueMethodForPattern(self,"insertObject:in%sAtIndex:", keyCStr);
+        Method insertObjectsAtIndexesMethod = NSKeyValueMethodForPattern(self,"insert%s:atIndexes:", keyCStr);
+        Method removeObjectAtIndexMethod = NSKeyValueMethodForPattern(self,"removeObjectFrom%sAtIndex:", keyCStr);
+        Method removeObjectsAtIndexesMethod = NSKeyValueMethodForPattern(self,"remove%sAtIndexes:", keyCStr);
         
         if((!insertObjectAtIndexMethod && !insertObjectsAtIndexesMethod) || (!removeObjectAtIndexMethod && !removeObjectsAtIndexesMethod)) {
             if(!NSKeyValueCachedSetters) {
@@ -526,14 +527,14 @@ CFMutableSetRef NSKeyValueCachedMutableArrayGetters = NULL;
             finder.containerClassID = self.class;
             finder.key = key;
             finder.hashValue = CFHash((CFTypeRef)key) ^ (NSUInteger)(self);
-            NSKeyValueIvarSetter *setter =  CFSetGetValue(NSKeyValueCachedSetters, (__bridge void*)finder);
+            NSKeyValueSetter *setter =  CFSetGetValue(NSKeyValueCachedSetters, finder);
             if (!setter) {
-                setter = (NSKeyValueIvarSetter *)[self.class _createValueSetterWithContainerClassID:self.class key:key];
-                CFSetAddValue(NSKeyValueCachedSetters, (__bridge void*)setter);
+                setter = [self.class _createValueSetterWithContainerClassID:self.class key:key];
+                CFSetAddValue(NSKeyValueCachedSetters, setter);
                 [setter release];
             }
             if([setter isKindOfClass:NSKeyValueIvarSetter.self]) {
-                return [[NSKeyValueIvarMutableCollectionGetter alloc] initWithContainerClassID:containerClassID key:key containerIsa:self ivar:setter.ivar proxyClass:NSKeyValueIvarMutableArray.self];
+                return [[NSKeyValueIvarMutableCollectionGetter alloc] initWithContainerClassID:containerClassID key:key containerIsa:self ivar:((NSKeyValueIvarSetter *)setter).ivar proxyClass:NSKeyValueIvarMutableArray.self];
             }
             else {
                 return [[NSKeyValueSlowMutableCollectionGetter alloc] initWithContainerClassID:containerClassID key:key baseGetter:getter baseSetter:setter containerIsa:self proxyClass:NSKeyValueSlowMutableArray.self];
@@ -545,8 +546,8 @@ CFMutableSetRef NSKeyValueCachedMutableArrayGetters = NULL;
             methodSet.insertObjectsAtIndexes = insertObjectsAtIndexesMethod;
             methodSet.removeObjectAtIndex = removeObjectAtIndexMethod;
             methodSet.removeObjectsAtIndexes = removeObjectsAtIndexesMethod;
-            methodSet.replaceObjectAtIndex = NSKeyValueMethodForPattern(self,"replaceObjectIn%sAtIndex:withObject:", c_str);
-            methodSet.replaceObjectsAtIndexes = NSKeyValueMethodForPattern(self,"replace%sAtIndexes:with%s:", c_str);
+            methodSet.replaceObjectAtIndex = NSKeyValueMethodForPattern(self,"replaceObjectIn%sAtIndex:withObject:", keyCStr);
+            methodSet.replaceObjectsAtIndexes = NSKeyValueMethodForPattern(self,"replace%sAtIndexes:with%s:", keyCStr);
             
             if([getter isKindOfClass:NSKeyValueCollectionGetter.self]) {
                 NSKeyValueFastMutableCollection1Getter * collection1Getter = [[NSKeyValueFastMutableCollection1Getter alloc] initWithContainerClassID:containerClassID key:key nonmutatingMethods:((NSKeyValueCollectionGetter *)getter).methods mutatingMethods:methodSet proxyClass:NSKeyValueFastMutableArray1.self];

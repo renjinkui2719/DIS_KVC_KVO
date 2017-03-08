@@ -226,7 +226,7 @@ NSKeyValueNotifyingInfo *_NSKVONotifyingCreateInfoWithOriginalClass(Class origin
     }
     notifyingInfo->flag = flag;
     
-    NSKVONotifyingSetMethodImplementation(notifyingInfo, @selector(_isKVOA), (IMP)NSKVOIsAutonotifying, NULL);
+    NSKVONotifyingSetMethodImplementation(notifyingInfo, ISKVOASelector, (IMP)NSKVOIsAutonotifying, NULL);
     NSKVONotifyingSetMethodImplementation(notifyingInfo, @selector(dealloc), (IMP)NSKVODeallocate, NULL);
     NSKVONotifyingSetMethodImplementation(notifyingInfo, @selector(class), (IMP)NSKVOClass, NULL);
     
@@ -243,7 +243,7 @@ NSKeyValueNotifyingInfo *_NSKeyValueContainerClassGetNotifyingInfo(NSKeyValueCon
 }
 
 Class _NSKVONotifyingOriginalClassForIsa(Class isa) {
-    if(class_getMethodImplementation(isa, @selector(_isKVOA)) == (IMP)NSKVOIsAutonotifying) {
+    if(class_getMethodImplementation(isa, ISKVOASelector) == (IMP)NSKVOIsAutonotifying) {
         void *ivars = object_getIndexedIvars(isa);
         return ((NSKeyValueNotifyingInfo *)ivars)->originalClass;
     }

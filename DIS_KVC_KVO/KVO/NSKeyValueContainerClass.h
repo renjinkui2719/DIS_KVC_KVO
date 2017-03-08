@@ -11,6 +11,8 @@
 #import <Foundation/Foundation.h>
 #import <pthread.h>
 
+@class NSKeyValueContainerClass;
+
 typedef struct NSKeyValueNotifyingInfo {
     Class originalClass;
     Class containerClass;
@@ -19,6 +21,14 @@ typedef struct NSKeyValueNotifyingInfo {
     pthread_mutex_t mutex;
     BOOL flag;
 }NSKeyValueNotifyingInfo;
+
+#define ISKVOASelector NSSelectorFromString(@"_isKVOA")
+
+NSKeyValueNotifyingInfo *_NSKVONotifyingCreateInfoWithOriginalClass(Class originalClass) ;
+NSKeyValueNotifyingInfo *_NSKeyValueContainerClassGetNotifyingInfo(NSKeyValueContainerClass *containerClass);
+Class _NSKVONotifyingOriginalClassForIsa(Class isa);
+NSKeyValueContainerClass * _NSKeyValueContainerClassForIsa(Class isa);
+BOOL NSKVOIsAutonotifying();
 
 @interface NSKeyValueContainerClass : NSObject
 
@@ -32,7 +42,3 @@ typedef struct NSKeyValueNotifyingInfo {
 
 @end
 
-NSKeyValueNotifyingInfo *_NSKVONotifyingCreateInfoWithOriginalClass(Class originalClass) ;
-NSKeyValueNotifyingInfo *_NSKeyValueContainerClassGetNotifyingInfo(NSKeyValueContainerClass *containerClass);
-Class _NSKVONotifyingOriginalClassForIsa(Class isa);
-NSKeyValueContainerClass * _NSKeyValueContainerClassForIsa(Class isa);
