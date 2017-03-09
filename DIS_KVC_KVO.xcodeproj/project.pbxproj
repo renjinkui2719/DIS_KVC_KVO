@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		911A16B51E70DF87000EE1CC /* NSKeyValueSlowGetter.m in Sources */ = {isa = PBXBuildFile; fileRef = 911A16B41E70DF87000EE1CC /* NSKeyValueSlowGetter.m */; };
+		911A16BB1E70E413000EE1CC /* NSKeyValueSlowSetter.m in Sources */ = {isa = PBXBuildFile; fileRef = 911A16BA1E70E413000EE1CC /* NSKeyValueSlowSetter.m */; };
 		916EC4E31E6674FE001E7595 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 916EC4E21E6674FE001E7595 /* main.m */; };
 		916EC56C1E667511001E7595 /* NSKeyValueCollectionGetter.m in Sources */ = {isa = PBXBuildFile; fileRef = 916EC4ED1E667511001E7595 /* NSKeyValueCollectionGetter.m */; };
 		916EC56D1E667511001E7595 /* NSKeyValueFastMutableCollection1Getter.m in Sources */ = {isa = PBXBuildFile; fileRef = 916EC4EF1E667511001E7595 /* NSKeyValueFastMutableCollection1Getter.m */; };
@@ -88,6 +90,10 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		911A16B31E70DF87000EE1CC /* NSKeyValueSlowGetter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSKeyValueSlowGetter.h; sourceTree = "<group>"; };
+		911A16B41E70DF87000EE1CC /* NSKeyValueSlowGetter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSKeyValueSlowGetter.m; sourceTree = "<group>"; };
+		911A16B91E70E413000EE1CC /* NSKeyValueSlowSetter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSKeyValueSlowSetter.h; sourceTree = "<group>"; };
+		911A16BA1E70E413000EE1CC /* NSKeyValueSlowSetter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSKeyValueSlowSetter.m; sourceTree = "<group>"; };
 		916EC4DF1E6674FE001E7595 /* DIS_KVC_KVO */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = DIS_KVC_KVO; sourceTree = BUILT_PRODUCTS_DIR; };
 		916EC4E21E6674FE001E7595 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		916EC4EC1E667511001E7595 /* NSKeyValueCollectionGetter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSKeyValueCollectionGetter.h; sourceTree = "<group>"; };
@@ -317,6 +323,8 @@
 				916EC4EF1E667511001E7595 /* NSKeyValueFastMutableCollection1Getter.m */,
 				916EC4F01E667511001E7595 /* NSKeyValueFastMutableCollection2Getter.h */,
 				916EC4F11E667511001E7595 /* NSKeyValueFastMutableCollection2Getter.m */,
+				911A16B31E70DF87000EE1CC /* NSKeyValueSlowGetter.h */,
+				911A16B41E70DF87000EE1CC /* NSKeyValueSlowGetter.m */,
 			);
 			path = Getter;
 			sourceTree = "<group>";
@@ -332,6 +340,8 @@
 				916EC50E1E667511001E7595 /* NSKeyValueSetter.m */,
 				916EC50F1E667511001E7595 /* NSKeyValueUndefinedSetter.h */,
 				916EC5101E667511001E7595 /* NSKeyValueUndefinedSetter.m */,
+				911A16B91E70E413000EE1CC /* NSKeyValueSlowSetter.h */,
+				911A16BA1E70E413000EE1CC /* NSKeyValueSlowSetter.m */,
 			);
 			path = Setter;
 			sourceTree = "<group>";
@@ -513,6 +523,7 @@
 				916EC59F1E667511001E7595 /* NSKeyValueNestedProperty.m in Sources */,
 				9177886B1E6F9FFD00715DA8 /* NSKeyValueNotifyingMutableArray.m in Sources */,
 				916EC57A1E667511001E7595 /* NSKeyValueIvarSetter.m in Sources */,
+				911A16BB1E70E413000EE1CC /* NSKeyValueSlowSetter.m in Sources */,
 				916EC5A91E667511001E7595 /* NSObject+NSKeyValueObservingCustomization.m in Sources */,
 				917788581E6F9FFD00715DA8 /* NSKeyValueMutatingArrayMethodSet.m in Sources */,
 				9177885B1E6F9FFD00715DA8 /* NSKeyValueMutatingSetMethodSet.m in Sources */,
@@ -554,6 +565,7 @@
 				917788601E6F9FFD00715DA8 /* NSSetValueForKeyInIvar.m in Sources */,
 				917788651E6F9FFD00715DA8 /* NSKeyValueIvarMutableArray.m in Sources */,
 				916EC5A71E667511001E7595 /* NSObject+NSKeyValueObserverNotification.m in Sources */,
+				911A16B51E70DF87000EE1CC /* NSKeyValueSlowGetter.m in Sources */,
 				9177886D1E6F9FFD00715DA8 /* NSKeyValueNotifyingMutableSet.m in Sources */,
 				916EC56F1E667511001E7595 /* NSKeyValueGetter.m in Sources */,
 				917788701E6F9FFD00715DA8 /* NSKeyValueProxyShareKey.m in Sources */,

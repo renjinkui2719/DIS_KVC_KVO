@@ -8,6 +8,11 @@
 
 #import "NSKeyValueMutableArray.h"
 
-@interface NSKeyValueSlowMutableArray : NSKeyValueMutableArray
+@class NSKeyValueGetter;
+@class NSKeyValueSetter;
 
+@interface NSKeyValueSlowMutableArray : NSKeyValueMutableArray
+@property(nonatomic, strong) NSKeyValueGetter *valueGetter;
+@property(nonatomic, strong) NSKeyValueSetter *valueSetter;
+@property(nonatomic, assign) BOOL treatNilValuesLikeEmptyArrays;
 @end
