@@ -9,17 +9,20 @@
 #import "NSKeyValueMutableSet.h"
 
 @class NSKeyValueMutatingSetMethodSet;
+@class NSKeyValueNonmutatingSetMethodSet;
+@class NSKeyValueGetter;
 
 @interface NSKeyValueFastMutableSet : NSKeyValueMutableSet
 @property (nonatomic, strong) NSKeyValueMutatingSetMethodSet *mutatingMethods;
 @end
 
-@class NSKeyValueNonmutatingSetMethodSet;
+
 @interface NSKeyValueFastMutableSet1 : NSKeyValueFastMutableSet
 @property (nonatomic, strong) NSKeyValueNonmutatingSetMethodSet *nonmutatingMethods;
 @end
 
-@class NSKeyValueGetter;
+
+
 @interface NSKeyValueFastMutableSet2 : NSKeyValueFastMutableSet
 @property (nonatomic, strong) NSKeyValueGetter *valueGetter;
 @end

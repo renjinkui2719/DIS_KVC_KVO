@@ -23,6 +23,9 @@
 #import "NSKeyValueSet.h"
 #import "NSKeyValueArray.h"
 #import "NSKeyValueOrderedSet.h"
+#import "NSKeyValueFastMutableOrderedSet.h"
+#import "NSKeyValueIvarMutableOrderedSet.h"
+#import "NSKeyValueSlowMutableOrderedSet.h"
 #import "NSKeyValueNonmutatingArrayMethodSet.h"
 #import "NSKeyValueNonmutatingSetMethodSet.h"
 #import "NSKeyValueNonmutatingOrderedSetMethodSet.h"
@@ -555,12 +558,12 @@ Ivar NSKeyValueIvarForPattern(Class class, const char *pattern,const char *param
             methodSet.replaceObjectsAtIndexes = NSKeyValueMethodForPattern(self, "replace%sAtIndexes:with%s:", kCstr);;
             
             if([getter isKindOfClass:NSKeyValueCollectionGetter.self]) {
-                NSKeyValueFastMutableCollection1Getter *collectionGetter = [[NSKeyValueFastMutableCollection1Getter alloc] initWithContainerClassID:containerClassID key:key nonmutatingMethods:[(NSKeyValueCollectionGetter *)getter methods] mutatingMethods:methodSet proxyClass:NSKeyValueFastMutableSet1.self];
+                NSKeyValueFastMutableCollection1Getter *collectionGetter = [[NSKeyValueFastMutableCollection1Getter alloc] initWithContainerClassID:containerClassID key:key nonmutatingMethods:[(NSKeyValueCollectionGetter *)getter methods] mutatingMethods:methodSet proxyClass:NSKeyValueFastMutableOrderedSet1.self];
                 [methodSet release];
                 return collectionGetter;
             }
             else {
-                NSKeyValueFastMutableCollection2Getter *collectionGetter = [[NSKeyValueFastMutableCollection2Getter alloc] initWithContainerClassID:containerClassID key:key baseGetter:getter mutatingMethods:methodSet proxyClass:NSKeyValueFastMutableSet2.self];
+                NSKeyValueFastMutableCollection2Getter *collectionGetter = [[NSKeyValueFastMutableCollection2Getter alloc] initWithContainerClassID:containerClassID key:key baseGetter:getter mutatingMethods:methodSet proxyClass:NSKeyValueFastMutableOrderedSet2.self];
                 [methodSet release];
                 return collectionGetter;
             }
@@ -597,11 +600,11 @@ Ivar NSKeyValueIvarForPattern(Class class, const char *pattern,const char *param
             }
             
             if([setter isKindOfClass:NSKeyValueIvarSetter.self]) {
-                NSKeyValueIvarMutableCollectionGetter *collectionGetter = [[NSKeyValueIvarMutableCollectionGetter alloc] initWithContainerClassID:containerClassID key:key containerIsa:self ivar:[(NSKeyValueIvarSetter *)setter ivar] proxyClass:NSKeyValueIvarMutableSet.self];
+                NSKeyValueIvarMutableCollectionGetter *collectionGetter = [[NSKeyValueIvarMutableCollectionGetter alloc] initWithContainerClassID:containerClassID key:key containerIsa:self ivar:[(NSKeyValueIvarSetter *)setter ivar] proxyClass:NSKeyValueIvarMutableOrderedSet.self];
                 return collectionGetter;
             }
             else {
-                NSKeyValueSlowMutableCollectionGetter *collectionGetter = [[NSKeyValueSlowMutableCollectionGetter alloc] initWithContainerClassID:containerClassID key:key baseGetter:getter baseSetter:setter containerIsa:self proxyClass:NSKeyValueSlowMutableSet.self];
+                NSKeyValueSlowMutableCollectionGetter *collectionGetter = [[NSKeyValueSlowMutableCollectionGetter alloc] initWithContainerClassID:containerClassID key:key baseGetter:getter baseSetter:setter containerIsa:self proxyClass:NSKeyValueSlowMutableOrderedSet.self];
                 return collectionGetter;
             }
             

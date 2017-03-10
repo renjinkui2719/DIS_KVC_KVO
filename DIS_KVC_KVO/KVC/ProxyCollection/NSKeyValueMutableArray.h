@@ -14,5 +14,6 @@
 @interface NSKeyValueMutableArray : NSMutableArray<NSKeyValueProxyCaching>
 @property (nonatomic, strong) NSObject *container;
 @property (nonatomic, copy) NSString *key;
+
 - (id)_proxyInitWithContainer:(id)container getter:(NSKeyValueGetter *)getter;
 @end

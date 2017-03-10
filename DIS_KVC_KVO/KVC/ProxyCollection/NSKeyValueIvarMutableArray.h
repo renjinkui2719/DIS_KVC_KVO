@@ -10,6 +10,4 @@
 
 @interface NSKeyValueIvarMutableArray : NSKeyValueMutableArray
 @property (nonatomic, assign) struct objc_ivar *ivar;
-
-
 @end

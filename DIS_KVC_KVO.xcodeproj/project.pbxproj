@@ -75,6 +75,9 @@
 		917788731E6F9FFD00715DA8 /* NSKeyValueSlowMutableSet.m in Sources */ = {isa = PBXBuildFile; fileRef = 917788571E6F9FFD00715DA8 /* NSKeyValueSlowMutableSet.m */; };
 		917788761E6FBC7B00715DA8 /* NSArray+NSKeyValueCoding.m in Sources */ = {isa = PBXBuildFile; fileRef = 917788751E6FBC7B00715DA8 /* NSArray+NSKeyValueCoding.m */; };
 		917788791E6FBC8C00715DA8 /* NSArray+NSKeyValueCodingPrivate.m in Sources */ = {isa = PBXBuildFile; fileRef = 917788781E6FBC8C00715DA8 /* NSArray+NSKeyValueCodingPrivate.m */; };
+		91EE68EB1E72964E00B507A9 /* NSKeyValueIvarMutableOrderedSet.m in Sources */ = {isa = PBXBuildFile; fileRef = 91EE68EA1E72964E00B507A9 /* NSKeyValueIvarMutableOrderedSet.m */; };
+		91EE68EE1E7296C400B507A9 /* NSKeyValueSlowMutableOrderedSet.m in Sources */ = {isa = PBXBuildFile; fileRef = 91EE68ED1E7296C400B507A9 /* NSKeyValueSlowMutableOrderedSet.m */; };
+		91EE68F11E7296EB00B507A9 /* NSKeyValueFastMutableOrderedSet.m in Sources */ = {isa = PBXBuildFile; fileRef = 91EE68F01E7296EB00B507A9 /* NSKeyValueFastMutableOrderedSet.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -226,6 +229,12 @@
 		917788751E6FBC7B00715DA8 /* NSArray+NSKeyValueCoding.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSArray+NSKeyValueCoding.m"; sourceTree = "<group>"; };
 		917788771E6FBC8C00715DA8 /* NSArray+NSKeyValueCodingPrivate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSArray+NSKeyValueCodingPrivate.h"; sourceTree = "<group>"; };
 		917788781E6FBC8C00715DA8 /* NSArray+NSKeyValueCodingPrivate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSArray+NSKeyValueCodingPrivate.m"; sourceTree = "<group>"; };
+		91EE68E91E72964E00B507A9 /* NSKeyValueIvarMutableOrderedSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSKeyValueIvarMutableOrderedSet.h; sourceTree = "<group>"; };
+		91EE68EA1E72964E00B507A9 /* NSKeyValueIvarMutableOrderedSet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSKeyValueIvarMutableOrderedSet.m; sourceTree = "<group>"; };
+		91EE68EC1E7296C400B507A9 /* NSKeyValueSlowMutableOrderedSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSKeyValueSlowMutableOrderedSet.h; sourceTree = "<group>"; };
+		91EE68ED1E7296C400B507A9 /* NSKeyValueSlowMutableOrderedSet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSKeyValueSlowMutableOrderedSet.m; sourceTree = "<group>"; };
+		91EE68EF1E7296EB00B507A9 /* NSKeyValueFastMutableOrderedSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSKeyValueFastMutableOrderedSet.h; sourceTree = "<group>"; };
+		91EE68F01E7296EB00B507A9 /* NSKeyValueFastMutableOrderedSet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSKeyValueFastMutableOrderedSet.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -415,40 +424,46 @@
 			children = (
 				917788341E6F9FFD00715DA8 /* NSKeyValueArray.h */,
 				917788351E6F9FFD00715DA8 /* NSKeyValueArray.m */,
-				917788361E6F9FFD00715DA8 /* NSKeyValueFastMutableArray.h */,
-				917788371E6F9FFD00715DA8 /* NSKeyValueFastMutableArray.m */,
-				917788381E6F9FFD00715DA8 /* NSKeyValueFastMutableSet.h */,
-				917788391E6F9FFD00715DA8 /* NSKeyValueFastMutableSet.m */,
-				9177883A1E6F9FFD00715DA8 /* NSKeyValueIvarMutableArray.h */,
-				9177883B1E6F9FFD00715DA8 /* NSKeyValueIvarMutableArray.m */,
-				9177883C1E6F9FFD00715DA8 /* NSKeyValueIvarMutableSet.h */,
-				9177883D1E6F9FFD00715DA8 /* NSKeyValueIvarMutableSet.m */,
 				9177883E1E6F9FFD00715DA8 /* NSKeyValueMutableArray.h */,
 				9177883F1E6F9FFD00715DA8 /* NSKeyValueMutableArray.m */,
-				917788401E6F9FFD00715DA8 /* NSKeyValueMutableOrderedSet.h */,
-				917788411E6F9FFD00715DA8 /* NSKeyValueMutableOrderedSet.m */,
-				917788421E6F9FFD00715DA8 /* NSKeyValueMutableSet.h */,
-				917788431E6F9FFD00715DA8 /* NSKeyValueMutableSet.m */,
-				917788441E6F9FFD00715DA8 /* NSKeyValueNilSetEnumerator.h */,
-				917788451E6F9FFD00715DA8 /* NSKeyValueNilSetEnumerator.m */,
+				9177883A1E6F9FFD00715DA8 /* NSKeyValueIvarMutableArray.h */,
+				9177883B1E6F9FFD00715DA8 /* NSKeyValueIvarMutableArray.m */,
+				917788361E6F9FFD00715DA8 /* NSKeyValueFastMutableArray.h */,
+				917788371E6F9FFD00715DA8 /* NSKeyValueFastMutableArray.m */,
+				917788541E6F9FFD00715DA8 /* NSKeyValueSlowMutableArray.h */,
+				917788551E6F9FFD00715DA8 /* NSKeyValueSlowMutableArray.m */,
 				917788461E6F9FFD00715DA8 /* NSKeyValueNotifyingMutableArray.h */,
 				917788471E6F9FFD00715DA8 /* NSKeyValueNotifyingMutableArray.m */,
-				917788481E6F9FFD00715DA8 /* NSKeyValueNotifyingMutableOrderedSet.h */,
-				917788491E6F9FFD00715DA8 /* NSKeyValueNotifyingMutableOrderedSet.m */,
+				917788521E6F9FFD00715DA8 /* NSKeyValueSet.h */,
+				917788531E6F9FFD00715DA8 /* NSKeyValueSet.m */,
+				917788421E6F9FFD00715DA8 /* NSKeyValueMutableSet.h */,
+				917788431E6F9FFD00715DA8 /* NSKeyValueMutableSet.m */,
+				9177883C1E6F9FFD00715DA8 /* NSKeyValueIvarMutableSet.h */,
+				9177883D1E6F9FFD00715DA8 /* NSKeyValueIvarMutableSet.m */,
+				917788381E6F9FFD00715DA8 /* NSKeyValueFastMutableSet.h */,
+				917788391E6F9FFD00715DA8 /* NSKeyValueFastMutableSet.m */,
+				917788561E6F9FFD00715DA8 /* NSKeyValueSlowMutableSet.h */,
+				917788571E6F9FFD00715DA8 /* NSKeyValueSlowMutableSet.m */,
 				9177884A1E6F9FFD00715DA8 /* NSKeyValueNotifyingMutableSet.h */,
 				9177884B1E6F9FFD00715DA8 /* NSKeyValueNotifyingMutableSet.m */,
 				9177884C1E6F9FFD00715DA8 /* NSKeyValueOrderedSet.h */,
 				9177884D1E6F9FFD00715DA8 /* NSKeyValueOrderedSet.m */,
+				917788401E6F9FFD00715DA8 /* NSKeyValueMutableOrderedSet.h */,
+				917788411E6F9FFD00715DA8 /* NSKeyValueMutableOrderedSet.m */,
+				91EE68E91E72964E00B507A9 /* NSKeyValueIvarMutableOrderedSet.h */,
+				91EE68EA1E72964E00B507A9 /* NSKeyValueIvarMutableOrderedSet.m */,
+				91EE68EC1E7296C400B507A9 /* NSKeyValueSlowMutableOrderedSet.h */,
+				91EE68ED1E7296C400B507A9 /* NSKeyValueSlowMutableOrderedSet.m */,
+				91EE68EF1E7296EB00B507A9 /* NSKeyValueFastMutableOrderedSet.h */,
+				91EE68F01E7296EB00B507A9 /* NSKeyValueFastMutableOrderedSet.m */,
+				917788481E6F9FFD00715DA8 /* NSKeyValueNotifyingMutableOrderedSet.h */,
+				917788491E6F9FFD00715DA8 /* NSKeyValueNotifyingMutableOrderedSet.m */,
 				9177884E1E6F9FFD00715DA8 /* NSKeyValueProxyCaching.h */,
 				9177884F1E6F9FFD00715DA8 /* NSKeyValueProxyCaching.m */,
 				917788501E6F9FFD00715DA8 /* NSKeyValueProxyShareKey.h */,
 				917788511E6F9FFD00715DA8 /* NSKeyValueProxyShareKey.m */,
-				917788521E6F9FFD00715DA8 /* NSKeyValueSet.h */,
-				917788531E6F9FFD00715DA8 /* NSKeyValueSet.m */,
-				917788541E6F9FFD00715DA8 /* NSKeyValueSlowMutableArray.h */,
-				917788551E6F9FFD00715DA8 /* NSKeyValueSlowMutableArray.m */,
-				917788561E6F9FFD00715DA8 /* NSKeyValueSlowMutableSet.h */,
-				917788571E6F9FFD00715DA8 /* NSKeyValueSlowMutableSet.m */,
+				917788441E6F9FFD00715DA8 /* NSKeyValueNilSetEnumerator.h */,
+				917788451E6F9FFD00715DA8 /* NSKeyValueNilSetEnumerator.m */,
 			);
 			path = ProxyCollection;
 			sourceTree = "<group>";
@@ -518,6 +533,7 @@
 				916EC5791E667511001E7595 /* NSKeyValueAccessor.m in Sources */,
 				917788611E6F9FFD00715DA8 /* NSSetValueForKeyWithMethod.m in Sources */,
 				917788631E6F9FFD00715DA8 /* NSKeyValueFastMutableArray.m in Sources */,
+				91EE68EB1E72964E00B507A9 /* NSKeyValueIvarMutableOrderedSet.m in Sources */,
 				9177885C1E6F9FFD00715DA8 /* NSKeyValueNonmutatingArrayMethodSet.m in Sources */,
 				916EC57C1E667511001E7595 /* NSKeyValueSetter.m in Sources */,
 				916EC59F1E667511001E7595 /* NSKeyValueNestedProperty.m in Sources */,
@@ -560,6 +576,7 @@
 				9177885D1E6F9FFD00715DA8 /* NSKeyValueNonmutatingCollectionMethodSet.m in Sources */,
 				917788761E6FBC7B00715DA8 /* NSArray+NSKeyValueCoding.m in Sources */,
 				916EC56C1E667511001E7595 /* NSKeyValueCollectionGetter.m in Sources */,
+				91EE68F11E7296EB00B507A9 /* NSKeyValueFastMutableOrderedSet.m in Sources */,
 				917788621E6F9FFD00715DA8 /* NSKeyValueArray.m in Sources */,
 				916EC5781E667511001E7595 /* NSGetValueWithMethod.m in Sources */,
 				917788601E6F9FFD00715DA8 /* NSSetValueForKeyInIvar.m in Sources */,
@@ -571,6 +588,7 @@
 				917788701E6F9FFD00715DA8 /* NSKeyValueProxyShareKey.m in Sources */,
 				916EC5A11E667511001E7595 /* NSKeyValueObservationInfo.m in Sources */,
 				916EC5AA1E667511001E7595 /* NSObject+NSKeyValueObservingPrivate.m in Sources */,
+				91EE68EE1E7296C400B507A9 /* NSKeyValueSlowMutableOrderedSet.m in Sources */,
 				916EC5721E667511001E7595 /* NSKeyValueMethodGetter.m in Sources */,
 				916EC56E1E667511001E7595 /* NSKeyValueFastMutableCollection2Getter.m in Sources */,
 				916EC57D1E667511001E7595 /* NSKeyValueUndefinedSetter.m in Sources */,

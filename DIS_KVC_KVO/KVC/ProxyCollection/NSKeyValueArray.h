@@ -7,7 +7,17 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "NSKeyValueProxyCaching.h"
 
-@interface NSKeyValueArray : NSArray
+@class NSKeyValueNonmutatingArrayMethodSet;
+@class NSKeyValueGetter;
+
+@interface NSKeyValueArray : NSArray <NSKeyValueProxyCaching>
+
+@property(nonatomic, strong) NSObject *container;
+@property(nonatomic, copy) NSString *key;
+@property(nonatomic, strong) NSKeyValueNonmutatingArrayMethodSet *methods;
+
+- (id)_proxyInitWithContainer:(id)container getter:(NSKeyValueGetter *)getter;
 
 @end

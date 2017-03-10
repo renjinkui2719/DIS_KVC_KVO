@@ -13,6 +13,22 @@
 
 extern OSSpinLock NSKeyValueProxySpinLock;
 
+NSUInteger NSKeyValueProxyHash(const void *item, NSUInteger (* _Nullable size)(const void *item)) {
+    NSKeyValueProxyLocator locator =  [(id)item _proxyLocator];
+    return (NSUInteger)locator.container ^ locator.key.hash;
+}
+
+BOOL NSKeyValueProxyIsEqual(const void *item1, const void*item2, NSUInteger (* _Nullable size)(const void *item)) {
+    NSKeyValueProxyLocator locator1 =  [(id)item1 _proxyLocator];
+    NSKeyValueProxyLocator locator2 =  [(id)item2 _proxyLocator];
+    if (locator1.container == locator2.container) {
+        if (locator1.key == locator2.key || [locator1.key isEqual:locator2.key]) {
+            return YES;
+        }
+    }
+    return NO;
+}
+
 NSHashTable * _NSKeyValueProxyShareCreate() {
     NSPointerFunctions *pointerFunctions = [[NSPointerFunctions alloc] initWithOptions:NSPointerFunctionsWeakMemory];
     pointerFunctions.hashFunction = NSKeyValueProxyHash;

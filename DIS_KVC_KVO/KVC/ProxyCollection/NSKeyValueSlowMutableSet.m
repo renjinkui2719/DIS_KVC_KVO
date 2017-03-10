@@ -47,11 +47,11 @@
 }
 
 - (NSUInteger)count {
-    [[self _setValueWithSelector:_cmd] count];
+    return [[self _setValueWithSelector:_cmd] count];
 }
 
 - (id)member:(id)object {
-    [[self _setValueWithSelector:_cmd] member:object];
+    return [[self _setValueWithSelector:_cmd] member:object];
 }
 
 - (NSEnumerator *)objectEnumerator {
