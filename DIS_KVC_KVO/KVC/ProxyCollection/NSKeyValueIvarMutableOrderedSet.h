@@ -9,5 +9,5 @@
 #import "NSKeyValueMutableOrderedSet.h"
 
 @interface NSKeyValueIvarMutableOrderedSet : NSKeyValueMutableOrderedSet
-@property (nonatomic, assign) struct objc_ivar *_ivar;
+@property (nonatomic, assign) struct objc_ivar *ivar;
 @end

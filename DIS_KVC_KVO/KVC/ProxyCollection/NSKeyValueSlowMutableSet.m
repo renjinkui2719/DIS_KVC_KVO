@@ -9,6 +9,7 @@
 #import "NSKeyValueSlowMutableSet.h"
 #import "NSObject+NSKeyValueCodingPrivate.h"
 #import "NSKeyValueNilSetEnumerator.h"
+#import "NSKeyValueCodingCommon.h"
 
 @implementation NSKeyValueSlowMutableSet
 

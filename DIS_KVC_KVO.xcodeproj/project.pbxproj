@@ -97,6 +97,7 @@
 		911A16B41E70DF87000EE1CC /* NSKeyValueSlowGetter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSKeyValueSlowGetter.m; sourceTree = "<group>"; };
 		911A16B91E70E413000EE1CC /* NSKeyValueSlowSetter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSKeyValueSlowSetter.h; sourceTree = "<group>"; };
 		911A16BA1E70E413000EE1CC /* NSKeyValueSlowSetter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSKeyValueSlowSetter.m; sourceTree = "<group>"; };
+		9127A5351E7387A3003F759B /* NSKeyValueCodingCommon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSKeyValueCodingCommon.h; sourceTree = "<group>"; };
 		916EC4DF1E6674FE001E7595 /* DIS_KVC_KVO */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = DIS_KVC_KVO; sourceTree = BUILT_PRODUCTS_DIR; };
 		916EC4E21E6674FE001E7595 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		916EC4EC1E667511001E7595 /* NSKeyValueCollectionGetter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSKeyValueCollectionGetter.h; sourceTree = "<group>"; };
@@ -288,6 +289,7 @@
 				917788751E6FBC7B00715DA8 /* NSArray+NSKeyValueCoding.m */,
 				917788771E6FBC8C00715DA8 /* NSArray+NSKeyValueCodingPrivate.h */,
 				917788781E6FBC8C00715DA8 /* NSArray+NSKeyValueCodingPrivate.m */,
+				9127A5351E7387A3003F759B /* NSKeyValueCodingCommon.h */,
 			);
 			path = KVC;
 			sourceTree = "<group>";

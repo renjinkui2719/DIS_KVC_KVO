@@ -19,7 +19,7 @@
 }
 
 + (NSKeyValueProxyNonGCPoolPointer *)_proxyNonGCPoolPointer {
-    static NSKeyValueProxyNonGCPoolPointer proxyPool = {0};
+    static NSKeyValueProxyNonGCPoolPointer proxyPool;
     return &proxyPool;
 }
 
