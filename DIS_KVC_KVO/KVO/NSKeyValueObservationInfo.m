@@ -3,10 +3,9 @@
 #import "NSKeyValueContainerClass.h"
 #import "NSKVOUtility.h"
 #import "NSObject+NSKeyValueObservingPrivate.h"
+#import "NSKeyValueCodingCommon.h"
 #import <objc/runtime.h>
 
-extern int NSFreeObjectArray(void *ptr);
-void* NSAllocateObjectArray(NSUInteger count);
 
 @implementation NSKeyValueObservationInfo
 

@@ -1,20 +1,18 @@
 //
-//  NSArray+NSKeyValueCoding.m
+//  NSSet+NSKeyValueCoding.m
 //  DIS_KVC_KVO
 //
-//  Created by renjinkui on 2017/3/8.
+//  Created by renjinkui on 2017/3/14.
 //  Copyright © 2017年 JK. All rights reserved.
 //
 
-#import "NSArray+NSKeyValueCoding.h"
-#import "NSArray+NSKeyValueCodingPrivate.h"
+#import "NSSet+NSKeyValueCoding.h"
+#import "NSKeyValueCodingCommon.h"
 #import "NSObject+NSKeyValueCodingPrivate.h"
+#import <objc/runtime.h>
 #import <objc/message.h>
 
-extern int NSFreeObjectArray(id *buff);
-extern id* NSAllocateObjectArray(NSUInteger count);
-
-@implementation NSArray (NSKeyValueCoding)
+@implementation NSSet (NSKeyValueCoding)
 
 - (id)valueForKey:(NSString *)key {
     NSString *subKey = nil;
@@ -43,8 +41,8 @@ extern id* NSAllocateObjectArray(NSUInteger count);
     if(keyPath.length && [keyPath characterAtIndex:0] == '@') {
         NSRange dotRange = [keyPath rangeOfString:@"." options:NSLiteralSearch range:NSMakeRange(0, keyPath.length)];
         if(dotRange.length) {
-            NSString *subKeyBeforDot = [[keyPath substringWithRange:NSMakeRange(1, dotRange.location - 1)] retain];
-            NSString *subKeyPathAfterDot = [[keyPath substringWithRange:NSMakeRange(dotRange.location + 1, keyPath.length - (dotRange.location + 1))] retain];
+            NSString *subKeyBeforDot = [keyPath substringWithRange:NSMakeRange(1, dotRange.location - 1)];
+            NSString *subKeyPathAfterDot = [keyPath substringWithRange:NSMakeRange(dotRange.location + 1, keyPath.length - (dotRange.location + 1))];
             if(subKeyPathAfterDot) {
                 NSUInteger subKeyBeforDotCStrLength = [subKeyBeforDot lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
                 char subKeyBeforDotCStr[subKeyBeforDotCStrLength + 1];
@@ -56,39 +54,27 @@ extern id* NSAllocateObjectArray(NSUInteger count);
                     valueForKeyPathMethod = NSKeyValueMethodForPattern(self.class, "_%sForKeyPath:", subKeyBeforDotCStr);
                 }
                 if (valueForKeyPathMethod) {
-                    //loc_471D6
                     id computedValue = ((id (*)(id,Method,NSString *))method_invoke)(self,valueForKeyPathMethod,subKeyPathAfterDot);
-                    [subKeyPathAfterDot release];
-                    [subKeyBeforDot release];
                     return computedValue;
                 }
                 else {
-                    //loc_4729D
-                    [subKeyPathAfterDot release];
-                    [subKeyBeforDot autorelease];
-                    
                     [NSException raise:NSInvalidArgumentException format:@"[<%@ %p> valueForKeyPath:]: this class does not implement the %@ operation.", self.class,self,subKeyBeforDot];
                     
                     return nil;
                 }
             }
             else {
-                //loc_4724A
                 id value = [super valueForKeyPath:subKeyBeforDot];
-                [subKeyBeforDot release];
                 return value;
             }
         }
         else {
-            //loc_4722E
-            NSString *subKey = [[keyPath substringWithRange:NSMakeRange(1, keyPath.length - 1)] retain];
+            NSString *subKey = [keyPath substringWithRange:NSMakeRange(1, keyPath.length - 1)];
             id value = [super valueForKeyPath:subKey];
-            [subKey release];
             return value;
         }
     }
     else {
-        //loc_47205
         return [super valueForKeyPath: keyPath];
     }
 }
@@ -107,8 +93,8 @@ extern id* NSAllocateObjectArray(NSUInteger count);
     }
     
     NSDecimal eachDecimal = {0};
-    for (NSUInteger i=0; i<self.count; ++i) {
-        id eachValue = [self _valueForKeyPath:keyPath ofObjectAtIndex:i];
+    for (id object in self) {
+        id eachValue = [object valueForKeyPath:keyPath];
         if (eachValue) {
             ((void (*)(NSDecimal *, id, SEL))objc_msgSend_stret)(&eachDecimal, zero, @selector(decimalValue));
             NSDecimalAdd(&resultDecimal, &resultDecimal, &eachDecimal, NSRoundBankers);
@@ -131,8 +117,8 @@ extern id* NSAllocateObjectArray(NSUInteger count);
 
 - (id)_maxForKeyPath:(NSString *)keyPath {
     id maxValue = nil;
-    for (NSUInteger i=0; i<self.count; ++i) {
-        id eachValue = [self _valueForKeyPath:keyPath ofObjectAtIndex:i];
+    for (id object in self) {
+        id eachValue = [object valueForKeyPath:keyPath];
         if (eachValue) {
             if (!maxValue) {
                 maxValue = eachValue;
@@ -147,8 +133,8 @@ extern id* NSAllocateObjectArray(NSUInteger count);
 
 - (id)_minForKeyPath:(NSString *)keyPath {
     id minValue = nil;
-    for (NSUInteger i=0; i<self.count; ++i) {
-        id eachValue = [self _valueForKeyPath:keyPath ofObjectAtIndex:i];
+    for (id object in self) {
+        id eachValue = [object valueForKeyPath:keyPath];
         if (eachValue) {
             if (!minValue) {
                 minValue = eachValue;
@@ -156,64 +142,40 @@ extern id* NSAllocateObjectArray(NSUInteger count);
             else if ([minValue compare:eachValue] == NSOrderedDescending){
                 minValue = eachValue;
             }
-
         }
     }
     return minValue;
 }
 
-- (NSArray *)_unionOfObjectsForKeyPath:(NSString *)keyPath {
-    NSMutableArray *unionArray = [NSMutableArray arrayWithCapacity:self.count];
-    for (NSUInteger i=0; i<self.count; ++i) {
-        id eachValue = [self _valueForKeyPath:keyPath ofObjectAtIndex:i];
-        if (eachValue) {
-            [unionArray addObject:eachValue];
-        }
-    }
-    return unionArray;
-}
-
-- (NSArray *)_unionOfArraysForKeyPath:(NSString *)keyPath {
-    NSMutableArray *unionArray = [NSMutableArray arrayWithCapacity:self.count];
-    for (NSUInteger i=0; i<self.count; ++i) {
-        id eachValue = [self _valueForKeyPath:keyPath ofObjectAtIndex:i];
-        if (eachValue) {
-            [unionArray addObjectsFromArray:eachValue];
-        }
-    }
-    return unionArray;
-}
-
-- (NSArray *)_unionOfSetsForKeyPath:(NSString *)keyPath {
-    NSMutableArray *unionArray = [NSMutableArray arrayWithCapacity:self.count];
-    for (NSUInteger i=0; i<self.count; ++i) {
-        id eachValue = [self _valueForKeyPath:keyPath ofObjectAtIndex:i];
-        if (eachValue) {
-            [unionArray addObjectsFromArray:[eachValue allObjects]];
-        }
-    }
-    return unionArray;
-}
-
-- (NSArray *)_distinctUnionOfObjectsForKeyPath:(NSString *)keyPath {
-    NSArray *unionArray = [self _unionOfObjectsForKeyPath:keyPath];
-    return [NSSet setWithArray:unionArray].allObjects;
-}
-
-- (NSArray *)_distinctUnionOfArraysForKeyPath:(NSString *)keyPath {
-    NSArray *unionArray = [self _unionOfArraysForKeyPath:keyPath];
-    return [NSSet setWithArray:unionArray].allObjects;
-}
-
-- (NSArray *)_distinctUnionOfSetsForKeyPath:(NSString *)keyPath {
+- (NSSet *)_distinctUnionOfObjectsForKeyPath:(NSString *)keyPath {
     NSMutableSet *unionSet = [NSMutableSet setWithCapacity:self.count];
-    for (NSUInteger i=0; i<self.count; ++i) {
-        id eachValue = [self _valueForKeyPath:keyPath ofObjectAtIndex:i];
+    for (id object in self) {
+        [unionSet addObject:[object valueForKeyPath:keyPath]];
+    }
+    return unionSet;
+}
+
+- (NSSet *)_distinctUnionOfArraysForKeyPath:(NSString *)keyPath {
+    NSMutableSet *unionSet = [NSMutableSet setWithCapacity:self.count];
+    for (id object in self) {
+        NSArray *arrayValue = [object valueForKeyPath:keyPath];
+        if(arrayValue) {
+            [unionSet addObjectsFromArray:arrayValue];
+        }
+    }
+    return unionSet;
+}
+
+- (NSSet *)_distinctUnionOfSetsForKeyPath:(NSString *)keyPath {
+    NSMutableSet *unionSet = [NSMutableSet setWithCapacity:self.count];
+    for (id object in self) {
+        id eachValue = [object valueForKeyPath:keyPath];
         if (eachValue) {
             [unionSet unionSet:eachValue];
         }
     }
-    return unionSet.allObjects;
+    return unionSet;
 }
+
 
 @end

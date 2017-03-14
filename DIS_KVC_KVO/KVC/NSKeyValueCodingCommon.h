@@ -10,6 +10,8 @@
 #import <objc/runtime.h>
 
 extern NSString * _NSMethodExceptionProem(id,SEL);
+extern int NSFreeObjectArray(void *ptr);
+extern void* NSAllocateObjectArray(NSUInteger count);
 
 static inline void *object_getIvarAddress(id object, Ivar ivar) {
     return (void *)((uint8_t *)object + ivar_getOffset(ivar));
