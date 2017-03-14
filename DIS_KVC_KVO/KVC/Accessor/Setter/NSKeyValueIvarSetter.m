@@ -8,6 +8,15 @@
 
 #import "NSKeyValueIvarSetter.h"
 #import "NSSetValueForKeyInIvar.h"
+#import "NSKeyValueContainerClass.h"
+
+void _NSSetValueAndNotifyForKeyInIvar(id object, SEL selector, id value, NSString *key, Ivar ivar, IMP imp) {
+    [object willChangeValueForKey:key];
+    
+    ((void (*)(id,SEL,id,NSString *, Ivar))imp)(object,NULL,value,key,ivar);
+    
+    [object didChangeValueForKey:key];
+}
 
 @implementation NSKeyValueIvarSetter
 
@@ -69,7 +78,6 @@
             break;
         case '#':
         case '@':{
-            
             objc_ivar_memory_management_t mngMent = _class_getIvarMemoryManagement(containerIsa, ivar);
             if(mngMent > objc_ivar_memoryUnretained) {
                 imp = (IMP)_NSSetObjectSetIvarValueForKeyInIvar;
@@ -107,7 +115,8 @@
             }
             else if (strncmp(typeEncoding, "{_NSRect={_NSPoint=ff}{_NSSize=ff}}", idx - typeEncoding) == 0){
                 imp = (IMP)_NSSetRectValueForKeyInIvar;
-            }else if (strncmp(typeEncoding, "{CGSize=ff}", idx - typeEncoding) == 0){
+            }
+            else if (strncmp(typeEncoding, "{CGSize=ff}", idx - typeEncoding) == 0){
                 imp = (IMP)_NSSetSizeValueForKeyInIvar;
             }
             else if (strncmp(typeEncoding, "{_NSSize=ff}", idx - typeEncoding) == 0){
@@ -125,36 +134,39 @@
     if (imp) {
         SEL sel = NULL;
         void *extraArguments[3];
-        NSUInteger count = 0;
-        if (__NSKVONotifyingMutatorsShouldNotifyForIsaAndKey(containerIsa, key)) {
-            
+        NSUInteger argumentCount = 0;
+        
+        if (_NSKVONotifyingMutatorsShouldNotifyForIsaAndKey(containerIsa, key)) {
             sel = NULL;
             
-            extraArguments[0] = (__bridge void*)key;
+            extraArguments[0] = key;
             extraArguments[1] = ivar;
             extraArguments[2] = imp;
             
-            imp = _NSSetValueAndNotifyForKeyInIvar;
+            imp = (IMP)_NSSetValueAndNotifyForKeyInIvar;
             
-            count = 3;
+            argumentCount = 3;
         }
         else {
-            
             sel = NULL;
             
-            extraArguments[0] = (__bridge void*)key;
+            extraArguments[0] = key;
             extraArguments[1] = ivar;
             extraArguments[2] = NULL;
             
-            count = 2;
+            argumentCount = 2;
         }
-        if (self = [super initWithContainerClassID:containerClassID key:key implementation:imp selector:sel extraArguments:extraArguments count:count]) {
         
-        }
+        self = [super initWithContainerClassID:containerClassID key:key implementation:imp selector:sel extraArguments:extraArguments count:argumentCount];
+        
         return self;
     }
     
     return nil;
+}
+
+- (struct objc_ivar *)ivar {
+    return (struct objc_ivar *)self.extraArgument2;
 }
 
 @end

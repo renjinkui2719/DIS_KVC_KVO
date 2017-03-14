@@ -9,8 +9,8 @@
 #import "NSKeyValueNonmutatingCollectionMethodSet.h"
 
 @interface NSKeyValueNonmutatingArrayMethodSet : NSKeyValueNonmutatingCollectionMethodSet
-@property (nonatomic, assign) Method count;
-@property (nonatomic, assign) Method objectAtIndex;
-@property (nonatomic, assign) Method getObjectsRange;
-@property (nonatomic, assign) Method objectsAtIndexes;
+@property (nonatomic, assign) struct objc_method * count;
+@property (nonatomic, assign) struct objc_method * objectAtIndex;
+@property (nonatomic, assign) struct objc_method * getObjectsRange;
+@property (nonatomic, assign) struct objc_method * objectsAtIndexes;
 @end

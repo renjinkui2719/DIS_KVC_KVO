@@ -7,10 +7,9 @@
 //
 
 #import "NSKeyValueSetter.h"
-#import <objc/runtime.h>
 
 @interface NSKeyValueMethodSetter : NSKeyValueSetter
-@property (nonatomic, assign) Method method;
+@property (nonatomic, assign) struct objc_method * method;
 
 - (id)initWithContainerClassID:(id)containerClassID key:(NSString *)key method:(Method)method;
 @end

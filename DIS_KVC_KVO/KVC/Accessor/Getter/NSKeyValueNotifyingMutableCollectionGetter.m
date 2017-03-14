@@ -7,7 +7,20 @@
 //
 
 #import "NSKeyValueNotifyingMutableCollectionGetter.h"
+#import "NSKeyValueProxyGetter.h"
 
 @implementation NSKeyValueNotifyingMutableCollectionGetter
+
+- (id)initWithContainerClassID:(id)containerClassID key:(id)key mutableCollectionGetter:(id)mutableCollectionGetter proxyClass:(Class)proxyClass {
+    if ((self = [super initWithContainerClassID:containerClassID key:key proxyClass:proxyClass])) {
+        _mutableCollectionGetter = [mutableCollectionGetter retain];
+    }
+    return self;
+}
+
+- (void)dealloc {
+    [_mutableCollectionGetter release];
+    [super dealloc];
+}
 
 @end

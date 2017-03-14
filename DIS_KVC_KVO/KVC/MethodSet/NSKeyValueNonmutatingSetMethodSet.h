@@ -9,7 +9,7 @@
 #import "NSKeyValueNonmutatingCollectionMethodSet.h"
 
 @interface NSKeyValueNonmutatingSetMethodSet : NSKeyValueNonmutatingCollectionMethodSet
-@property (nonatomic, assign) Method count;
-@property (nonatomic, assign) Method enumerator;
-@property (nonatomic, assign) Method member;
+@property (nonatomic, assign) struct objc_method * count;
+@property (nonatomic, assign) struct objc_method * enumerator;
+@property (nonatomic, assign) struct objc_method * member;
 @end

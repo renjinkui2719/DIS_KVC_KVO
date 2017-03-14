@@ -12,7 +12,6 @@
 @implementation NSKeyValueMethodSetter
 
 - (id)initWithContainerClassID:(id)containerClassID key:(NSString *)key method:(Method)method {
-    
     if(method_getNumberOfArguments(method) == 3) {
         SEL sel = method_getName(method);
         char *argType = method_copyArgumentType(method, 2);
@@ -128,7 +127,7 @@
         
         if (imp) {
             void *arguments[3];
-            arguments[0] = (__bridge void*)key;
+            arguments[0] = key;
             arguments[1] = (extraArgumentCount > 1 ? method : NULL);
             arguments[2] = NULL;
             if (self = [super initWithContainerClassID:containerClassID key:key implementation:imp selector:sel extraArguments:arguments count:extraArgumentCount]) {

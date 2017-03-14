@@ -12,4 +12,5 @@
 @property (nonatomic, assign) struct objc_ivar *ivar;
 
 - (id)initWithContainerClassID:(id)containerClassID key:(NSString *)key containerIsa:(Class)containerIsa ivar:(struct objc_ivar *)ivar proxyClass:(Class)proxyClass;
+
 @end

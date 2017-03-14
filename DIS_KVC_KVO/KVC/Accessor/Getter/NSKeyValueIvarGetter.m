@@ -11,6 +11,7 @@
 #import <objc/runtime.h>
 
 @implementation NSKeyValueIvarGetter
+
 - (id)initWithContainerClassID:(id)containerClassID key:(NSString *)key containerIsa:(Class)containerIsa ivar:(Ivar)ivar {
     const char *ivarEncoding = ivar_getTypeEncoding(ivar);
     IMP imp = NULL;
@@ -128,4 +129,5 @@
     }
     
 }
+
 @end

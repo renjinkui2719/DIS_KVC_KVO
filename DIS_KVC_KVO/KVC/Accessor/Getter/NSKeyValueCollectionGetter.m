@@ -7,16 +7,20 @@
 //
 
 #import "NSKeyValueCollectionGetter.h"
+#import "NSKeyValueNonmutatingCollectionMethodSet.h"
 
 @implementation NSKeyValueCollectionGetter
 
 - (id)initWithContainerClassID:(id)containerClassID key:(NSString *)key methods:(NSKeyValueNonmutatingCollectionMethodSet *)methods proxyClass:(Class)proxyClass {
     if (self = [super initWithContainerClassID:containerClassID key:key proxyClass:proxyClass]) {
-        _methods = methods;
+        _methods = [methods retain];
     }
     return  self;
 }
 
-
+- (void)dealloc {
+    [_methods release];
+    [super dealloc];
+}
 
 @end

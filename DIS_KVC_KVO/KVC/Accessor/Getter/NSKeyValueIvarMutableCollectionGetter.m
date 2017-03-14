@@ -10,4 +10,11 @@
 
 @implementation NSKeyValueIvarMutableCollectionGetter
 
+- (id)initWithContainerClassID:(id)containerClassID key:(NSString *)key containerIsa:(Class)containerIsa ivar:(struct objc_ivar *)ivar proxyClass:(Class)proxyClass {
+    if ((self = [super initWithContainerClassID:containerClassID key:key proxyClass:proxyClass])) {
+        _ivar = ivar;
+    }
+    return  self;
+}
+
 @end
