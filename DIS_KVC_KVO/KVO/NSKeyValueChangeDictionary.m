@@ -121,11 +121,11 @@ extern NSString * const NSKeyValueChangeOriginalObservableKey;
 }
 
 - (NSUInteger)count {
-    return 1 +
-    (_details.newValue ? 1 : 0) +
-    (_details.indexes ? 1 : 0) +
-    (_originalObservable ? 1 : 0) +
-    (_details.newValue ? 1 : 0) +
+    return 1                       +
+    (_details.newValue ? 1 : 0)    +
+    (_details.indexes ? 1 : 0)     +
+    (_originalObservable ? 1 : 0)  +
+    (_details.newValue ? 1 : 0)    +
     (_isPriorNotification ? 1 : 0) ;
 }
 

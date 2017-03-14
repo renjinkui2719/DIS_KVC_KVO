@@ -251,6 +251,7 @@
 		91958A7C1E77E40C004A7000 /* NSSetValueForKeyInIvar.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSSetValueForKeyInIvar.m; sourceTree = "<group>"; };
 		91958A7D1E77E40C004A7000 /* NSSetValueForKeyWithMethod.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSSetValueForKeyWithMethod.h; sourceTree = "<group>"; };
 		91958A7E1E77E40C004A7000 /* NSSetValueForKeyWithMethod.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSSetValueForKeyWithMethod.m; sourceTree = "<group>"; };
+		91958A811E77ECA7004A7000 /* NSKeyValueObserverCommon.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NSKeyValueObserverCommon.h; sourceTree = "<group>"; };
 		91EE68E91E72964E00B507A9 /* NSKeyValueIvarMutableOrderedSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSKeyValueIvarMutableOrderedSet.h; sourceTree = "<group>"; };
 		91EE68EA1E72964E00B507A9 /* NSKeyValueIvarMutableOrderedSet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSKeyValueIvarMutableOrderedSet.m; sourceTree = "<group>"; };
 		91EE68EC1E7296C400B507A9 /* NSKeyValueSlowMutableOrderedSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSKeyValueSlowMutableOrderedSet.h; sourceTree = "<group>"; };
@@ -399,6 +400,7 @@
 		916EC54D1E667511001E7595 /* KVO */ = {
 			isa = PBXGroup;
 			children = (
+				91958A811E77ECA7004A7000 /* NSKeyValueObserverCommon.h */,
 				916EC54E1E667511001E7595 /* NSKeyValueChangeDictionary.h */,
 				916EC54F1E667511001E7595 /* NSKeyValueChangeDictionary.m */,
 				916EC5501E667511001E7595 /* NSKeyValueComputedProperty.h */,
