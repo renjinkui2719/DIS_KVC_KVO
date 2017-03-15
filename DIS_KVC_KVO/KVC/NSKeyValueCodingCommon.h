@@ -50,3 +50,12 @@ static inline void object_setIvarDirectly(id object, Ivar ivar, id value) {
     *(id *)object_getIvarAddress(object, ivar) = value;
 }
 
+extern id   objc_retain(id obj);
+extern void objc_release(id obj);
+extern id   objc_autorelease(id obj);
+extern void objc_storeStrong(id *location, id obj);
+extern id   objc_storeWeak(id *location, id newObj);
+
+CF_EXPORT CFStringEncoding __CFDefaultEightBitStringEncoding;
+CF_EXPORT CFStringEncoding __CFStringComputeEightBitStringEncoding(void);
+

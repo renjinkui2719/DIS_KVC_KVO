@@ -23,6 +23,7 @@
 #import "NSKeyValueFastMutableCollection1Getter.h"
 #import "NSKeyValueFastMutableArray.h"
 #import "NSKeyValueFastMutableCollection2Getter.h"
+#import "NSKeyValueCodingCommon.h"
 #import <objc/runtime.h>
 #import <objc/message.h>
 #import <pthread.h>
@@ -36,16 +37,12 @@ extern dispatch_once_t pedanticKVCKeyOnce;
 extern void NSKeyValueObservingAssertRegistrationLockNotHeld();
 extern NSString * _NSMethodExceptionProem(id,SEL);
 
-CF_EXPORT CFStringEncoding __CFDefaultEightBitStringEncoding;
-CF_EXPORT CFStringEncoding __CFStringComputeEightBitStringEncoding(void);
-
-
 
 @implementation NSObject (NSKeyValueCoding)
 
 - (id)valueForKey:(NSString *)key {
     if(key) {
-        NSKeyValueCacheAccessLock();
+        OSSpinLockLock(&NSKeyValueCachedAccessorSpinLock);
         if(!NSKeyValueCachedGetters) {
             CFSetCallBacks callbacks = {0};
             callbacks.version = kCFTypeSetCallBacks.version;
@@ -61,12 +58,12 @@ CF_EXPORT CFStringEncoding __CFStringComputeEightBitStringEncoding(void);
         finder.containerClassID = self.class;
         finder.key = key;
         finder.hashValue = CFHash(key) ^ (NSUInteger)(self.class);
-        NSKeyValueGetter *getter =  CFSetGetValue(NSKeyValueCachedGetters, (__bridge void*)finder);
+        NSKeyValueGetter *getter =  CFSetGetValue(NSKeyValueCachedGetters, finder);
         if (!getter) {
             getter = [self.class _createValueGetterWithContainerClassID:self.class key:key];
-            CFSetAddValue(NSKeyValueCachedGetters, (__bridge void*)getter);
+            CFSetAddValue(NSKeyValueCachedGetters, getter);
         }
-        NSKeyValueCacheAccessUnlock();
+        OSSpinLockUnlock(&NSKeyValueCachedAccessorSpinLock);
         return _NSGetUsingKeyValueGetter(self, getter);
     }
     else {
@@ -128,7 +125,7 @@ CF_EXPORT CFStringEncoding __CFStringComputeEightBitStringEncoding(void);
 
 - (void)setValue:(id)value forKey:(NSString *)key {
     if (key) {
-        NSKeyValueCacheAccessLock();
+        OSSpinLockLock(&NSKeyValueCachedAccessorSpinLock);
         if (!NSKeyValueCachedSetters) {
             CFSetCallBacks callbacks = {0};
             callbacks.version = kCFTypeSetCallBacks.version;
@@ -150,7 +147,7 @@ CF_EXPORT CFStringEncoding __CFStringComputeEightBitStringEncoding(void);
             CFSetAddValue(NSKeyValueCachedSetters, (__bridge void*)setter);
         }
 
-        NSKeyValueCacheAccessUnlock();
+        OSSpinLockUnlock(&NSKeyValueCachedAccessorSpinLock);
         _NSSetUsingKeyValueSetter(self,setter, value);
     }
     else {
@@ -411,7 +408,6 @@ CF_EXPORT CFStringEncoding __CFStringComputeEightBitStringEncoding(void);
     }];
 }
 
-
 - (NSMutableOrderedSet *)mutableOrderedSetValueForKey:(NSString *)key {
     return [self _mutableColelctionValueForKey:key cache:&NSKeyValueCachedMutableOrderedSetGetters getterCrateBlock:^NSKeyValueGetter *(Class containerClassID, NSString *key) {
         return [self.class _createMutableOrderedSetValueGetterWithContainerClassID:containerClassID key:key];
@@ -435,8 +431,5 @@ CF_EXPORT CFStringEncoding __CFStringComputeEightBitStringEncoding(void);
         return [object mutableSetValueForKey: key];
     }];
 }
-
-
-
 
 @end

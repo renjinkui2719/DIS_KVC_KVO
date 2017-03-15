@@ -7,91 +7,130 @@
 //
 
 #import "NSSetValueForKeyInIvar.h"
-
-#define AddressAtObjectOffset(object, offset) (((unsigned char *)((__bridge void *)object)) + offset)
-
-#define __NSSetIntValueForKeyInIvar(object, selector, value, key, ivar, valueType, valueGetSelectorName) do {\
-    if (value) {\
-        ptrdiff_t offset =  ivar_getOffset(ivar);\
-        *((valueType *)AddressAtObjectOffset(object, offset)) = [value valueGetSelectorName];\
-    }\
-    else {\
-        [object setNilValueForKey:key];\
-    }\
-}while(0)
+#import "NSKeyValueCodingCommon.h"
 
 void _NSSetCharValueForKeyInIvar(id object, SEL selector, id value, NSString *key, Ivar ivar) {
-    __NSSetIntValueForKeyInIvar(object, selector, value, key, ivar, char, charValue);
+    if (value)
+        *(char *)object_getIvarAddress(object, ivar) = [value charValue];
+    else
+        [object setNilValueForKey:key];
 }
 
 void _NSSetDoubleValueForKeyInIvar(id object, SEL selector, id value, NSString *key, Ivar ivar) {
-    __NSSetIntValueForKeyInIvar(object, selector, value, key, ivar, double, doubleValue);
+    if (value)
+        *(double *)object_getIvarAddress(object, ivar) = [value doubleValue];
+    else
+        [object setNilValueForKey:key];
 }
 
 void _NSSetFloatValueForKeyInIvar(id object, SEL selector, id value, NSString *key, Ivar ivar) {
-    __NSSetIntValueForKeyInIvar(object, selector, value, key, ivar, float, floatValue);
+    if (value)
+        *(float *)object_getIvarAddress(object, ivar) = [value floatValue];
+    else
+        [object setNilValueForKey:key];
 }
 
 void _NSSetIntValueForKeyInIvar(id object, SEL selector, id value, NSString *key, Ivar ivar) {
-    __NSSetIntValueForKeyInIvar(object, selector, value, key, ivar, int, intValue);
+    if (value)
+        *(int *)object_getIvarAddress(object, ivar) = [value intValue];
+    else
+        [object setNilValueForKey:key];
 }
 
 void _NSSetLongValueForKeyInIvar(id object, SEL selector, id value, NSString *key, Ivar ivar) {
-    __NSSetIntValueForKeyInIvar(object, selector, value, key, ivar, long, longValue);
+    if (value)
+        *(long *)object_getIvarAddress(object, ivar) = [value longValue];
+    else
+        [object setNilValueForKey:key];
 }
 
 void _NSSetLongLongValueForKeyInIvar(id object, SEL selector, id value, NSString *key, Ivar ivar) {
-    __NSSetIntValueForKeyInIvar(object, selector, value, key, ivar, long long, longLongValue);
+    if (value)
+        *(long long *)object_getIvarAddress(object, ivar) = [value longLongValue];
+    else
+        [object setNilValueForKey:key];
 }
 
 void _NSSetShortValueForKeyInIvar(id object, SEL selector, id value, NSString *key, Ivar ivar) {
-    __NSSetIntValueForKeyInIvar(object, selector, value, key, ivar, short, shortValue);
+    if (value)
+        *(short *)object_getIvarAddress(object, ivar) = [value shortValue];
+    else
+        [object setNilValueForKey:key];
 }
 
 void _NSSetUnsignedLongLongValueForKeyInIvar(id object, SEL selector, id value, NSString *key, Ivar ivar) {
-    __NSSetIntValueForKeyInIvar(object, selector, value, key, ivar, unsigned long long, unsignedLongLongValue);
+    if (value)
+        *(unsigned long long *)object_getIvarAddress(object, ivar) = [value unsignedLongLongValue];
+    else
+        [object setNilValueForKey:key];
 }
 
 void _NSSetUnsignedLongValueForKeyInIvar(id object, SEL selector, id value, NSString *key, Ivar ivar) {
-    __NSSetIntValueForKeyInIvar(object, selector, value, key, ivar, unsigned long, unsignedLongValue);
+    if (value)
+        *(unsigned long *)object_getIvarAddress(object, ivar) = [value unsignedLongValue];
+    else
+        [object setNilValueForKey:key];
 }
 
 void _NSSetBoolValueForKeyInIvar(id object, SEL selector, id value, NSString *key, Ivar ivar) {
-    __NSSetIntValueForKeyInIvar(object, selector, value, key, ivar, BOOL, boolValue);
+    if (value)
+        *(BOOL *)object_getIvarAddress(object, ivar) = [value boolValue];
+    else
+        [object setNilValueForKey:key];
 }
 
 void _NSSetUnsignedCharValueForKeyInIvar(id object, SEL selector, id value, NSString *key, Ivar ivar) {
-    __NSSetIntValueForKeyInIvar(object, selector, value, key, ivar, unsigned char, unsignedCharValue);
+    if (value)
+        *(unsigned char *)object_getIvarAddress(object, ivar) = [value unsignedCharValue];
+    else
+        [object setNilValueForKey:key];
 }
 
 void _NSSetUnsignedIntValueForKeyInIvar(id object, SEL selector, id value, NSString *key, Ivar ivar) {
-    __NSSetIntValueForKeyInIvar(object, selector, value, key, ivar, unsigned int, unsignedIntValue);
+    if (value)
+        *(unsigned int *)object_getIvarAddress(object, ivar) = [value unsignedIntValue];
+    else
+        [object setNilValueForKey:key];
 }
 
 void _NSSetUnsignedShortValueForKeyInIvar(id object, SEL selector, id value, NSString *key, Ivar ivar) {
-    __NSSetIntValueForKeyInIvar(object, selector, value, key, ivar, unsigned short, unsignedShortValue);
+    if (value)
+        *(unsigned short *)object_getIvarAddress(object, ivar) = [value unsignedShortValue];
+    else
+        [object setNilValueForKey:key];
 }
 
 void _NSSetPointValueForKeyInIvar(id object, SEL selector, id value, NSString *key, Ivar ivar) {
-    __NSSetIntValueForKeyInIvar(object, selector, value, key, ivar, NSPoint, pointValue);
+    if (value)
+        *(NSPoint *)object_getIvarAddress(object, ivar) = [value pointValue];
+    else
+        [object setNilValueForKey:key];
 }
 
 void _NSSetRangeValueForKeyInIvar(id object, SEL selector, id value, NSString *key, Ivar ivar) {
-    __NSSetIntValueForKeyInIvar(object, selector, value, key, ivar, NSRange, rangeValue);
+    if (value)
+        *(NSRange *)object_getIvarAddress(object, ivar) = [value rangeValue];
+    else
+        [object setNilValueForKey:key];
 }
 
 void _NSSetRectValueForKeyInIvar(id object, SEL selector, id value, NSString *key, Ivar ivar) {
-    __NSSetIntValueForKeyInIvar(object, selector, value, key, ivar, NSRect, rectValue);
+    if (value)
+        *(char *)object_getIvarAddress(object, ivar) = [value charValue];
+    else
+        [object setNilValueForKey:key];
 }
 
 void _NSSetSizeValueForKeyInIvar(id object, SEL selector, id value, NSString *key, Ivar ivar) {
-    __NSSetIntValueForKeyInIvar(object, selector, value, key, ivar, NSSize, sizeValue);
+    if (value)
+        *(NSSize *)object_getIvarAddress(object, ivar) = [value sizeValue];
+    else
+        [object setNilValueForKey:key];
 }
 
 void _NSSetValueInIvar(id object, SEL selector, id value, NSString *key, Ivar ivar) {
     if (key) {
-        ptrdiff_t offset =  ivar_getOffset(ivar);
-        [value getValue:AddressAtObjectOffset(object, offset)];
+        [value getValue:object_getIvarAddress(object, ivar)];
     }
     else {
         [object setNilValueForKey:key];
@@ -103,26 +142,19 @@ void _NSSetObjectSetIvarValueForKeyInIvar(id object, SEL selector, id value, NSS
 }
 
 void _NSSetObjectSetManualValueForKeyInIvar(id object, SEL selector, id value, NSString *key, Ivar ivar) {
-    extern id objc_retain(id obj);
-    extern id objc_autorelease(id obj);
-    ptrdiff_t offset = ivar_getOffset(ivr);
-    objc_autorelease( *((id *)AddressAtObjectOffset(object, offset)))
+    objc_autorelease(*(id *)object_getIvarAddress(object, ivar));
     objc_retain(value);
-    *((id *)AddressAtObjectOffset(object, offset)) = value;
+    *(id *)object_getIvarAddress(object, ivar) = value;
 }
 
 void _NSSetObjectSetStrongValueForKeyInIvar(id object, SEL selector, id value, NSString *key, Ivar ivar) {
-    ptrdiff_t offset = ivar_getOffset(ivar);
-    extern void objc_storeStrong(id *location, id obj)
-    objc_storeStrong((id *)AddressAtObjectOffset(object, offset), value);
+    objc_storeStrong((id *)object_getIvarAddress(object, ivar), value);
 }
 
 void _NSSetObjectSetWeakValueForKeyInIvar(id object, SEL selector, id value, NSString *key, Ivar ivar) {
-    ptrdiff_t offset = ivar_getOffset(ivar);
-    objc_storeWeak((id *)AddressAtObjectOffset(object, offset), value);
+    objc_storeWeak((id *)object_getIvarAddress(object, ivar), value);
 }
 
 void _NSSetObjectSetAssignValueForKeyInIvar(id object, SEL selector, id value, NSString *key, Ivar ivar) {
-    ptrdiff_t offset = ivar_getOffset(ivar);
-    *((id *)AddressAtObjectOffset(object, offset)) = value;
+    *(id *)object_getIvarAddress(object, ivar) = value;
 }

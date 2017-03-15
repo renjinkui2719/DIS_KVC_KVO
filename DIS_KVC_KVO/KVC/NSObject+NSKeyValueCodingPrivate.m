@@ -108,19 +108,19 @@ void _NSSetUsingKeyValueSetter(id object, NSKeyValueSetter *setter, id value) {
 }
 
 Method NSKeyValueMethodForPattern(Class class, const char *pattern,const char *param) {
-    size_t param_len = strlen(param);
-    size_t pattern_len = strlen(pattern);
-    char sel_name[pattern_len + param_len * 2 + 1];
-    snprintf(sel_name, (pattern_len + param_len * 2 + 1), pattern,param,param);
-    return class_getInstanceMethod(class, sel_registerName(sel_name));
+    size_t paramLen = strlen(param);
+    size_t patternLen = strlen(pattern);
+    char selName[patternLen + paramLen * 2 + 1];
+    snprintf(selName, (patternLen + paramLen * 2 + 1), pattern,param,param);
+    return class_getInstanceMethod(class, sel_registerName(selName));
 }
 
 Ivar NSKeyValueIvarForPattern(Class class, const char *pattern,const char *param) {
-    size_t param_len = strlen(param);
-    size_t pattern_len = strlen(pattern);
-    char var_name[param_len + pattern_len + 1];
-    snprintf(var_name, param_len + pattern_len + 1, pattern,param);
-    return class_getInstanceVariable(class, var_name);
+    size_t paramLen = strlen(param);
+    size_t patternLen = strlen(pattern);
+    char ivarName[paramLen + patternLen + 1];
+    snprintf(ivarName, paramLen + patternLen + 1, pattern,param);
+    return class_getInstanceVariable(class, ivarName);
 }
 
 
@@ -377,7 +377,7 @@ void _NSKeyValueInvalidateAllCachesForContainerAndKey(Class containerClassID, NS
         NSKeyValueCachedPrimitiveSetters
     };
     
-    for (NSUInteger i=0; i < sizeof(accessorCaches)/sizeof(accessorCaches[0]); ++i) {
+    for (NSUInteger i = 0; i < sizeof(accessorCaches)/sizeof(accessorCaches[0]); ++i) {
         if (accessorCaches[i]) {
             CFSetRemoveValue(accessorCaches[i], finder);
         }
@@ -391,31 +391,31 @@ void _NSKeyValueInvalidateAllCachesForContainerAndKey(Class containerClassID, NS
 + (NSKeyValueGetter *)_createValueGetterWithContainerClassID:(id)containerClassID key:(NSString *)key {
     NSKeyValueGetter * getter = nil;
     
-    NSUInteger len = [key lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
-    char key_cstr_upfirst[len + 1];
-    [key getCString:key_cstr_upfirst maxLength:len + 1 encoding:NSUTF8StringEncoding];
+    NSUInteger keyLen = [key lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
+    char keyCStrUpFirst[keyLen + 1];
+    [key getCString:keyCStrUpFirst maxLength:keyLen + 1 encoding:NSUTF8StringEncoding];
     if (key.length) {
-        key_cstr_upfirst[0] = toupper(key_cstr_upfirst[0]);
+        keyCStrUpFirst[0] = toupper(keyCStrUpFirst[0]);
     }
-    char key_cstr[len + 16];
-    [key getCString:key_cstr maxLength:len + 1 encoding:NSUTF8StringEncoding];
+    char keyCStr[keyLen + 16];
+    [key getCString:keyCStr maxLength:keyLen + 1 encoding:NSUTF8StringEncoding];
     
     Method getMethod = NULL;
-    if((getMethod = NSKeyValueMethodForPattern(self,"get%s",key_cstr_upfirst)) ||
-       (getMethod = NSKeyValueMethodForPattern(self,"%s",key_cstr)) ||
-       (getMethod = NSKeyValueMethodForPattern(self,"is%s",key_cstr_upfirst)) ||
-       (getMethod = NSKeyValueMethodForPattern(self,"_get%s",key_cstr_upfirst)) ||
-       (getMethod = NSKeyValueMethodForPattern(self,"_%s",key_cstr))) {
+    if((getMethod = NSKeyValueMethodForPattern(self,"get%s",keyCStrUpFirst)) ||
+       (getMethod = NSKeyValueMethodForPattern(self,"%s",keyCStr)) ||
+       (getMethod = NSKeyValueMethodForPattern(self,"is%s",keyCStrUpFirst)) ||
+       (getMethod = NSKeyValueMethodForPattern(self,"_get%s",keyCStrUpFirst)) ||
+       (getMethod = NSKeyValueMethodForPattern(self,"_%s",keyCStr))) {
         getter = [[NSKeyValueMethodGetter alloc] initWithContainerClassID:containerClassID key:key method:getMethod];
     }
     else {
-        Method ountOf_Method = NSKeyValueMethodForPattern(self, "countOf%", key_cstr_upfirst);
-        Method ObjectIn_AtIndexMethod = NSKeyValueMethodForPattern(self, "objectIn%sAtIndex:", key_cstr_upfirst);
-        Method _AtIndexesMethod = NSKeyValueMethodForPattern(self, "%sAtIndexes:", key_cstr);
-        Method IndexIn_OfObjectMethod = NSKeyValueMethodForPattern(self, "indexIn%sOfObject:", key_cstr_upfirst);
+        Method ountOf_Method = NSKeyValueMethodForPattern(self, "countOf%", keyCStrUpFirst);
+        Method ObjectIn_AtIndexMethod = NSKeyValueMethodForPattern(self, "objectIn%sAtIndex:", keyCStrUpFirst);
+        Method _AtIndexesMethod = NSKeyValueMethodForPattern(self, "%sAtIndexes:", keyCStr);
+        Method IndexIn_OfObjectMethod = NSKeyValueMethodForPattern(self, "indexIn%sOfObject:", keyCStrUpFirst);
         
-        Method enumeratorOf_Method = NSKeyValueMethodForPattern(self, "enumeratorOf%s", key_cstr_upfirst);
-        Method memberOf_Method = NSKeyValueMethodForPattern(self, "memberOf%s:", key_cstr_upfirst);
+        Method enumeratorOf_Method = NSKeyValueMethodForPattern(self, "enumeratorOf%s", keyCStrUpFirst);
+        Method memberOf_Method = NSKeyValueMethodForPattern(self, "memberOf%s:", keyCStrUpFirst);
         
         if(ountOf_Method && IndexIn_OfObjectMethod && (ObjectIn_AtIndexMethod || _AtIndexesMethod)) {
             NSKeyValueNonmutatingOrderedSetMethodSet *methodSet = [[NSKeyValueNonmutatingOrderedSetMethodSet alloc] init];
@@ -423,7 +423,7 @@ void _NSKeyValueInvalidateAllCachesForContainerAndKey(Class containerClassID, NS
             methodSet.objectAtIndex =  ObjectIn_AtIndexMethod;
             methodSet.indexOfObject =  IndexIn_OfObjectMethod;
             methodSet.objectsAtIndexes =  _AtIndexesMethod;
-            methodSet.getObjectsRange =  NSKeyValueMethodForPattern(self, "get%s:range:", key_cstr_upfirst);
+            methodSet.getObjectsRange =  NSKeyValueMethodForPattern(self, "get%s:range:", keyCStrUpFirst);
             getter = [[NSKeyValueCollectionGetter alloc] initWithContainerClassID:containerClassID key:key  methods:methodSet proxyClass:NSKeyValueOrderedSet.self];
             [methodSet release];
         }
@@ -432,7 +432,7 @@ void _NSKeyValueInvalidateAllCachesForContainerAndKey(Class containerClassID, NS
             methodSet.count =  ountOf_Method;
             methodSet.objectAtIndex =  ObjectIn_AtIndexMethod;
             methodSet.objectsAtIndexes =  _AtIndexesMethod;
-            methodSet.getObjectsRange =  NSKeyValueMethodForPattern(self, "get%s:range:", key_cstr_upfirst);
+            methodSet.getObjectsRange =  NSKeyValueMethodForPattern(self, "get%s:range:", keyCStrUpFirst);
             getter = [[NSKeyValueCollectionGetter alloc] initWithContainerClassID:containerClassID key:key  methods:methodSet proxyClass:NSKeyValueArray.self];
             [methodSet release];
         }
@@ -446,10 +446,10 @@ void _NSKeyValueInvalidateAllCachesForContainerAndKey(Class containerClassID, NS
         }
         else if([self accessInstanceVariablesDirectly]) {
             Ivar ivar = NULL;
-            if((ivar = NSKeyValueIvarForPattern(self, "_%s", key_cstr)) ||
-               (ivar = NSKeyValueIvarForPattern(self, "_is%s", key_cstr_upfirst)) ||
-               (ivar = NSKeyValueIvarForPattern(self, "%s", key_cstr)) ||
-               (ivar = NSKeyValueIvarForPattern(self, "is%s", key_cstr_upfirst))
+            if((ivar = NSKeyValueIvarForPattern(self, "_%s", keyCStr)) ||
+               (ivar = NSKeyValueIvarForPattern(self, "_is%s", keyCStrUpFirst)) ||
+               (ivar = NSKeyValueIvarForPattern(self, "%s", keyCStr)) ||
+               (ivar = NSKeyValueIvarForPattern(self, "is%s", keyCStrUpFirst))
                ) {
                 getter = [[NSKeyValueIvarGetter alloc] initWithContainerClassID:containerClassID key:key containerIsa:self ivar:ivar];
             }
