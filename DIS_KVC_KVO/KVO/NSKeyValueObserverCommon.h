@@ -10,9 +10,7 @@
 #import <stdarg.h>
 
 
-
 static inline NSUInteger _NSKVOPointersHash(NSInteger count,...) {
-    
     void *pointers[count];
     
     va_list ap;

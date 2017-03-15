@@ -8,7 +8,7 @@
 #import "NSObject+NSKeyValueCoding.h"
 #import "NSObject+NSKeyValueCodingPrivate.h"
 #import "NSKeyValuePropertyCreate.h"
-#import "NSKVOSetAndNotify.h"
+#import "NSSetValueAndNotify.h"
 #import <pthread.h>
 #import <objc/runtime.h>
 #import <objc/objc.h>
@@ -413,7 +413,7 @@ void _NSKVONotifyingEnableForInfoAndKey(NSKeyValueNotifyingInfo *info, NSString 
                         imp = (IMP)_NSSetSizeValueAndNotify;
                     }
                     else if (strcmp(argType, "{_NSSize=ff}") == 0) {
-                        imp = (IMP)_NSSetSizeValueAndNotify
+                        imp = (IMP)_NSSetSizeValueAndNotify;
                     }
                     else {
                         imp = (IMP)_CF_forwarding_prep_0;
@@ -447,7 +447,7 @@ void _NSKVONotifyingEnableForInfoAndKey(NSKeyValueNotifyingInfo *info, NSString 
                 SEL setMethodSEL = method_getName(setMethod);
                 NSKVONotifyingSetMethodImplementation(info, setMethodSEL, imp, key);
                 if (imp == _CF_forwarding_prep_0) {
-                    NSKVONotifyingSetMethodImplementation(info, @selector(forwardInvocation:), NSKVOForwardInvocation, nil);
+                    NSKVONotifyingSetMethodImplementation(info, @selector(forwardInvocation:), (IMP)NSKVOForwardInvocation, nil);
                     char *setMethodSELName = sel_getName(setMethodSEL);
                     size_t setMethodSELNameLen = strlen(setMethodSELName);
                     char buff[setMethodSELNameLen + 26];
@@ -465,14 +465,14 @@ void _NSKVONotifyingEnableForInfoAndKey(NSKeyValueNotifyingInfo *info, NSString 
                 NSLog(@"KVO autonotifying only supports -set<Key>: methods that take id, \
                       NSNumber-supported scalar types, and some NSValue-supported structure \
                       types. Autonotifying will not be done for invocations of -[%s %s].",
-                      _NSNameOfClass(info->originalClass), sel_getName(method_getName(setMethod))
+                      class_getName(info->originalClass), sel_getName(method_getName(setMethod))
                       );
             }
         }
         else {
             NSLog(@"KVO autonotifying only supports -set<Key>: \
                   methods that return void. Autonotifying will not be done for invocations of -[%s %s].",
-                  _NSNameOfClass(info->originalClass), sel_getName(method_getName(setMethod)));
+                  class_getName(info->originalClass), sel_getName(method_getName(setMethod)));
         }
     }
     
@@ -481,22 +481,22 @@ void _NSKVONotifyingEnableForInfoAndKey(NSKeyValueNotifyingInfo *info, NSString 
         NSKeyValueMutatingArrayMethodSet *mutatingMethods = [getter mutatingMethods];
         if(mutatingMethods) {
             if(mutatingMethods.insertObjectAtIndex) {
-                NSKVONotifyingSetMethodImplementation(info,method_getName(mutatingMethods.insertObjectAtIndex),NSKVOInsertObjectAtIndexAndNotify,key);
+                NSKVONotifyingSetMethodImplementation(info,method_getName(mutatingMethods.insertObjectAtIndex),(IMP)NSKVOInsertObjectAtIndexAndNotify,key);
             }
             if(mutatingMethods.insertObjectsAtIndexes) {
-                NSKVONotifyingSetMethodImplementation(info,method_getName(mutatingMethods.insertObjectsAtIndexes),NSKVOInsertObjectsAtIndexesAndNotify,key);
+                NSKVONotifyingSetMethodImplementation(info,method_getName(mutatingMethods.insertObjectsAtIndexes),(IMP)NSKVOInsertObjectsAtIndexesAndNotify,key);
             }
             if(mutatingMethods.removeObjectAtIndex) {
-                NSKVONotifyingSetMethodImplementation(info,method_getName(mutatingMethods.removeObjectAtIndex),NSKVORemoveObjectAtIndexAndNotify,key);
+                NSKVONotifyingSetMethodImplementation(info,method_getName(mutatingMethods.removeObjectAtIndex),(IMP)NSKVORemoveObjectAtIndexAndNotify,key);
             }
             if(mutatingMethods.removeObjectsAtIndexes) {
-                NSKVONotifyingSetMethodImplementation(info,method_getName(mutatingMethods.removeObjectsAtIndexes),NSKVORemoveObjectsAtIndexesAndNotify,key);
+                NSKVONotifyingSetMethodImplementation(info,method_getName(mutatingMethods.removeObjectsAtIndexes),(IMP)NSKVORemoveObjectsAtIndexesAndNotify,key);
             }
             if(mutatingMethods.replaceObjectAtIndex) {
-                NSKVONotifyingSetMethodImplementation(info,method_getName(mutatingMethods.replaceObjectAtIndex),NSKVOReplaceObjectAtIndexAndNotify,key);
+                NSKVONotifyingSetMethodImplementation(info,method_getName(mutatingMethods.replaceObjectAtIndex),(IMP)NSKVOReplaceObjectAtIndexAndNotify,key);
             }
             if(mutatingMethods.replaceObjectsAtIndexes) {
-                NSKVONotifyingSetMethodImplementation(info,method_getName(mutatingMethods.replaceObjectsAtIndexes),NSKVOReplaceObjectsAtIndexesAndNotify,key);
+                NSKVONotifyingSetMethodImplementation(info,method_getName(mutatingMethods.replaceObjectsAtIndexes),(IMP)NSKVOReplaceObjectsAtIndexesAndNotify,key);
             }
             //loc_1DA6E
         }
@@ -508,22 +508,22 @@ void _NSKVONotifyingEnableForInfoAndKey(NSKeyValueNotifyingInfo *info, NSString 
         NSKeyValueMutatingOrderedSetMethodSet *mutatingMethods = [getter mutatingMethods];
         if(mutatingMethods) {
             if(mutatingMethods.insertObjectAtIndex) {
-                NSKVONotifyingSetMethodImplementation(info,method_getName(mutatingMethods.insertObjectAtIndex),NSKVOInsertObjectAtIndexAndNotify,key);
+                NSKVONotifyingSetMethodImplementation(info,method_getName(mutatingMethods.insertObjectAtIndex),(IMP)NSKVOInsertObjectAtIndexAndNotify,key);
             }
             if(mutatingMethods.insertObjectsAtIndexes) {
-                NSKVONotifyingSetMethodImplementation(info,method_getName(mutatingMethods.insertObjectsAtIndexes),NSKVOInsertObjectsAtIndexesAndNotify,key);
+                NSKVONotifyingSetMethodImplementation(info,method_getName(mutatingMethods.insertObjectsAtIndexes),(IMP)NSKVOInsertObjectsAtIndexesAndNotify,key);
             }
             if(mutatingMethods.removeObjectAtIndex) {
-                NSKVONotifyingSetMethodImplementation(info,method_getName(mutatingMethods.removeObjectAtIndex),NSKVORemoveObjectAtIndexAndNotify,key);
+                NSKVONotifyingSetMethodImplementation(info,method_getName(mutatingMethods.removeObjectAtIndex),(IMP)NSKVORemoveObjectAtIndexAndNotify,key);
             }
             if(mutatingMethods.removeObjectsAtIndexes) {
-                NSKVONotifyingSetMethodImplementation(info,method_getName(mutatingMethods.removeObjectsAtIndexes),NSKVORemoveObjectsAtIndexesAndNotify,key);
+                NSKVONotifyingSetMethodImplementation(info,method_getName(mutatingMethods.removeObjectsAtIndexes),(IMP)NSKVORemoveObjectsAtIndexesAndNotify,key);
             }
             if(mutatingMethods.replaceObjectAtIndex) {
-                NSKVONotifyingSetMethodImplementation(info,method_getName(mutatingMethods.replaceObjectAtIndex),NSKVOReplaceObjectAtIndexAndNotify,key);
+                NSKVONotifyingSetMethodImplementation(info,method_getName(mutatingMethods.replaceObjectAtIndex),(IMP)NSKVOReplaceObjectAtIndexAndNotify,key);
             }
             if(mutatingMethods.replaceObjectsAtIndexes) {
-                NSKVONotifyingSetMethodImplementation(info,method_getName(mutatingMethods.replaceObjectsAtIndexes),NSKVOReplaceObjectsAtIndexesAndNotify,key);
+                NSKVONotifyingSetMethodImplementation(info,method_getName(mutatingMethods.replaceObjectsAtIndexes),(IMP)NSKVOReplaceObjectsAtIndexesAndNotify,key);
             }
         }
     }
@@ -533,19 +533,19 @@ void _NSKVONotifyingEnableForInfoAndKey(NSKeyValueNotifyingInfo *info, NSString 
         NSKeyValueMutatingSetMethodSet *mutatingMethods = [getter mutatingMethods];
         if(mutatingMethods) {
             if(mutatingMethods.addObject) {
-                NSKVONotifyingSetMethodImplementation(info,method_getName(mutatingMethods.addObject),NSKVOAddObjectAndNotify,key);
+                NSKVONotifyingSetMethodImplementation(info,method_getName(mutatingMethods.addObject),(IMP)NSKVOAddObjectAndNotify,key);
             }
             if(mutatingMethods.intersectSet) {
-                NSKVONotifyingSetMethodImplementation(info,method_getName(mutatingMethods.intersectSet),NSKVOIntersectSetAndNotify,key);
+                NSKVONotifyingSetMethodImplementation(info,method_getName(mutatingMethods.intersectSet),(IMP)NSKVOIntersectSetAndNotify,key);
             }
             if(mutatingMethods.minusSet) {
-                NSKVONotifyingSetMethodImplementation(info,method_getName(mutatingMethods.minusSet),NSKVOMinusSetAndNotify,key);
+                NSKVONotifyingSetMethodImplementation(info,method_getName(mutatingMethods.minusSet),(IMP)NSKVOMinusSetAndNotify,key);
             }
             if(mutatingMethods.removeObject) {
-                NSKVONotifyingSetMethodImplementation(info,method_getName(mutatingMethods.removeObject),NSKVORemoveObjectAndNotify,key);
+                NSKVONotifyingSetMethodImplementation(info,method_getName(mutatingMethods.removeObject),(IMP)NSKVORemoveObjectAndNotify,key);
             }
             if(mutatingMethods.unionSet) {
-                NSKVONotifyingSetMethodImplementation(info,method_getName(mutatingMethods.unionSet),NSKVOUnionSetAndNotify,key);
+                NSKVONotifyingSetMethodImplementation(info,method_getName(mutatingMethods.unionSet),(IMP)NSKVOUnionSetAndNotify,key);
             }
         }
     }

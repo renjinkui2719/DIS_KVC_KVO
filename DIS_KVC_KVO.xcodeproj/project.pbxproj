@@ -39,8 +39,7 @@
 		916EC5A21E667511001E7595 /* NSKeyValueProperty.m in Sources */ = {isa = PBXBuildFile; fileRef = 916EC55B1E667511001E7595 /* NSKeyValueProperty.m */; };
 		916EC5A31E667511001E7595 /* NSKeyValuePropertyCreate.m in Sources */ = {isa = PBXBuildFile; fileRef = 916EC55D1E667511001E7595 /* NSKeyValuePropertyCreate.m */; };
 		916EC5A41E667511001E7595 /* NSKeyValueUnnestedProperty.m in Sources */ = {isa = PBXBuildFile; fileRef = 916EC55F1E667511001E7595 /* NSKeyValueUnnestedProperty.m */; };
-		916EC5A51E667511001E7595 /* NSKVOSetAndNotify.m in Sources */ = {isa = PBXBuildFile; fileRef = 916EC5611E667511001E7595 /* NSKVOSetAndNotify.m */; };
-		916EC5A61E667511001E7595 /* NSKVOUtility.m in Sources */ = {isa = PBXBuildFile; fileRef = 916EC5631E667511001E7595 /* NSKVOUtility.m */; };
+		916EC5A51E667511001E7595 /* NSSetValueAndNotify.m in Sources */ = {isa = PBXBuildFile; fileRef = 916EC5611E667511001E7595 /* NSSetValueAndNotify.m */; };
 		916EC5A71E667511001E7595 /* NSObject+NSKeyValueObserverNotification.m in Sources */ = {isa = PBXBuildFile; fileRef = 916EC5651E667511001E7595 /* NSObject+NSKeyValueObserverNotification.m */; };
 		916EC5A81E667511001E7595 /* NSObject+NSKeyValueObserverRegistration.m in Sources */ = {isa = PBXBuildFile; fileRef = 916EC5671E667511001E7595 /* NSObject+NSKeyValueObserverRegistration.m */; };
 		916EC5A91E667511001E7595 /* NSObject+NSKeyValueObservingCustomization.m in Sources */ = {isa = PBXBuildFile; fileRef = 916EC5691E667511001E7595 /* NSObject+NSKeyValueObservingCustomization.m */; };
@@ -165,10 +164,8 @@
 		916EC55D1E667511001E7595 /* NSKeyValuePropertyCreate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSKeyValuePropertyCreate.m; sourceTree = "<group>"; };
 		916EC55E1E667511001E7595 /* NSKeyValueUnnestedProperty.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSKeyValueUnnestedProperty.h; sourceTree = "<group>"; };
 		916EC55F1E667511001E7595 /* NSKeyValueUnnestedProperty.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSKeyValueUnnestedProperty.m; sourceTree = "<group>"; };
-		916EC5601E667511001E7595 /* NSKVOSetAndNotify.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSKVOSetAndNotify.h; sourceTree = "<group>"; };
-		916EC5611E667511001E7595 /* NSKVOSetAndNotify.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSKVOSetAndNotify.m; sourceTree = "<group>"; };
-		916EC5621E667511001E7595 /* NSKVOUtility.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSKVOUtility.h; sourceTree = "<group>"; };
-		916EC5631E667511001E7595 /* NSKVOUtility.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSKVOUtility.m; sourceTree = "<group>"; };
+		916EC5601E667511001E7595 /* NSSetValueAndNotify.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSSetValueAndNotify.h; sourceTree = "<group>"; };
+		916EC5611E667511001E7595 /* NSSetValueAndNotify.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSSetValueAndNotify.m; sourceTree = "<group>"; };
 		916EC5641E667511001E7595 /* NSObject+NSKeyValueObserverNotification.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSObject+NSKeyValueObserverNotification.h"; sourceTree = "<group>"; };
 		916EC5651E667511001E7595 /* NSObject+NSKeyValueObserverNotification.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSObject+NSKeyValueObserverNotification.m"; sourceTree = "<group>"; };
 		916EC5661E667511001E7595 /* NSObject+NSKeyValueObserverRegistration.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSObject+NSKeyValueObserverRegistration.h"; sourceTree = "<group>"; };
@@ -401,28 +398,26 @@
 			isa = PBXGroup;
 			children = (
 				91958A811E77ECA7004A7000 /* NSKeyValueObserverCommon.h */,
-				916EC54E1E667511001E7595 /* NSKeyValueChangeDictionary.h */,
-				916EC54F1E667511001E7595 /* NSKeyValueChangeDictionary.m */,
 				916EC5501E667511001E7595 /* NSKeyValueComputedProperty.h */,
 				916EC5511E667511001E7595 /* NSKeyValueComputedProperty.m */,
-				916EC5521E667511001E7595 /* NSKeyValueContainerClass.h */,
-				916EC5531E667511001E7595 /* NSKeyValueContainerClass.m */,
 				916EC5541E667511001E7595 /* NSKeyValueNestedProperty.h */,
 				916EC5551E667511001E7595 /* NSKeyValueNestedProperty.m */,
+				916EC55A1E667511001E7595 /* NSKeyValueProperty.h */,
+				916EC55B1E667511001E7595 /* NSKeyValueProperty.m */,
+				916EC55E1E667511001E7595 /* NSKeyValueUnnestedProperty.h */,
+				916EC55F1E667511001E7595 /* NSKeyValueUnnestedProperty.m */,
+				916EC54E1E667511001E7595 /* NSKeyValueChangeDictionary.h */,
+				916EC54F1E667511001E7595 /* NSKeyValueChangeDictionary.m */,
+				916EC5521E667511001E7595 /* NSKeyValueContainerClass.h */,
+				916EC5531E667511001E7595 /* NSKeyValueContainerClass.m */,
 				916EC5561E667511001E7595 /* NSKeyValueObservance.h */,
 				916EC5571E667511001E7595 /* NSKeyValueObservance.m */,
 				916EC5581E667511001E7595 /* NSKeyValueObservationInfo.h */,
 				916EC5591E667511001E7595 /* NSKeyValueObservationInfo.m */,
-				916EC55A1E667511001E7595 /* NSKeyValueProperty.h */,
-				916EC55B1E667511001E7595 /* NSKeyValueProperty.m */,
 				916EC55C1E667511001E7595 /* NSKeyValuePropertyCreate.h */,
 				916EC55D1E667511001E7595 /* NSKeyValuePropertyCreate.m */,
-				916EC55E1E667511001E7595 /* NSKeyValueUnnestedProperty.h */,
-				916EC55F1E667511001E7595 /* NSKeyValueUnnestedProperty.m */,
-				916EC5601E667511001E7595 /* NSKVOSetAndNotify.h */,
-				916EC5611E667511001E7595 /* NSKVOSetAndNotify.m */,
-				916EC5621E667511001E7595 /* NSKVOUtility.h */,
-				916EC5631E667511001E7595 /* NSKVOUtility.m */,
+				916EC5601E667511001E7595 /* NSSetValueAndNotify.h */,
+				916EC5611E667511001E7595 /* NSSetValueAndNotify.m */,
 				916EC5641E667511001E7595 /* NSObject+NSKeyValueObserverNotification.h */,
 				916EC5651E667511001E7595 /* NSObject+NSKeyValueObserverNotification.m */,
 				916EC5661E667511001E7595 /* NSObject+NSKeyValueObserverRegistration.h */,
@@ -568,7 +563,7 @@
 				916EC59C1E667511001E7595 /* NSKeyValueChangeDictionary.m in Sources */,
 				9177885E1E6F9FFD00715DA8 /* NSKeyValueNonmutatingOrderedSetMethodSet.m in Sources */,
 				91958A701E779881004A7000 /* NSNull+NSKeyValueCoding.m in Sources */,
-				916EC5A51E667511001E7595 /* NSKVOSetAndNotify.m in Sources */,
+				916EC5A51E667511001E7595 /* NSSetValueAndNotify.m in Sources */,
 				917788711E6F9FFD00715DA8 /* NSKeyValueSet.m in Sources */,
 				916EC5791E667511001E7595 /* NSKeyValueAccessor.m in Sources */,
 				917788631E6F9FFD00715DA8 /* NSKeyValueFastMutableArray.m in Sources */,
@@ -593,7 +588,6 @@
 				917788731E6F9FFD00715DA8 /* NSKeyValueSlowMutableSet.m in Sources */,
 				917788641E6F9FFD00715DA8 /* NSKeyValueFastMutableSet.m in Sources */,
 				917788681E6F9FFD00715DA8 /* NSKeyValueMutableOrderedSet.m in Sources */,
-				916EC5A61E667511001E7595 /* NSKVOUtility.m in Sources */,
 				91958A6D1E77978C004A7000 /* NSUserDefaults+NSKeyValueCoding.m in Sources */,
 				9177886F1E6F9FFD00715DA8 /* NSKeyValueProxyCaching.m in Sources */,
 				916EC5A41E667511001E7595 /* NSKeyValueUnnestedProperty.m in Sources */,

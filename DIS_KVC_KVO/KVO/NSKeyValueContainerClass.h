@@ -17,19 +17,21 @@ typedef struct NSKeyValueNotifyingInfo {
     Class originalClass;
     Class containerClass;
     CFMutableSetRef keys;
-    CFMutableDictionaryRef selMap;
+    CFMutableDictionaryRef selKeyMap;
     pthread_mutex_t mutex;
     BOOL flag;
 }NSKeyValueNotifyingInfo;
 
 #define ISKVOASelector NSSelectorFromString(@"_isKVOA")
 
-NSKeyValueNotifyingInfo *_NSKVONotifyingCreateInfoWithOriginalClass(Class originalClass) ;
 NSKeyValueNotifyingInfo *_NSKeyValueContainerClassGetNotifyingInfo(NSKeyValueContainerClass *containerClass);
-Class _NSKVONotifyingOriginalClassForIsa(Class isa);
+void NSKVONotifyingSetMethodImplementation(NSKeyValueNotifyingInfo *info, SEL sel, IMP imp, NSString *key);
+NSKeyValueNotifyingInfo *_NSKVONotifyingCreateInfoWithOriginalClass(Class originalClass) ;
 BOOL _NSKVONotifyingMutatorsShouldNotifyForIsaAndKey(Class isa, NSString *key);
 NSKeyValueContainerClass * _NSKeyValueContainerClassForIsa(Class isa);
+Class _NSKVONotifyingOriginalClassForIsa(Class isa);
 BOOL NSKVOIsAutonotifying();
+
 
 @interface NSKeyValueContainerClass : NSObject
 

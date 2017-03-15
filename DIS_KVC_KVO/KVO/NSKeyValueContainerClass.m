@@ -109,7 +109,7 @@ void _NSKeyValueRemoveObservationInfoForObject(id object, NSKeyValueObservationI
     if(!NSKeyValueObservationInfoPerObject) {
         NSKeyValueObservationInfoPerObject = CFDictionaryCreateMutable(NULL, 0, NULL, NULL);
     }
-    CFDictionaryRemoveValue(NSKeyValueObservationInfoPerObject, ~(NSUInteger)(void *)object);
+    CFDictionaryRemoveValue(NSKeyValueObservationInfoPerObject, (void*)~(NSUInteger)(void *)object);
     os_lock_unlock(&NSKeyValueObservationInfoSpinLock);
 }
 
@@ -174,7 +174,9 @@ void NSKVONotifyingSetMethodImplementation(NSKeyValueNotifyingInfo *info, SEL se
     if (m) {
         if (key) {
             pthread_mutex_lock(&info->mutex);
-            CFDictionarySetValue(info->selMap,key, sel);
+            
+            CFDictionarySetValue(info->selKeyMap,sel, key);
+            
             pthread_mutex_unlock(&info->mutex);
         }
         const char *encoding = method_getTypeEncoding(m);
@@ -206,7 +208,7 @@ NSKeyValueNotifyingInfo *_NSKVONotifyingCreateInfoWithOriginalClass(Class origin
     notifyingInfo->containerClass = containerClass;
     
     notifyingInfo->keys = CFSetCreateMutable(NULL, 0, &kCFCopyStringSetCallBacks);
-    notifyingInfo->selMap = CFDictionaryCreateMutable(NULL, 0, NULL, &kCFTypeDictionaryValueCallBacks);
+    notifyingInfo->selKeyMap = CFDictionaryCreateMutable(NULL, 0, NULL, &kCFTypeDictionaryValueCallBacks);
     
     pthread_mutexattr_t mutexattr;
     pthread_mutexattr_init(&mutexattr);
@@ -264,7 +266,6 @@ BOOL _NSKVONotifyingMutatorsShouldNotifyForIsaAndKey(Class isa, NSString *key) {
 }
 
 NSKeyValueContainerClass * _NSKeyValueContainerClassForIsa(Class isa) {
-
     static void * isaCacheKey = NULL;
     static CFMutableDictionaryRef NSKeyValueContainerClassPerOriginalClass = NULL;
     static NSKeyValueContainerClass * cachedContainerClass = NULL;
