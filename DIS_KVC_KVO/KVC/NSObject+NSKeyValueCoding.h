@@ -15,5 +15,4 @@ extern CFMutableSetRef NSKeyValueCachedMutableArrayGetters;
 
 - (id)valueForKey:(NSString *)key;
 
-+ (NSKeyValueGetter *)_createMutableArrayValueGetterWithContainerClassID:(Class)containerClassID key:(NSString *)key;
 @end

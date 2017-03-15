@@ -9,6 +9,7 @@
 #import <Foundation/Foundation.h>
 #import <stdarg.h>
 
+extern void _CF_forwarding_prep_0(void *);
 
 static inline NSUInteger _NSKVOPointersHash(NSInteger count,...) {
     void *pointers[count];

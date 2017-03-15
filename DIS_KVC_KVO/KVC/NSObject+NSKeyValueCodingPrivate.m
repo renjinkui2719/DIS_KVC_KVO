@@ -7,7 +7,6 @@
 //
 
 #import "NSobject+NSKeyValueCodingPrivate.h"
-#import <objc/runtime.h>
 #import "NSKeyValueCollectionGetter.h"
 #import "NSKeyValueMethodGetter.h"
 #import "NSKeyValueIvarGetter.h"
@@ -23,6 +22,11 @@
 #import "NSKeyValueSet.h"
 #import "NSKeyValueArray.h"
 #import "NSKeyValueOrderedSet.h"
+#import "NSKeyValueSlowMutableArray.h"
+#import "NSKeyValueIvarMutableArray.h"
+#import "NSKeyValueFastMutableArray.h"
+#import "NSKeyValueMutatingArrayMethodSet.h"
+#import "NSKeyValueNotifyingMutableArray.h"
 #import "NSKeyValueFastMutableOrderedSet.h"
 #import "NSKeyValueIvarMutableOrderedSet.h"
 #import "NSKeyValueSlowMutableOrderedSet.h"
@@ -38,25 +42,22 @@
 #import "NSKeyValueSlowMutableSet.h"
 #import "NSKeyValueContainerClass.h"
 #import <pthread.h>
+#import <os/lock.h>
+#import <objc/runtime.h>
 
+CFMutableSetRef NSKeyValueCachedMutableArrayGetters = NULL;
 CFMutableSetRef NSKeyValueCachedMutableOrderedSetGetters = NULL;
 CFMutableSetRef NSKeyValueCachedMutableSetGetters = NULL;
+CFMutableSetRef NSKeyValueCachedPrimitiveSetters = NULL;
+CFMutableSetRef NSKeyValueCachedPrimitiveGetters = NULL;
 
-extern CFMutableSetRef NSKeyValueCachedGetters;
-extern CFMutableSetRef NSKeyValueCachedSetters;
+
+
 extern OSSpinLock NSKeyValueCachedAccessorSpinLock;
 extern BOOL __UsePedanticKVCNilKeyBehavior_throwOnNil;
 extern dispatch_once_t pedanticKVCKeyOnce;
 
 extern void NSKeyValueObservingAssertRegistrationLockNotHeld();
-
-void NSKeyValueCacheAccessLock() {
-    OSSpinLockLock(&NSKeyValueCachedAccessorSpinLock);
-}
-
-void NSKeyValueCacheAccessUnlock() {
-    OSSpinLockUnlock(&NSKeyValueCachedAccessorSpinLock);
-}
 
 id _NSGetUsingKeyValueGetter(id object, NSKeyValueGetter *getter) {
     NSKeyValueObservingAssertRegistrationLockNotHeld();
@@ -123,6 +124,267 @@ Ivar NSKeyValueIvarForPattern(Class class, const char *pattern,const char *param
 }
 
 
+NSKeyValueSetter * _NSKeyValueSetterForClassAndKey(Class containerClassID, NSString *key, Class class){
+    OSSpinLockLock(&NSKeyValueCachedAccessorSpinLock);
+    if (!NSKeyValueCachedSetters) {
+        CFSetCallBacks callbacks = {0};
+        callbacks.version = kCFTypeSetCallBacks.version;
+        callbacks.retain = kCFTypeSetCallBacks.retain;
+        callbacks.release = kCFTypeSetCallBacks.release;
+        callbacks.copyDescription = kCFTypeSetCallBacks.copyDescription;
+        callbacks.equal = (CFSetEqualCallBack)NSKeyValueAccessorIsEqual;
+        callbacks.hash = (CFSetHashCallBack)NSKeyValueAccessorHash;
+        NSKeyValueCachedSetters = CFSetCreateMutable(NULL,0,&callbacks);
+    }
+    
+    NSKeyValueSetter *finder = [NSKeyValueSetter new];
+    finder.containerClassID = containerClassID;
+    finder.key = key;
+    finder.hashValue = (key ? CFHash(key) : 0) ^ (NSUInteger)containerClassID;
+    NSKeyValueSetter *setter =  CFSetGetValue(NSKeyValueCachedSetters, finder);
+    if (!setter) {
+        setter = [class _createValueSetterWithContainerClassID:containerClassID key:key];
+        CFSetAddValue(NSKeyValueCachedSetters, setter);
+        [setter release];
+    }
+    OSSpinLockUnlock(&NSKeyValueCachedAccessorSpinLock);
+    return setter;
+}
+
+NSKeyValueGetter * _NSKeyValueGetterForClassAndKey(Class containerClassID, NSString *key, Class class){
+    OSSpinLockLock(&NSKeyValueCachedAccessorSpinLock);
+    if (!NSKeyValueCachedGetters) {
+        CFSetCallBacks callbacks = {0};
+        callbacks.version = kCFTypeSetCallBacks.version;
+        callbacks.retain = kCFTypeSetCallBacks.retain;
+        callbacks.release = kCFTypeSetCallBacks.release;
+        callbacks.copyDescription = kCFTypeSetCallBacks.copyDescription;
+        callbacks.equal = (CFSetEqualCallBack)NSKeyValueAccessorIsEqual;
+        callbacks.hash = (CFSetHashCallBack)NSKeyValueAccessorHash;
+        NSKeyValueCachedGetters = CFSetCreateMutable(NULL,0,&callbacks);
+    }
+    
+    NSKeyValueSetter *finder = [NSKeyValueSetter new];
+    finder.containerClassID = containerClassID;
+    finder.key = key;
+    finder.hashValue = (key ? CFHash(key) : 0) ^ (NSUInteger)containerClassID;
+    NSKeyValueGetter *getter =  CFSetGetValue(NSKeyValueCachedGetters, finder);
+    if (!getter) {
+        getter = [class _createValueGetterWithContainerClassID:containerClassID key:key];
+        CFSetAddValue(NSKeyValueCachedGetters, getter);
+        [getter release];
+    }
+    OSSpinLockUnlock(&NSKeyValueCachedAccessorSpinLock);
+    return getter;
+}
+
+NSKeyValueSetter * _NSKeyValuePrimitiveSetterForClassAndKey(Class containerClassID, NSString *key, Class class) {
+    OSSpinLockLock(&NSKeyValueCachedAccessorSpinLock);
+    if (!NSKeyValueCachedPrimitiveSetters) {
+        CFSetCallBacks callbacks = {0};
+        callbacks.version = kCFTypeSetCallBacks.version;
+        callbacks.retain = kCFTypeSetCallBacks.retain;
+        callbacks.release = kCFTypeSetCallBacks.release;
+        callbacks.copyDescription = kCFTypeSetCallBacks.copyDescription;
+        callbacks.equal = (CFSetEqualCallBack)NSKeyValueAccessorIsEqual;
+        callbacks.hash = (CFSetHashCallBack)NSKeyValueAccessorHash;
+        NSKeyValueCachedPrimitiveSetters = CFSetCreateMutable(NULL,0,&callbacks);
+    }
+    
+    NSKeyValueSetter *finder = [NSKeyValueSetter new];
+    finder.containerClassID = containerClassID;
+    finder.key = key;
+    finder.hashValue = (key ? CFHash(key) : 0) ^ (NSUInteger)containerClassID;
+    NSKeyValueSetter *setter =  CFSetGetValue(NSKeyValueCachedPrimitiveSetters, finder);
+    if (!setter) {
+        setter = [class _createValuePrimitiveSetterWithContainerClassID:containerClassID key:key];
+        CFSetAddValue(NSKeyValueCachedPrimitiveSetters, setter);
+        [setter release];
+    }
+    OSSpinLockUnlock(&NSKeyValueCachedAccessorSpinLock);
+    return setter;
+}
+
+NSKeyValueGetter * _NSKeyValuePrimitiveGetterForClassAndKey(Class containerClassID, NSString *key, Class class) {
+    OSSpinLockLock(&NSKeyValueCachedAccessorSpinLock);
+    if (!NSKeyValueCachedPrimitiveGetters) {
+        CFSetCallBacks callbacks = {0};
+        callbacks.version = kCFTypeSetCallBacks.version;
+        callbacks.retain = kCFTypeSetCallBacks.retain;
+        callbacks.release = kCFTypeSetCallBacks.release;
+        callbacks.copyDescription = kCFTypeSetCallBacks.copyDescription;
+        callbacks.equal = (CFSetEqualCallBack)NSKeyValueAccessorIsEqual;
+        callbacks.hash = (CFSetHashCallBack)NSKeyValueAccessorHash;
+        NSKeyValueCachedPrimitiveGetters = CFSetCreateMutable(NULL,0,&callbacks);
+    }
+    
+    NSKeyValueSetter *finder = [NSKeyValueSetter new];
+    finder.containerClassID = containerClassID;
+    finder.key = key;
+    finder.hashValue = (key ? CFHash(key) : 0) ^ (NSUInteger)containerClassID;
+    NSKeyValueGetter *getter =  CFSetGetValue(NSKeyValueCachedPrimitiveGetters, finder);
+    if (!getter) {
+        getter = [class _createValuePrimitiveGetterWithContainerClassID:containerClassID key:key];
+        CFSetAddValue(NSKeyValueCachedPrimitiveGetters, getter);
+        [getter release];
+    }
+    OSSpinLockUnlock(&NSKeyValueCachedAccessorSpinLock);
+    return getter;
+}
+
+
+NSKeyValueGetter * _NSKeyValueMutableSetGetterForClassAndKey(Class containerClassID, NSString *key, Class class) {
+    OSSpinLockLock(&NSKeyValueCachedAccessorSpinLock);
+    if (!NSKeyValueCachedMutableSetGetters) {
+        CFSetCallBacks callbacks = {0};
+        callbacks.version = kCFTypeSetCallBacks.version;
+        callbacks.retain = kCFTypeSetCallBacks.retain;
+        callbacks.release = kCFTypeSetCallBacks.release;
+        callbacks.copyDescription = kCFTypeSetCallBacks.copyDescription;
+        callbacks.equal = (CFSetEqualCallBack)NSKeyValueAccessorIsEqual;
+        callbacks.hash = (CFSetHashCallBack)NSKeyValueAccessorHash;
+        NSKeyValueCachedMutableSetGetters = CFSetCreateMutable(NULL,0,&callbacks);
+    }
+    
+    NSKeyValueSetter *finder = [NSKeyValueSetter new];
+    finder.containerClassID = containerClassID;
+    finder.key = key;
+    finder.hashValue = (key ? CFHash(key) : 0) ^ (NSUInteger)containerClassID;
+    NSKeyValueGetter *getter =  CFSetGetValue(NSKeyValueCachedMutableSetGetters, finder);
+    if (!getter) {
+        getter = [class _createMutableSetValueGetterWithContainerClassID:containerClassID key:key];
+        CFSetAddValue(NSKeyValueCachedMutableSetGetters, getter);
+        [getter release];
+    }
+    OSSpinLockUnlock(&NSKeyValueCachedAccessorSpinLock);
+    return getter;
+}
+
+NSKeyValueGetter * _NSKeyValueMutableOrderedSetGetterForIsaAndKey(Class containerClassID, NSString *key) {
+    OSSpinLockLock(&NSKeyValueCachedAccessorSpinLock);
+    if (!NSKeyValueCachedMutableOrderedSetGetters) {
+        CFSetCallBacks callbacks = {0};
+        callbacks.version = kCFTypeSetCallBacks.version;
+        callbacks.retain = kCFTypeSetCallBacks.retain;
+        callbacks.release = kCFTypeSetCallBacks.release;
+        callbacks.copyDescription = kCFTypeSetCallBacks.copyDescription;
+        callbacks.equal = (CFSetEqualCallBack)NSKeyValueAccessorIsEqual;
+        callbacks.hash = (CFSetHashCallBack)NSKeyValueAccessorHash;
+        NSKeyValueCachedMutableOrderedSetGetters = CFSetCreateMutable(NULL,0,&callbacks);
+    }
+    
+    NSKeyValueSetter *finder = [NSKeyValueSetter new];
+    finder.containerClassID = containerClassID;
+    finder.key = key;
+    finder.hashValue = (key ? CFHash(key) : 0) ^ (NSUInteger)containerClassID;
+    NSKeyValueGetter *getter =  CFSetGetValue(NSKeyValueCachedMutableOrderedSetGetters, finder);
+    if (!getter) {
+        getter = [containerClassID _createMutableOrderedSetValueGetterWithContainerClassID:containerClassID key:key];
+        CFSetAddValue(NSKeyValueCachedMutableOrderedSetGetters, getter);
+        [getter release];
+    }
+    OSSpinLockUnlock(&NSKeyValueCachedAccessorSpinLock);
+    return getter;
+}
+
+NSKeyValueGetter * _NSKeyValueMutableArrayGetterForIsaAndKey(Class containerClassID, NSString *key) {
+    OSSpinLockLock(&NSKeyValueCachedAccessorSpinLock);
+    if(!NSKeyValueCachedMutableArrayGetters) {
+        CFSetCallBacks callbacks = {0};
+        callbacks.version = kCFTypeSetCallBacks.version;
+        callbacks.retain = kCFTypeSetCallBacks.retain;
+        callbacks.release = kCFTypeSetCallBacks.release;
+        callbacks.copyDescription = kCFTypeSetCallBacks.copyDescription;
+        callbacks.equal = (CFSetEqualCallBack)NSKeyValueAccessorIsEqual;
+        callbacks.hash = (CFSetHashCallBack)NSKeyValueAccessorHash;
+        NSKeyValueCachedMutableArrayGetters = CFSetCreateMutable(NULL,0,&callbacks);
+    }
+    NSKeyValueSetter *finder = [NSKeyValueSetter new];
+    finder.containerClassID = containerClassID;
+    finder.key = key;
+    finder.hashValue = (key ? CFHash(key) : 0) ^ (NSUInteger)containerClassID;
+    NSKeyValueGetter *getter =  CFSetGetValue(NSKeyValueCachedMutableArrayGetters, finder);
+    if (!getter) {
+        getter = [containerClassID _createMutableArrayValueGetterWithContainerClassID:containerClassID key:key];
+        CFSetAddValue(NSKeyValueCachedMutableArrayGetters, getter);
+        [getter release];
+    }
+    OSSpinLockUnlock(&NSKeyValueCachedAccessorSpinLock);
+    return getter;
+}
+
+void _NSKeyValueInvalidateCachedMutatorsForIsaAndKey(Class isa, NSString *key) {
+    OSSpinLockLock(&NSKeyValueCachedAccessorSpinLock);
+    NSUInteger hashValue = 0;
+    if(key) {
+        hashValue = CFHash(key);
+    }
+    hashValue ^= (NSUInteger)isa;
+    
+    NSKeyValueSetter *finder = [NSKeyValueSetter new];
+    finder.containerClassID = isa;
+    finder.key = key;
+    finder.hashValue = hashValue;
+    
+    if(NSKeyValueCachedSetters) {
+        id find = CFSetGetValue(NSKeyValueCachedSetters, finder);
+        if(find) {
+            CFSetRemoveValue(NSKeyValueCachedSetters, find);
+        }
+    }
+    if(NSKeyValueCachedMutableArrayGetters) {
+        id find = CFSetGetValue(NSKeyValueCachedMutableArrayGetters, finder);
+        if(find) {
+            CFSetRemoveValue(NSKeyValueCachedMutableArrayGetters, find);
+        }
+    }
+    if(NSKeyValueCachedMutableOrderedSetGetters) {
+        id find = CFSetGetValue(NSKeyValueCachedMutableOrderedSetGetters, finder);
+        if(find) {
+            CFSetRemoveValue(NSKeyValueCachedMutableOrderedSetGetters, find);
+        }
+    }
+    if(NSKeyValueCachedMutableSetGetters) {
+        id find = CFSetGetValue(NSKeyValueCachedMutableSetGetters, finder);
+        if(find) {
+            CFSetRemoveValue(NSKeyValueCachedMutableSetGetters, find);
+        }
+    }
+    OSSpinLockUnlock(&NSKeyValueCachedAccessorSpinLock);
+}
+
+
+void _NSKeyValueInvalidateAllCachesForContainerAndKey(Class containerClassID, NSString *key) {
+    OSSpinLockLock(&NSKeyValueCachedAccessorSpinLock);
+    NSUInteger hashValue = 0;
+    if(key) {
+        hashValue = CFHash(key);
+    }
+    hashValue ^= (NSUInteger)containerClassID;
+    
+    NSKeyValueSetter *finder = [NSKeyValueSetter new];
+    finder.containerClassID = containerClassID;
+    finder.key = key;
+    finder.hashValue = hashValue;
+    
+    CFMutableSetRef accessorCaches[] = {
+        NSKeyValueCachedGetters,
+        NSKeyValueCachedSetters,
+        NSKeyValueCachedMutableArrayGetters,
+        NSKeyValueCachedMutableOrderedSetGetters,
+        NSKeyValueCachedMutableSetGetters,
+        NSKeyValueCachedPrimitiveGetters,
+        NSKeyValueCachedPrimitiveSetters
+    };
+    
+    for (NSUInteger i=0; i < sizeof(accessorCaches)/sizeof(accessorCaches[0]); ++i) {
+        if (accessorCaches[i]) {
+            CFSetRemoveValue(accessorCaches[i], finder);
+        }
+    }
+    
+    OSSpinLockUnlock(&NSKeyValueCachedAccessorSpinLock);
+}
 
 @implementation NSObject (NSKeyValueCodingPrivate)
 
@@ -325,8 +587,6 @@ Ivar NSKeyValueIvarForPattern(Class class, const char *pattern,const char *param
 }
 
 
-
-
 + (NSKeyValueGetter *)_createMutableSetValueGetterWithContainerClassID:(id)containerClassID key:(NSString *)key {
     if(_NSKVONotifyingMutatorsShouldNotifyForIsaAndKey(self,key)) {
         Class originClass = _NSKVONotifyingOriginalClassForIsa(self);
@@ -469,6 +729,131 @@ Ivar NSKeyValueIvarForPattern(Class class, const char *pattern,const char *param
     }
 }
 
+
++ (NSKeyValueGetter *)_createMutableArrayValueGetterWithContainerClassID:(Class)containerClassID key:(NSString *)key {
+    if(_NSKVONotifyingMutatorsShouldNotifyForIsaAndKey(self, key)) {
+        Class originalClass = _NSKVONotifyingOriginalClassForIsa(self);
+        if(!NSKeyValueCachedMutableArrayGetters) {
+            CFSetCallBacks callbacks = {0};
+            callbacks.version = kCFTypeSetCallBacks.version;
+            callbacks.retain = kCFTypeSetCallBacks.retain;
+            callbacks.release = kCFTypeSetCallBacks.release;
+            callbacks.copyDescription = kCFTypeSetCallBacks.copyDescription;
+            callbacks.equal = (CFSetEqualCallBack)NSKeyValueAccessorIsEqual;
+            callbacks.hash = (CFSetHashCallBack)NSKeyValueAccessorHash;
+            NSKeyValueCachedMutableArrayGetters = CFSetCreateMutable(NULL, 0, &callbacks);
+        }
+        NSUInteger hashValue = 0;
+        if(key) {
+            hashValue = CFHash((CFTypeRef)key);
+        }
+        hashValue ^= (NSUInteger)originalClass;
+        
+        NSKeyValueGetter *finder = [NSKeyValueGetter new];
+        finder.containerClassID = originalClass;
+        finder.key = key;
+        finder.hashValue = hashValue;
+        
+        NSKeyValueGetter *getter = CFSetGetValue(NSKeyValueCachedMutableArrayGetters, finder);
+        if(!getter) {
+            getter = [originalClass _createMutableArrayValueGetterWithContainerClassID:originalClass key:key];
+            CFSetAddValue(NSKeyValueCachedMutableArrayGetters, getter);
+            [getter release];
+        }
+        
+        return [[NSKeyValueNotifyingMutableCollectionGetter alloc] initWithContainerClassID:containerClassID key:key mutableCollectionGetter:getter proxyClass:NSKeyValueNotifyingMutableArray.self];
+    }
+    else {
+        NSUInteger keyLength = [key lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
+        char keyCStr[keyLength + 1];
+        [key getCString:keyCStr maxLength:keyLength + 1 encoding:NSUTF8StringEncoding];
+        if(key.length) {
+            keyCStr[0] = toupper(keyCStr[0]);
+        }
+        if(!NSKeyValueCachedGetters) {
+            CFSetCallBacks callbacks = {0};
+            callbacks.version = kCFTypeSetCallBacks.version;
+            callbacks.retain = kCFTypeSetCallBacks.retain;
+            callbacks.release = kCFTypeSetCallBacks.release;
+            callbacks.copyDescription = kCFTypeSetCallBacks.copyDescription;
+            callbacks.equal = (CFSetEqualCallBack)NSKeyValueAccessorIsEqual;
+            callbacks.hash = (CFSetHashCallBack)NSKeyValueAccessorHash;
+            NSKeyValueCachedGetters = CFSetCreateMutable(NULL,0,&callbacks);
+        }
+        
+        NSUInteger hashValue = 0;
+        if(key) {
+            hashValue = CFHash(key);
+        }
+        hashValue ^= (NSUInteger)self;
+        
+        NSKeyValueGetter *finder = [NSKeyValueGetter new];
+        finder.containerClassID = self;
+        finder.key = key;
+        finder.hashValue = hashValue;
+        
+        NSKeyValueGetter *getter =  CFSetGetValue(NSKeyValueCachedGetters,finder);
+        if(!getter) {
+            getter = [self _createValueGetterWithContainerClassID:self key:key];
+            CFSetAddValue(NSKeyValueCachedGetters, getter);
+            [getter release];
+        }
+        
+        Method insertObjectAtIndexMethod = NSKeyValueMethodForPattern(self,"insertObject:in%sAtIndex:", keyCStr);
+        Method insertObjectsAtIndexesMethod = NSKeyValueMethodForPattern(self,"insert%s:atIndexes:", keyCStr);
+        Method removeObjectAtIndexMethod = NSKeyValueMethodForPattern(self,"removeObjectFrom%sAtIndex:", keyCStr);
+        Method removeObjectsAtIndexesMethod = NSKeyValueMethodForPattern(self,"remove%sAtIndexes:", keyCStr);
+        
+        if((!insertObjectAtIndexMethod && !insertObjectsAtIndexesMethod) || (!removeObjectAtIndexMethod && !removeObjectsAtIndexesMethod)) {
+            if(!NSKeyValueCachedSetters) {
+                CFSetCallBacks callbacks = {0};
+                callbacks.version = kCFTypeSetCallBacks.version;
+                callbacks.retain = kCFTypeSetCallBacks.retain;
+                callbacks.release = kCFTypeSetCallBacks.release;
+                callbacks.copyDescription = kCFTypeSetCallBacks.copyDescription;
+                callbacks.equal = (CFSetEqualCallBack)NSKeyValueAccessorIsEqual;
+                callbacks.hash = (CFSetHashCallBack)NSKeyValueAccessorHash;
+                NSKeyValueCachedSetters = CFSetCreateMutable(NULL,0,&callbacks);
+            }
+            NSKeyValueSetter *finder = [NSKeyValueSetter new];
+            finder.containerClassID = self.class;
+            finder.key = key;
+            finder.hashValue = CFHash((CFTypeRef)key) ^ (NSUInteger)(self);
+            NSKeyValueSetter *setter =  CFSetGetValue(NSKeyValueCachedSetters, finder);
+            if (!setter) {
+                setter = [self.class _createValueSetterWithContainerClassID:self.class key:key];
+                CFSetAddValue(NSKeyValueCachedSetters, setter);
+                [setter release];
+            }
+            if([setter isKindOfClass:NSKeyValueIvarSetter.self]) {
+                return [[NSKeyValueIvarMutableCollectionGetter alloc] initWithContainerClassID:containerClassID key:key containerIsa:self ivar:((NSKeyValueIvarSetter *)setter).ivar proxyClass:NSKeyValueIvarMutableArray.self];
+            }
+            else {
+                return [[NSKeyValueSlowMutableCollectionGetter alloc] initWithContainerClassID:containerClassID key:key baseGetter:getter baseSetter:setter containerIsa:self proxyClass:NSKeyValueSlowMutableArray.self];
+            }
+        }
+        else {
+            NSKeyValueMutatingArrayMethodSet *methodSet = [[NSKeyValueMutatingArrayMethodSet alloc] init];
+            methodSet.insertObjectAtIndex = insertObjectAtIndexMethod;
+            methodSet.insertObjectsAtIndexes = insertObjectsAtIndexesMethod;
+            methodSet.removeObjectAtIndex = removeObjectAtIndexMethod;
+            methodSet.removeObjectsAtIndexes = removeObjectsAtIndexesMethod;
+            methodSet.replaceObjectAtIndex = NSKeyValueMethodForPattern(self,"replaceObjectIn%sAtIndex:withObject:", keyCStr);
+            methodSet.replaceObjectsAtIndexes = NSKeyValueMethodForPattern(self,"replace%sAtIndexes:with%s:", keyCStr);
+            
+            if([getter isKindOfClass:NSKeyValueCollectionGetter.self]) {
+                NSKeyValueFastMutableCollection1Getter * collection1Getter = [[NSKeyValueFastMutableCollection1Getter alloc] initWithContainerClassID:containerClassID key:key nonmutatingMethods:((NSKeyValueCollectionGetter *)getter).methods mutatingMethods:methodSet proxyClass:NSKeyValueFastMutableArray1.self];
+                [methodSet release];
+                return collection1Getter;
+            }
+            else {
+                NSKeyValueFastMutableCollection2Getter *collection2Getter = [[NSKeyValueFastMutableCollection2Getter alloc] initWithContainerClassID:containerClassID key:key baseGetter:getter mutatingMethods:methodSet proxyClass:NSKeyValueFastMutableArray2.self];
+                [methodSet release];
+                return collection2Getter;
+            }
+        }
+    }
+}
 
 + (NSKeyValueGetter *)_createMutableOrderedSetValueGetterWithContainerClassID:(id)containerClassID key:(NSString *)key {
     if(_NSKVONotifyingMutatorsShouldNotifyForIsaAndKey(self,key)) {

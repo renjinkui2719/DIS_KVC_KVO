@@ -49,3 +49,4 @@ static inline id object_getIvarDirectly(id object, Ivar ivar) {
 static inline void object_setIvarDirectly(id object, Ivar ivar, id value) {
     *(id *)object_getIvarAddress(object, ivar) = value;
 }
+

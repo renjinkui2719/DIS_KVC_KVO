@@ -44,14 +44,26 @@ void _NSSetUnsignedLongLongValueAndNotify(id object,SEL selector, unsigned long 
 
 void _NSSetObjectValueAndNotify(id object,SEL selector, id value);
 
+
+
 void NSKVOInsertObjectAtIndexAndNotify(id object,SEL selector, id value, NSUInteger idx);
+
 void NSKVOInsertObjectsAtIndexesAndNotify(id object,SEL selector, id values, NSIndexSet *indexes);
+
 void NSKVORemoveObjectAtIndexAndNotify(id object,SEL selector, NSUInteger idx);
+
 void NSKVORemoveObjectsAtIndexesAndNotify(id object, SEL selector, NSIndexSet *indexes);
+
 void NSKVOReplaceObjectAtIndexAndNotify(id object,SEL selector, NSUInteger idx, id value);
+
 void NSKVOReplaceObjectsAtIndexesAndNotify(id object, SEL selector, NSIndexSet *indexes, id values);
+
 void NSKVOAddObjectAndNotify(id object, SEL selector, id value);
+
 void NSKVORemoveObjectAndNotify(id object, SEL selector, id value);
+
 void NSKVOIntersectSetAndNotify(id object, SEL selector, id values);
+
 void NSKVOMinusSetAndNotify(id object, SEL selector, id values);
+
 void NSKVOUnionSetAndNotify(id object, SEL selector, id values);

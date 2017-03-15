@@ -46,10 +46,7 @@ extern NSString * const NSKeyValueChangeOriginalObservableKey;
 
 - (id)objectForKey:(NSString *)aKey {
     if(aKey == NSKeyValueChangeKindKey) {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored"-Wdeprecated-declarations"
         NSKeyValueChangeKindCacheCheck();
-#pragma clang diagnostic pop
         return NSKeyValueChangeDictionaryNumberWithKind_numbersByKind[_details.kind];
     }
     else if(aKey == NSKeyValueChangeNewKey) {
@@ -69,10 +66,7 @@ extern NSString * const NSKeyValueChangeOriginalObservableKey;
     }
     else {
         if([aKey isEqualToString:NSKeyValueChangeKindKey]) {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored"-Wdeprecated-declarations"
             NSKeyValueChangeKindCacheCheck();
-#pragma clang diagnostic pop
             return NSKeyValueChangeDictionaryNumberWithKind_numbersByKind[_details.kind];
         }
         else if([aKey isEqualToString:NSKeyValueChangeNewKey]) {
