@@ -10,6 +10,17 @@
 #import <stdarg.h>
 
 extern void _CF_forwarding_prep_0(void *);
+extern void os_lock_lock(void *);
+extern void os_lock_unlock(void *);
+extern void *_CFGetTSD(uint32_t slot);
+extern void *_CFSetTSD(uint32_t slot, void *newVal, void (*destructor)(void *));
+extern void *NSAllocateScannedUncollectable(size_t);
+extern void *NSReallocateScannedUncollectable(void *, size_t);
+
+extern pthread_mutex_t _NSKeyValueObserverRegistrationLock;
+extern pthread_t _NSKeyValueObserverRegistrationLockOwner;
+extern OSSpinLock NSKeyValueObservationInfoCreationSpinLock;
+extern OSSpinLock NSKeyValueObservationInfoSpinLock;
 
 static inline NSUInteger _NSKVOPointersHash(NSInteger count,...) {
     void *pointers[count];

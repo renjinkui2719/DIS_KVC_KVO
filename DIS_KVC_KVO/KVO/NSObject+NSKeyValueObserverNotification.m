@@ -13,6 +13,7 @@
 #import "NSKeyValueProperty.h"
 #import "NSKeyValueChangeDictionary.h"
 #import "NSKeyValueContainerClass.h"
+#import "NSKeyValueObserverCommon.h"
 #import <pthread.h>
 #import <objc/runtime.h>
 
@@ -23,12 +24,7 @@ extern BOOL _NSKeyValueObserverRegistrationEnableLockingAssertions;
 extern dispatch_once_t isVMWare_onceToken;
 extern BOOL isVMWare_doWorkarounds;
 
-extern void os_lock_lock(void *);
-extern void os_lock_unlock(void *);
-extern void *_CFGetTSD(uint32_t slot);
-extern void *_CFSetTSD(uint32_t slot, void *newVal, void (*destructor)(void *));
-extern void *NSAllocateScannedUncollectable(size_t);
-extern void *NSReallocateScannedUncollectable(void *, size_t);
+
 
 
 @implementation NSObject (NSKeyValueObserverNotification)

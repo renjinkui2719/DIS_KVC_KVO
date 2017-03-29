@@ -8,6 +8,16 @@
 
 #import <Foundation/Foundation.h>
 
+extern CFMutableDictionaryRef NSKeyValueObservationInfoPerObject;
+extern CFMutableDictionaryRef NSKeyValueOldStyleDependenciesByClass;
+
+extern OSSpinLock NSKeyValueOldStyleDependenciesSpinLock;
+
 @interface NSObject (NSKeyValueObservingCustomization)
+
+- (void *)observationInfo;
+- (void)setObservationInfo:(void *)info ;
++ (id)keyPathsForValuesAffectingValueForKey:(NSString *)key;
++ (BOOL)automaticallyNotifiesObserversForKey:(NSString *)key;
 
 @end

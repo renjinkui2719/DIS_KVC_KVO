@@ -12,6 +12,7 @@
 #import <pthread.h>
 
 @class NSKeyValueContainerClass;
+@class NSKeyValueObservationInfo;
 
 typedef struct NSKeyValueNotifyingInfo {
     Class originalClass;
@@ -25,13 +26,22 @@ typedef struct NSKeyValueNotifyingInfo {
 #define ISKVOASelector NSSelectorFromString(@"_isKVOA")
 
 NSKeyValueNotifyingInfo *_NSKeyValueContainerClassGetNotifyingInfo(NSKeyValueContainerClass *containerClass);
+
 void NSKVONotifyingSetMethodImplementation(NSKeyValueNotifyingInfo *info, SEL sel, IMP imp, NSString *key);
+
 NSKeyValueNotifyingInfo *_NSKVONotifyingCreateInfoWithOriginalClass(Class originalClass);
+
 BOOL _NSKVONotifyingMutatorsShouldNotifyForIsaAndKey(Class isa, NSString *key);
+
 NSKeyValueContainerClass * _NSKeyValueContainerClassForIsa(Class isa);
-Class _NSKVONotifyingOriginalClassForIsa(Class isa);
-BOOL NSKVOIsAutonotifying();
+
 void _NSKVONotifyingEnableForInfoAndKey(NSKeyValueNotifyingInfo *info, NSString *key);
+
+NSKeyValueObservationInfo *_NSKeyValueRetainedObservationInfoForObject(id object, NSKeyValueContainerClass *containerClass) ;
+
+Class _NSKVONotifyingOriginalClassForIsa(Class isa);
+
+BOOL NSKVOIsAutonotifying();
 
 @interface NSKeyValueContainerClass : NSObject
 

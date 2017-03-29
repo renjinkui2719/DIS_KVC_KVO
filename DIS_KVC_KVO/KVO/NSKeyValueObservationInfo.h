@@ -39,6 +39,7 @@
 @end
 
 NSKeyValueObservationInfo *_NSKeyValueObservationInfoCreateByAdding(NSKeyValueObservationInfo *baseObservationInfo, id observer, NSKeyValueProperty *property, int options, void *context, id originalObservable,  BOOL *flag, NSKeyValueObservance **pObservance);
+NSKeyValueObservationInfo *_NSKeyValueObservationInfoCreateByRemoving(NSKeyValueObservationInfo *baseObservationInfo, id observer, NSKeyValueProperty *property, void *context, int options,  id originalObservable,  BOOL *fromCache, NSKeyValueObservance **pObservance);
 void _NSKeyValueReplaceObservationInfoForObject(id object, NSKeyValueContainerClass * containerClass, NSKeyValueObservationInfo *oldObservationInfo, NSKeyValueObservationInfo *newObservationInfo, void *unknowparam);
 NSUInteger _NSKeyValueObservationInfoGetObservanceCount(NSKeyValueObservationInfo *info) ;
 void _NSKeyValueObservationInfoGetObservances(NSKeyValueObservationInfo *info, NSKeyValueObservance *observances[], NSUInteger count) ;

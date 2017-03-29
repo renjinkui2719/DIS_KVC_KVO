@@ -9,28 +9,27 @@
 #import "NSObject+NSKeyValueObserverRegistration.h"
 #import "NSKeyValueProperty.h"
 #import "NSKeyValueContainerClass.h"
-#import "NSKeyValueComputedProperty.h"
-#import "NSKeyValueUnnestedProperty.h"
-#import "NSKeyValueNestedProperty.h"
 #import "NSKeyValueObservationInfo.h"
 #import "NSObject+NSKeyValueObservingPrivate.h"
 #import "NSObject+NSKeyValueObserverNotification.h"
 #import "NSKeyValueChangeDictionary.h"
 #import "NSKeyValuePropertyCreate.h"
-
+#import "NSKeyValueObserverCommon.h"
 #import <pthread.h>
 #import <objc/runtime.h>
 
-extern pthread_mutex_t _NSKeyValueObserverRegistrationLock;
-extern pthread_t _NSKeyValueObserverRegistrationLockOwner;
-extern CFDictionaryRef NSKeyValueObservationInfoPerObject;
-extern CFMutableSetRef NSKeyValueProperties;
+pthread_mutex_t _NSKeyValueObserverRegistrationLock = PTHREAD_MUTEX_INITIALIZER;
+pthread_t _NSKeyValueObserverRegistrationLockOwner = NULL;
 
-NSKeyValueProperty *NSKeyValuePropertyForIsaAndKeyPath(Class isa, NSString *keypath);
-NSKeyValueProperty * NSKeyValuePropertyForIsaAndKeyPathInner( Class isa, NSString *keyPath, CFMutableSetRef propertySet);
-extern void *_CFGetTSD(uint32_t slot);
-extern void *_CFSetTSD(uint32_t slot, void *newVal, void (*destructor)(void *));
-extern NSKeyValueObservationInfo *_NSKeyValueRetainedObservationInfoForObject(id object, NSKeyValueContainerClass *containerClass);
+void NSKeyValueObserverRegistrationLockUnlock() {
+    _NSKeyValueObserverRegistrationLockOwner = NULL;
+    pthread_mutex_unlock(&_NSKeyValueObserverRegistrationLock);
+}
+
+void NSKeyValueObserverRegistrationLockLock() {
+    pthread_mutex_lock(&_NSKeyValueObserverRegistrationLock);
+    _NSKeyValueObserverRegistrationLockOwner = pthread_self();
+}
 
 @implementation NSObject (NSKeyValueObserverRegistration)
 
@@ -38,8 +37,7 @@ extern NSKeyValueObservationInfo *_NSKeyValueRetainedObservationInfoForObject(id
     pthread_mutex_lock(&_NSKeyValueObserverRegistrationLock);
     _NSKeyValueObserverRegistrationLockOwner = pthread_self();
     
-    Class cls = object_getClass(self);
-    NSKeyValueProperty * property = NSKeyValuePropertyForIsaAndKeyPath(cls,keyPath);
+    NSKeyValueProperty * property = NSKeyValuePropertyForIsaAndKeyPath(self.class,keyPath);
     
     [self _addObserver:observer forProperty:property options:options context:context];
     
@@ -47,13 +45,72 @@ extern NSKeyValueObservationInfo *_NSKeyValueRetainedObservationInfoForObject(id
 }
 
 - (void)removeObserver:(NSObject *)observer forKeyPath:(NSString *)keyPath context:(nullable void *)context {
+    NSKeyValueObservingTSD *TSD = _CFGetTSD(NSKeyValueObservingTSDKey);
+    if (!TSD) {
+        TSD = (NSKeyValueObservingTSD *)NSAllocateScannedUncollectable(sizeof(NSKeyValueObservingTSD));
+        _CFSetTSD(NSKeyValueObservingTSDKey, TSD, NSKeyValueObservingTSDDestroy);
+    }
 
+    NSKeyValueObservingTSD backTSD = *(TSD);
+    TSD->implicitObservanceRemovalInfo.context = context;
+    TSD->implicitObservanceRemovalInfo.flag = YES;
+    
+    [self removeObserver:observer forKeyPath:keyPath];
+    
+    *(TSD) = backTSD;
 }
 
 - (void)removeObserver:(NSObject *)observer forKeyPath:(NSString *)keyPath {
-
+    pthread_mutex_lock(&_NSKeyValueObserverRegistrationLock);
+    _NSKeyValueObserverRegistrationLockOwner = pthread_self();
+    
+    NSKeyValueProperty * property = NSKeyValuePropertyForIsaAndKeyPath(self.class,keyPath);
+    
+    [self _removeObserver:observer forProperty:property];
+    
+    pthread_mutex_unlock(&_NSKeyValueObserverRegistrationLock);
 }
 
+- (void)_removeObserver:(id)observer forProperty:(NSKeyValueProperty *)property {
+    NSKeyValueObservationInfo *retainedObervationInfo = _NSKeyValueRetainedObservationInfoForObject(self, property.containerClass);
+    if (retainedObervationInfo) {
+        void *context = NULL;
+        BOOL flag = NO;
+        id originalObservable = nil;
+        BOOL fromCache = NO;
+        NSKeyValueObservance *observance = nil;
+        
+        NSKeyValueObservingTSD *TSD = _CFGetTSD(NSKeyValueObservingTSDKey);
+        if (TSD && TSD->implicitObservanceRemovalInfo.relationshipObject == self && TSD->implicitObservanceRemovalInfo.observer == observer && [TSD->implicitObservanceRemovalInfo.keyPathFromRelatedObject isEqualToString:property.keyPath]) {
+            originalObservable = TSD->implicitObservanceRemovalInfo.object;
+            context = TSD->implicitObservanceRemovalInfo.context;
+            flag = TSD->implicitObservanceRemovalInfo.flag;
+        }
+        NSKeyValueObservationInfo *createdObservationInfo = _NSKeyValueObservationInfoCreateByRemoving(retainedObervationInfo, observer, property, context, flag, originalObservable, &fromCache, &observance);
+        if (observance) {
+            [observance retain];
+            _NSKeyValueReplaceObservationInfoForObject(self, property.containerClass, retainedObervationInfo, createdObservationInfo, NULL);
+            [property object:self didRemoveObservance:observance recurse:YES];
+            if (!createdObservationInfo) {
+                if (self.class != property.containerClass.originalClass) {
+                    object_setClass(self, property.containerClass.originalClass);
+                }
+                //loc_5A1D8
+            }
+            else {
+                //loc_5A1D8
+            }
+            //loc_5A1D8
+            
+        }
+        else {
+            //loc_5A22A
+        }
+    }
+    else {
+        //loc_5A22D
+    }
+}
 
 - (void)_addObserver:(id)observer forProperty:(NSKeyValueProperty *)property options:(int)options context:(void *)context {
     if(options & NSKeyValueObservingOptionInitial) {
@@ -69,7 +126,6 @@ extern NSKeyValueObservationInfo *_NSKeyValueRetainedObservationInfoForObject(id
             }
         }
         
-        //loc_1C02D
         NSKeyValueChangeDictionary *changeDict = nil;
         NSKeyValueChangeDetails changeDetails = {0};
         changeDetails.kind = NSKeyValueChangeSetting;
@@ -80,15 +136,12 @@ extern NSKeyValueObservationInfo *_NSKeyValueRetainedObservationInfoForObject(id
         
         NSKeyValueNotifyObserver(observer,keyPath, self, context, nil, NO,changeDetails, &changeDict);
         
-        //loc_1C090
         [changeDict release];
         
         pthread_mutex_lock(&_NSKeyValueObserverRegistrationLock);
         _NSKeyValueObserverRegistrationLockOwner = pthread_self();
     }
     
-    //loc_1C0D0
-
     NSKeyValueObservationInfo *retainedObservInfo = _NSKeyValueRetainedObservationInfoForObject(self,property.containerClass);
     
     NSKeyValueObservingTSD *TSD = NULL;
@@ -124,12 +177,4 @@ extern NSKeyValueObservationInfo *_NSKeyValueRetainedObservationInfoForObject(id
 
 @end
 
-void NSKeyValueObserverRegistrationLockUnlock() {
-    _NSKeyValueObserverRegistrationLockOwner = NULL;
-    pthread_mutex_unlock(&_NSKeyValueObserverRegistrationLock);
-}
 
-void NSKeyValueObserverRegistrationLockLock() {
-    pthread_mutex_lock(&_NSKeyValueObserverRegistrationLock);
-    _NSKeyValueObserverRegistrationLockOwner = pthread_self();
-}

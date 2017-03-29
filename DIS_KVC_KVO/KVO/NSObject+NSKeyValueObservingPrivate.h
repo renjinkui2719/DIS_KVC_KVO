@@ -9,24 +9,25 @@
 #import <Foundation/Foundation.h>
 
 @class NSKeyValueObservance;
+@class NSKeyValueProperty;
 
 typedef struct {
-    id object;
-    NSKeyValueObservance *observance;
+    id object;//8
+    NSKeyValueObservance *observance;//c
 }ImplicitObservanceAdditionInfo;
 
 typedef struct {
-    id relationshipObject;
-    NSKeyValueObservance *observance;
-    NSString *keyPathFromRelatedObject;
-    id object;
-    NSKeyValueProperty *property;
-    BOOL flag;
+    id relationshipObject;//10
+    id observer;//14
+    NSString *keyPathFromRelatedObject;//18
+    id object;//1c
+    void *context;//20
+    BOOL flag;//24
 }ImplicitObservanceRemovalInfo;
 
 typedef struct {
-    CFMutableArrayRef pendingArray;
-    void *unknow1;
+    CFMutableArrayRef pendingArray;//0
+    void *unknow1;//4
     ImplicitObservanceAdditionInfo  implicitObservanceAdditionInfo;
     ImplicitObservanceRemovalInfo implicitObservanceRemovalInfo;
 }NSKeyValueObservingTSD;
@@ -51,4 +52,5 @@ extern const CFArrayCallBacks NSKVOPendingNotificationArrayCallbacks;
 - (void)_didChangeValuesForKeys:(id)keys;
 - (void)_willChangeValuesForKeys:(id)keys;
 + (BOOL)_shouldAddObservationForwardersForKey:(NSString *)key;
+
 @end

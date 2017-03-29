@@ -1,7 +1,7 @@
 #import "NSKeyValueObservance.h"
 #import "NSKeyValueProperty.h"
 #import "NSKeyValueChangeDictionary.h"
-#import "NSKVOUtility.h"
+#import "NSKeyValueObserverCommon.h"
 
 const NSString * const NSKeyValueChangeOriginalObservableKey = @"originalObservable";
 
@@ -18,9 +18,7 @@ void NSKVONotify(id, NSString *, id, NSDictionary *, void *);
         _options = options;
         _context = context;
         _originalObservable = originalObservable;
-        
-        BOOL flag =  ([observer isKindOfClass:[NSKeyValueObservance class]]);
-        _cachedIsShareable = (_cachedIsShareable & 0x7f) | ( (flag ? 0 : 1) <<  7);
+        _cachedIsShareable = !([observer isKindOfClass:[NSKeyValueObservance class]]);
     }
     return self;
 }

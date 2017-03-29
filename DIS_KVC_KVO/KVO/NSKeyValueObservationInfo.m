@@ -1,9 +1,9 @@
 #import "NSKeyValueObservationInfo.h"
 #import "NSKeyValueObservance.h"
 #import "NSKeyValueContainerClass.h"
-#import "NSKVOUtility.h"
 #import "NSObject+NSKeyValueObservingPrivate.h"
 #import "NSKeyValueCodingCommon.h"
+#import "NSKeyValueObserverCommon.h"
 #import <objc/runtime.h>
 
 
@@ -26,7 +26,7 @@
         else {
             for (NSUInteger i = 0; i < count; ++i) {
                 NSKeyValueObservance *observance = observances[i];
-                NSUInteger hash = _NSKVOPointersHash(4, (__bridge void *)observance.observer, (__bridge void *)observance.property,(void *)observance.context,(__bridge void *)observance.originalObservable);
+                NSUInteger hash = _NSKVOPointersHash(4, (void *)observance.observer, (void *)observance.property,(void *)observance.context,(void *)observance.originalObservable);
                 _cachedHash = (hash << (i & 0x1F)) | (hash >> (i & 0x1F));
                 if (!observance.cachedIsShareable) {
                     _cachedIsShareable = NO;
@@ -41,7 +41,7 @@
 
     NSKeyValueObservationInfo *copied = [[NSKeyValueObservationInfo alloc] init];
 
-    NSUInteger hash = _NSKVOPointersHash(4, (__bridge void *)observance.observer, (__bridge void *)observance.property,  (void *)_observances.count, (void *)observance.context);
+    NSUInteger hash = _NSKVOPointersHash(4, (void *)observance.observer, (void *)observance.property,  (void *)_observances.count, (void *)observance.context);
 
     unsigned char shift = (_observances.count & 0x1F);
     copied.cachedHash = (hash >> shift | hash << shift) ^ _cachedHash;
@@ -49,9 +49,6 @@
     NSUInteger result_count = _observances.count + 1;
 
     if (((NSInteger)result_count) < 0) {
-        /*
-         如果此时 _observances.count(无符号数)再加1，使得结果的最高位为1，此时对应的有符号数是负数, 则算作"too large", 引发异常
-         */
         [NSException raise:NSGenericException format:@"*** attempt to create a temporary id buffer which is too large or with a negative count (%lu) -- possibly data is corrupt",(NSUInteger)result_count];
     }
     else {
@@ -59,7 +56,7 @@
             result_count = 1;
         }
         if (result_count > 256) {
-            NSKeyValueObservance __unsafe_unretained **observance_objs = (NSKeyValueObservance __unsafe_unretained **)NSAllocateObjectArray(result_count);
+            NSKeyValueObservance **observance_objs = (NSKeyValueObservance **)NSAllocateObjectArray(result_count);
             if (!observance_objs) {
                 [NSException raise:NSMallocException format:@"*** attempt to create a temporary id buffer of length (%lu) failed",(NSUInteger)result_count];
             }
@@ -69,7 +66,7 @@
             NSFreeObjectArray(observance_objs);
         }
         else {
-            NSKeyValueObservance __unsafe_unretained *observance_objs[result_count];
+            NSKeyValueObservance *observance_objs[result_count];
             memset(observance_objs, 0, result_count);
             observance_objs[_observances.count] = observance;
             [_observances getObjects:observance_objs range:NSMakeRange(0, _observances.count)];
@@ -100,9 +97,9 @@
         return NO;
     }
     
-    NSKeyValueObservance __unsafe_unretained *observance_objs[_observances.count];
+    NSKeyValueObservance *observance_objs[_observances.count];
     [_observances getObjects:observance_objs range:NSMakeRange(0, _observances.count)];
-    NSKeyValueObservance __unsafe_unretained *other_observance_objs[_observances.count];
+    NSKeyValueObservance *other_observance_objs[_observances.count];
     [other.observances getObjects:other_observance_objs range:NSMakeRange(0, _observances.count)];
     
     for (NSUInteger i=0; i<_observances.count; ++i) {
@@ -118,7 +115,7 @@
 
 - (NSString *)description {
     NSMutableString *desc = [NSMutableString stringWithFormat:@"<%@ %p> (\n", self.class, self];
-    NSKeyValueObservance __unsafe_unretained *observance_objs[_observances.count];
+    NSKeyValueObservance *observance_objs[_observances.count];
     [_observances getObjects:observance_objs range:NSMakeRange(0, _observances.count)];
     for (NSUInteger i = 0 ;i < _observances.count; ++i) {
         NSKeyValueObservance *observance = observance_objs[i];
@@ -148,12 +145,12 @@ extern Class NSKeyValueShareableObservationInfoKeyIsa;
 extern NSHashTable *NSKeyValueShareableObservances;
 
 NSUInteger NSKeyValueShareableObservationInfoNSHTHash(const void * item, NSUInteger (* size)(const void * item)) {
-    NSKeyValueShareableObservationInfoKey *infoKey = (__bridge NSKeyValueShareableObservationInfoKey *)item;
+    NSKeyValueShareableObservationInfoKey *infoKey = (NSKeyValueShareableObservationInfoKey *)item;
     if(infoKey.class == NSKeyValueShareableObservationInfoKeyIsa) {
         if(infoKey.addingNotRemoving) {
             NSUInteger count = 0;
             if(infoKey.baseObservationInfo) {
-                count = CFArrayGetCount((__bridge CFArrayRef)infoKey.baseObservationInfo.observances);
+                count = CFArrayGetCount((CFArrayRef)infoKey.baseObservationInfo.observances);
                 count &= 0x1F;
             }
             NSUInteger hashValue =  _NSKVOPointersHash(4,infoKey.additionObserver,infoKey.additionProperty, infoKey.additionContext, infoKey.additionOriginalObservable);
@@ -163,21 +160,17 @@ NSUInteger NSKeyValueShareableObservationInfoNSHTHash(const void * item, NSUInte
         }
         else {
             if(infoKey.cachedHash == 0) {
-                NSUInteger count = CFArrayGetCount((__bridge CFArrayRef)infoKey.baseObservationInfo.observances);
-                NSKeyValueObservance __unsafe_unretained *observance_objs[count];
+                NSUInteger count = CFArrayGetCount((CFArrayRef)infoKey.baseObservationInfo.observances);
+                NSKeyValueObservance *observance_objs[count];
                 [infoKey.baseObservationInfo.observances getObjects:observance_objs range:NSMakeRange(0, count)];
                 NSUInteger hashValue = 0;
-                if(count) {
-                    NSUInteger i = 0;
-                    while(i != infoKey.removalObservanceIndex) {
+                for (NSUInteger i = 0; i < count; ++i) {
+                    if (i != infoKey.removalObservanceIndex) {
                         NSKeyValueObservance *observance = observance_objs[i];
                         NSUInteger hash =  _NSKVOPointersHash(4,observance.observer,observance.property, observance.context, observance.originalObservable);
                         hash = (hash << (i & 0x1f)) | (hash >> (i & 0x1f));
                         hash ^= hashValue;
                         hashValue = hash;
-                        if(++i == count) {
-                            break;
-                        }
                     }
                 }
                 return hashValue;
@@ -188,7 +181,7 @@ NSUInteger NSKeyValueShareableObservationInfoNSHTHash(const void * item, NSUInte
         }
     }
     else {
-        return ((__bridge NSKeyValueObservationInfo *)item).cachedHash;
+        return ((NSKeyValueObservationInfo *)item).cachedHash;
     }
 }
 
@@ -198,53 +191,50 @@ BOOL NSKeyValueShareableObservationInfoNSHTIsEqual(const void * item1, const voi
     }
     if(object_getClass((id)item1) == NSKeyValueShareableObservationInfoKeyIsa || object_getClass((id)item1) == NSKeyValueShareableObservationInfoKeyIsa) {
         NSKeyValueObservationInfo *info = nil;
-        NSKeyValueShareableObservationInfoKey *infoKey = nil;
-        if (object_getClass(( id)item1) == NSKeyValueShareableObservationInfoKeyIsa) {
+        NSKeyValueShareableObservationInfoKey *key = nil;
+        if (object_getClass((id)item1) == NSKeyValueShareableObservationInfoKeyIsa) {
             info = ( NSKeyValueObservationInfo *)item2;
-            infoKey = ( NSKeyValueShareableObservationInfoKey *)item1;
+            key = ( NSKeyValueShareableObservationInfoKey *)item1;
         }
         else {
             info = ( NSKeyValueObservationInfo *)item1;
-            infoKey = ( NSKeyValueShareableObservationInfoKey *)item2;
+            key = ( NSKeyValueShareableObservationInfoKey *)item2;
         }
         
-        if(infoKey.addingNotRemoving) {
-            NSUInteger base_observance_count = 0;
+        if(key.addingNotRemoving) {
+            NSUInteger observance_count_inkey = 0;
             NSUInteger observance_count = info.observances.count;
-            if(infoKey.baseObservationInfo) {
-                base_observance_count = infoKey.baseObservationInfo.observances.count;
+            if(key.baseObservationInfo) {
+                observance_count_inkey = key.baseObservationInfo.observances.count;
             }
-            if(observance_count == base_observance_count + 1) {
-                NSKeyValueObservance *__unsafe_unretained base_observance_objs[base_observance_count];
-                if(infoKey.baseObservationInfo) {
-                    [infoKey.baseObservationInfo.observances getObjects:base_observance_objs range:NSMakeRange(0, base_observance_count)];
+            if(observance_count == observance_count_inkey + 1) {
+                NSKeyValueObservance * observance_objs_inkey[observance_count_inkey];
+                if(key.baseObservationInfo) {
+                    [key.baseObservationInfo.observances getObjects:observance_objs_inkey range:NSMakeRange(0, observance_count_inkey)];
                 }
 
-                NSKeyValueObservance *__unsafe_unretained observance_objs[observance_count];
+                NSKeyValueObservance * observance_objs[observance_count];
                 [info.observances getObjects:observance_objs range:NSMakeRange(0, observance_count)];
                 
-                if(base_observance_count != 0) {
-                    NSUInteger i = 0;
-                    while(i < base_observance_count) {
-                        if(base_observance_objs[i] != observance_objs[i]) {
-                            return NO;
-                        }
-                        ++i;
+                for (NSUInteger i = 0; i < observance_count_inkey; ++i) {
+                    if (observance_objs_inkey[i] != observance_objs[i]) {
+                        return NO;
                     }
                 }
-                if(observance_objs[base_observance_count].property != infoKey.additionProperty) {
+   
+                if(observance_objs[observance_count_inkey].property != key.additionProperty) {
                     return NO;
                 }
-                if(observance_objs[base_observance_count].options != infoKey.additionOptions) {
+                if(observance_objs[observance_count_inkey].options != key.additionOptions) {
                     return NO;
                 }
-                if(observance_objs[base_observance_count].context != infoKey.additionContext) {
+                if(observance_objs[observance_count_inkey].context != key.additionContext) {
                     return NO;
                 }
-                if(observance_objs[base_observance_count].originalObservable != infoKey.additionOriginalObservable) {
+                if(observance_objs[observance_count_inkey].originalObservable != key.additionOriginalObservable) {
                     return NO;
                 }
-                if(observance_objs[base_observance_count].observer != infoKey.additionObserver) {
+                if(observance_objs[observance_count_inkey].observer != key.additionObserver) {
                     return NO;
                 }
                 
@@ -255,69 +245,63 @@ BOOL NSKeyValueShareableObservationInfoNSHTIsEqual(const void * item1, const voi
             }
         }
         else {
-            NSUInteger base_observance_count = CFArrayGetCount(( CFArrayRef)infoKey.baseObservationInfo.observances);
+            NSUInteger observance_count_inkey = CFArrayGetCount(( CFArrayRef)key.baseObservationInfo.observances);
             NSUInteger observance_count = CFArrayGetCount(( CFArrayRef)info.observances);
-            if(base_observance_count - 1 != observance_count) {
+            if(observance_count_inkey - 1 != observance_count) {
                 return NO;
             }
-            NSKeyValueObservance *__unsafe_unretained base_observance_objs[base_observance_count];
-            [infoKey.baseObservationInfo.observances getObjects:base_observance_objs range:NSMakeRange(0, base_observance_count)];
             
-            NSKeyValueObservance *__unsafe_unretained observance_objs[observance_count];
+            NSKeyValueObservance * observance_objs_inkey[observance_count_inkey];
+            [key.baseObservationInfo.observances getObjects:observance_objs_inkey range:NSMakeRange(0, observance_count_inkey)];
+            
+            NSKeyValueObservance * observance_objs[observance_count];
             [info.observances getObjects:observance_objs range:NSMakeRange(0, observance_count)];
             
-            if(infoKey.removalObservanceIndex != 0) {
-                NSUInteger i = 0;
-                while(i < infoKey.removalObservanceIndex) {
-                    if(base_observance_objs[i] != observance_objs[i]) {
-                        return NO;
-                    }
-                    ++i;
+            for (NSUInteger i = 0; i < key.removalObservanceIndex; ++i) {
+                if(observance_objs_inkey[i] != observance_objs[i]) {
+                    return NO;
                 }
             }
-            NSUInteger count = base_observance_count - (infoKey.removalObservanceIndex + 1);
-            if(count == 0) {
+            
+            NSUInteger leftCount = observance_count_inkey - (key.removalObservanceIndex + 1);
+            if(leftCount == 0) {
                 return YES;
             }
             else {
-                NSKeyValueObservance *__unsafe_unretained *  p_observance_objs = &observance_objs[infoKey.removalObservanceIndex];
-                NSKeyValueObservance *__unsafe_unretained *  p_base_observance_objs = &base_observance_objs[infoKey.removalObservanceIndex + 1];
-                NSUInteger i = 0;
-                while(i < count) {
-                    if(p_observance_objs[i] != p_base_observance_objs[i]) {
+                NSKeyValueObservance * *  p_observance_objs = &observance_objs[key.removalObservanceIndex];
+                NSKeyValueObservance * *  p_observance_objs_inkey = &observance_objs_inkey[key.removalObservanceIndex + 1];
+                for (NSUInteger i = 0; i < leftCount; ++i) {
+                    if(p_observance_objs[i] != p_observance_objs_inkey[i]) {
                         return NO;
                     }
-                    ++i;
                 }
+                
                 return YES;
             }
-            return YES;
         }
     }
     else {
-        NSKeyValueObservationInfo *info1 = (__bridge NSKeyValueObservationInfo *)item1;
-        NSKeyValueObservationInfo *info2 = (__bridge NSKeyValueObservationInfo *)item2;
-        NSUInteger info1_observance_count = CFArrayGetCount((__bridge CFArrayRef)info1.observances);
-        NSUInteger info2_observance_count = CFArrayGetCount((__bridge CFArrayRef)info2.observances);
+        NSKeyValueObservationInfo *info1 = (NSKeyValueObservationInfo *)item1;
+        NSKeyValueObservationInfo *info2 = (NSKeyValueObservationInfo *)item2;
+        NSUInteger info1_observance_count = CFArrayGetCount((CFArrayRef)info1.observances);
+        NSUInteger info2_observance_count = CFArrayGetCount((CFArrayRef)info2.observances);
         if(info1_observance_count != info2_observance_count) {
             return NO;
         }
         
-        NSKeyValueObservance *__unsafe_unretained info1_observance_objs[info1_observance_count];
+        NSKeyValueObservance * info1_observance_objs[info1_observance_count];
         [info1.observances getObjects:info1_observance_objs range:NSMakeRange(0, info1_observance_count)];
-        NSKeyValueObservance *__unsafe_unretained info2_observance_objs[info2_observance_count];
+        NSKeyValueObservance * info2_observance_objs[info2_observance_count];
         [info1.observances getObjects:info2_observance_objs range:NSMakeRange(0, info2_observance_count)];
         
         if(info1_observance_count == 0) {
             return  YES;
         }
         else {
-            NSUInteger i = 0;
-            while(i < info1_observance_count) {
+            for (NSUInteger i = 0; i < info1_observance_count; ++i) {
                 if(info1_observance_objs[i] != info2_observance_objs[i]) {
                     return NO;
                 }
-                ++i;
             }
             return YES;
         }
@@ -329,7 +313,7 @@ NSKeyValueObservationInfo *_NSKeyValueObservationInfoCreateByAdding(NSKeyValueOb
     
     os_lock_lock(&NSKeyValueObservationInfoCreationSpinLock);
     if(!NSKeyValueShareableObservationInfos) {
-        NSPointerFunctions *pointerFunctions = [[NSPointerFunctions alloc] initWithOptions:5];
+        NSPointerFunctions *pointerFunctions = [[NSPointerFunctions alloc] initWithOptions:NSPointerFunctionsWeakMemory];
         [pointerFunctions setHashFunction:NSKeyValueShareableObservationInfoNSHTHash];
         [pointerFunctions setIsEqualFunction:NSKeyValueShareableObservationInfoNSHTIsEqual];
         NSKeyValueShareableObservationInfos = [[NSHashTable alloc] initWithPointerFunctions:pointerFunctions capacity:0];
@@ -348,7 +332,7 @@ NSKeyValueObservationInfo *_NSKeyValueObservationInfoCreateByAdding(NSKeyValueOb
     shareableObservationInfoKey.baseObservationInfo = baseObservationInfo;
     shareableObservationInfoKey.additionObserver = observer;
     shareableObservationInfoKey.additionProperty = property;
-    shareableObservationInfoKey.additionOptions = options & 0xFFFFFFFB;
+    shareableObservationInfoKey.additionOptions = options;
     shareableObservationInfoKey.additionContext = context;
     shareableObservationInfoKey.additionOriginalObservable = originalObservable;
     NSKeyValueObservationInfo * observationInfoMember = [NSKeyValueShareableObservationInfos member:shareableObservationInfoKey];
@@ -402,6 +386,94 @@ NSKeyValueObservationInfo *_NSKeyValueObservationInfoCreateByAdding(NSKeyValueOb
     os_lock_unlock(&NSKeyValueObservationInfoCreationSpinLock);
     
     return createdObservationInfo;
+}
+
+NSKeyValueObservationInfo *_NSKeyValueObservationInfoCreateByRemoving(NSKeyValueObservationInfo *baseObservationInfo, id observer, NSKeyValueProperty *property, void *context, int options,  id originalObservable,  BOOL *fromCache, NSKeyValueObservance **pObservance) {
+    NSUInteger observanceCount = CFArrayGetCount((CFArrayRef)baseObservationInfo.observances);
+    NSKeyValueObservance *observancesBuff[observanceCount];
+    CFArrayGetValues((CFArrayRef)baseObservationInfo.observances, CFRangeMake(0, observanceCount), (const void**)observancesBuff);
+    
+    NSUInteger observanceIndex = NSNotFound;
+    if (observanceCount > 0) {
+        for (NSInteger i = observanceCount - 1; i >= 0; --i) {
+            NSKeyValueObservance *observance = observancesBuff[i];
+            if (observance.property == property && observance.observer == observer) {
+                if (options == 0 || observance.context == context) {
+                    if (!originalObservable || observance.originalObservable == originalObservable) {
+                        //loc_5A4C1
+                        *pObservance = observance;
+                        observanceIndex = i;
+                        //loc_5A4C6
+                        break;
+                    }
+                }
+            }
+        }//for
+        //loc_5A4AA
+    }
+    
+    //loc_5A4AA
+    if (*pObservance) {
+        //loc_5A4C6
+        if (observanceCount >= 2) {
+            os_lock_lock(&NSKeyValueObservationInfoCreationSpinLock);
+            if (!NSKeyValueShareableObservationInfos) {
+                NSPointerFunctions *functions = [[NSPointerFunctions alloc] initWithOptions:NSPointerFunctionsWeakMemory];
+                [functions setHashFunction:NSKeyValueShareableObservationInfoNSHTHash];
+                [functions setIsEqualFunction:NSKeyValueShareableObservationInfoNSHTIsEqual];
+                
+                NSKeyValueShareableObservationInfos = [[NSHashTable alloc] initWithPointerFunctions:functions capacity:0];
+                
+                [functions release];
+            }
+            //loc_5A596
+            if (!NSKeyValueShareableObservationInfoKeyIsa) {
+                NSKeyValueShareableObservationInfoKeyIsa = NSKeyValueShareableObservationInfoKey.self;
+            }
+            //loc_5A5BC
+            
+            static NSKeyValueShareableObservationInfoKey * shareableObservationInfoKey = nil;
+            if (!shareableObservationInfoKey) {
+                shareableObservationInfoKey = [[NSKeyValueShareableObservationInfoKey alloc] init];
+            }
+            
+            //loc_5A5F5
+            shareableObservationInfoKey.addingNotRemoving = NO;
+            shareableObservationInfoKey.baseObservationInfo = baseObservationInfo;
+            shareableObservationInfoKey.removalObservance = *pObservance;
+            shareableObservationInfoKey.removalObservanceIndex = observanceIndex;
+            shareableObservationInfoKey.cachedHash = NSKeyValueShareableObservationInfoNSHTHash(shareableObservationInfoKey, NULL);
+            
+            NSKeyValueObservationInfo *observationInfo = [NSKeyValueShareableObservationInfos member:shareableObservationInfoKey];
+            
+            shareableObservationInfoKey.removalObservance = nil;
+            shareableObservationInfoKey.baseObservationInfo = nil;
+            NSUInteger cachedHash = shareableObservationInfoKey.cachedHash;
+            shareableObservationInfoKey.cachedHash = 0;
+            
+            if (!observationInfo) {
+                memmove(observancesBuff + observanceIndex, observancesBuff + observanceIndex + 1, observanceCount - (observanceIndex + 1));
+                observationInfo = [[NSKeyValueObservationInfo alloc] _initWithObservances:observancesBuff count:observanceCount - 1 hashValue:cachedHash];
+                if (observationInfo.cachedIsShareable) {
+                    [NSKeyValueShareableObservationInfos addObject:observationInfo];
+                }
+                *fromCache = NO;
+            }
+            else {
+                *fromCache = YES;
+                [observationInfo retain];
+            }
+            
+            os_lock_unlock(&NSKeyValueObservationInfoCreationSpinLock);
+            return observationInfo;
+        }
+        else {
+            //loc_5A6A8
+            *fromCache = YES;
+        }
+    }
+    
+    return nil;
 }
 
 void _NSKeyValueReplaceObservationInfoForObject(id object, NSKeyValueContainerClass * containerClass, NSKeyValueObservationInfo *oldObservationInfo, NSKeyValueObservationInfo *newObservationInfo, void *unknowparam) {
