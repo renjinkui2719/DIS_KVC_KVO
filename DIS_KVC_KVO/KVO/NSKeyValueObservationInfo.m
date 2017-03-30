@@ -388,29 +388,27 @@ NSKeyValueObservationInfo *_NSKeyValueObservationInfoCreateByAdding(NSKeyValueOb
     return createdObservationInfo;
 }
 
-NSKeyValueObservationInfo *_NSKeyValueObservationInfoCreateByRemoving(NSKeyValueObservationInfo *baseObservationInfo, id observer, NSKeyValueProperty *property, void *context, int options,  id originalObservable,  BOOL *fromCache, NSKeyValueObservance **pObservance) {
+NSKeyValueObservationInfo *_NSKeyValueObservationInfoCreateByRemoving(NSKeyValueObservationInfo *baseObservationInfo, id observer, NSKeyValueProperty *property, void *context, BOOL flag,  id originalObservable,  BOOL *fromCache, NSKeyValueObservance **pObservance) {
     NSUInteger observanceCount = CFArrayGetCount((CFArrayRef)baseObservationInfo.observances);
     NSKeyValueObservance *observancesBuff[observanceCount];
     CFArrayGetValues((CFArrayRef)baseObservationInfo.observances, CFRangeMake(0, observanceCount), (const void**)observancesBuff);
     
     NSUInteger observanceIndex = NSNotFound;
-    if (observanceCount > 0) {
-        for (NSInteger i = observanceCount - 1; i >= 0; --i) {
-            NSKeyValueObservance *observance = observancesBuff[i];
-            if (observance.property == property && observance.observer == observer) {
-                if (options == 0 || observance.context == context) {
-                    if (!originalObservable || observance.originalObservable == originalObservable) {
-                        //loc_5A4C1
-                        *pObservance = observance;
-                        observanceIndex = i;
-                        //loc_5A4C6
-                        break;
-                    }
+    for (NSInteger i = observanceCount - 1; i >= 0; --i) {
+        NSKeyValueObservance *observance = observancesBuff[i];
+        if (observance.property == property && observance.observer == observer) {
+            if (!flag || observance.context == context) {
+                if (!originalObservable || observance.originalObservable == originalObservable) {
+                    //loc_5A4C1
+                    *pObservance = observance;
+                    observanceIndex = i;
+                    //loc_5A4C6
+                    break;
                 }
             }
-        }//for
-        //loc_5A4AA
-    }
+        }
+    }//for
+    //loc_5A4AA
     
     //loc_5A4AA
     if (*pObservance) {

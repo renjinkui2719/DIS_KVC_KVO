@@ -42,24 +42,24 @@ NSKeyValueProperty *NSKeyValuePropertyForIsaAndKeyPath(Class isa, NSString *keyp
     callbacks.copyDescription =  kCFTypeSetCallBacks.copyDescription;
     callbacks.equal =  (CFSetEqualCallBack)NSKeyValuePropertyIsEqual;
     callbacks.hash =  (CFSetHashCallBack)NSKeyValuePropertyHash;
-    CFMutableSetRef propertySet = CFSetCreateMutable(NULL,0,&callbacks);
+    CFMutableSetRef initializedProperties = CFSetCreateMutable(NULL,0,&callbacks);
     
-    NSKeyValueProperty *property = NSKeyValuePropertyForIsaAndKeyPathInner(isa, keypath, propertySet);
+    NSKeyValueProperty *property = NSKeyValuePropertyForIsaAndKeyPathInner(isa, keypath, initializedProperties);
     
-    CFRelease(propertySet);
+    CFRelease(initializedProperties);
     
     return property;
 }
 
 
-NSKeyValueProperty * NSKeyValuePropertyForIsaAndKeyPathInner( Class isa, NSString *keyPath, CFMutableSetRef propertySet) {
+NSKeyValueProperty * NSKeyValuePropertyForIsaAndKeyPathInner( Class isa, NSString *keyPath, CFMutableSetRef initializedProperties) {
     NSKeyValueContainerClass *containerClass = _NSKeyValueContainerClassForIsa(isa);
     
     NSKeyValueProperty *finder = [NSKeyValueProperty new];
     finder.containerClass = containerClass;
     finder.keyPath = keyPath;
     
-    NSKeyValueProperty *property = CFSetGetValue(propertySet,finder);
+    NSKeyValueProperty *property = CFSetGetValue(initializedProperties,finder);
     
     if(!property) {
         if(NSKeyValueProperties) {
@@ -70,15 +70,15 @@ NSKeyValueProperty * NSKeyValuePropertyForIsaAndKeyPathInner( Class isa, NSStrin
         }
         char c = [keyPath characterAtIndex:0];
         if(c == '@') {
-            property = [[NSKeyValueComputedProperty alloc] _initWithContainerClass:containerClass keyPath:keyPath propertiesBeingInitialized:propertySet];
+            property = [[NSKeyValueComputedProperty alloc] _initWithContainerClass:containerClass keyPath:keyPath propertiesBeingInitialized:initializedProperties];
         }
         else {
             NSRange range = [keyPath rangeOfString:@"."];
             if (range.length != 0) {
-                property = [[NSKeyValueNestedProperty alloc] _initWithContainerClass:containerClass keyPath:keyPath firstDotIndex: range.location propertiesBeingInitialized:propertySet];
+                property = [[NSKeyValueNestedProperty alloc] _initWithContainerClass:containerClass keyPath:keyPath firstDotIndex: range.location propertiesBeingInitialized:initializedProperties];
             }
             else {
-                property = [[NSKeyValueUnnestedProperty alloc] _initWithContainerClass: containerClass key: keyPath propertiesBeingInitialized: propertySet];
+                property = [[NSKeyValueUnnestedProperty alloc] _initWithContainerClass: containerClass key: keyPath propertiesBeingInitialized: initializedProperties];
             }
         }
         
@@ -94,7 +94,7 @@ NSKeyValueProperty * NSKeyValuePropertyForIsaAndKeyPathInner( Class isa, NSStrin
         }
         
         CFSetAddValue(NSKeyValueProperties, property);
-        CFSetRemoveValue(propertySet, property);
+        CFSetRemoveValue(initializedProperties, property);
     }
     return property;
 }

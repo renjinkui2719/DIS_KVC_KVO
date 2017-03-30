@@ -9,6 +9,7 @@
 #import "NSObject+NSKeyValueObserverRegistration.h"
 #import "NSKeyValueProperty.h"
 #import "NSKeyValueContainerClass.h"
+#import "NSKeyValueObservance.h"
 #import "NSKeyValueObservationInfo.h"
 #import "NSObject+NSKeyValueObservingPrivate.h"
 #import "NSObject+NSKeyValueObserverNotification.h"
@@ -95,21 +96,16 @@ void NSKeyValueObserverRegistrationLockLock() {
                 if (self.class != property.containerClass.originalClass) {
                     object_setClass(self, property.containerClass.originalClass);
                 }
-                //loc_5A1D8
             }
-            else {
-                //loc_5A1D8
-            }
-            //loc_5A1D8
+            [observance release];
+            [createdObservationInfo release];
+            [retainedObervationInfo release];
             
-        }
-        else {
-            //loc_5A22A
+            return;
         }
     }
-    else {
-        //loc_5A22D
-    }
+
+    [NSException raise:NSRangeException format:@"Cannot remove an observer <%@ %p> for the key path \"%@\" from <%@ %p> because it is not registered as an observer.",[observer class], observer, property.keyPath, self.class, self];
 }
 
 - (void)_addObserver:(id)observer forProperty:(NSKeyValueProperty *)property options:(int)options context:(void *)context {
@@ -132,7 +128,7 @@ void NSKeyValueObserverRegistrationLockLock() {
         changeDetails.oldValue = nil;
         changeDetails.newValue = newValue;
         changeDetails.indexes = nil;
-        changeDetails.observationInfo = nil;
+        changeDetails.unknow1 = nil;
         
         NSKeyValueNotifyObserver(observer,keyPath, self, context, nil, NO,changeDetails, &changeDict);
         

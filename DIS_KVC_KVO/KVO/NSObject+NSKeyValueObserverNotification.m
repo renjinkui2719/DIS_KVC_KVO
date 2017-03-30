@@ -25,8 +25,6 @@ extern dispatch_once_t isVMWare_onceToken;
 extern BOOL isVMWare_doWorkarounds;
 
 
-
-
 @implementation NSObject (NSKeyValueObserverNotification)
 
 - (void)willChangeValueForKey:(NSString *)key {
@@ -64,16 +62,13 @@ extern BOOL isVMWare_doWorkarounds;
         _NSKeyValueObservationInfoGetObservances(implicitObservationInfo, observance_objs + observationInfoObservanceCount, implicitObservationInfoObservanceCount);
     }
     
-    if(totalObservanceCount) {
-        NSUInteger i = 0;
-        do {
-            if(!object_isClass(observance_objs[i].observer)) {
-                observance_objs[i] = [observance_objs[i].observer retain];
-            }
-            else {
-                observance_objs[i] = nil;
-            }
-        }while(++i != totalObservanceCount);
+    for (NSUInteger i = 0; i < totalObservanceCount; ++i) {
+        if(!object_isClass(observance_objs[i].observer)) {
+            observance_objs[i] = [observance_objs[i].observer retain];
+        }
+        else {
+            observance_objs[i] = nil;
+        }
     }
 
     _NSKeyValueObserverRegistrationLockOwner = NULL;
@@ -85,25 +80,19 @@ extern BOOL isVMWare_doWorkarounds;
             NSKVOPendingInfoPerThreadPush pendingInfo = {pendingArray, 1, observationInfo};
             NSKeyValueWillChange(self,key,NO,observationInfo,NSKeyValueWillChangeBySetting,nil,(NSKeyValuePushPendingNotificationCallback)NSKeyValuePushPendingNotificationPerThread,&pendingInfo,nil);
         }
-        //loc_117F1
         if(implicitObservationInfo) {
             NSKVOPendingInfoPerThreadPush pendingInfo = {pendingArray, 1, NULL};
             NSKeyValueWillChange(self,key,NO,implicitObservationInfo,NSKeyValueWillChangeBySetting,nil,(NSKeyValuePushPendingNotificationCallback)NSKeyValuePushPendingNotificationPerThread,&pendingInfo,nil);
         }
-        //loc_1182F
     }
-    //loc_1182F
     [observationInfo release];
-    if(totalObservanceCount) {
-        NSUInteger i=0;
-        do {
-            [observance_objs[i] release];
-        }while(totalObservanceCount);
+    for (NSUInteger i = 0; i < totalObservanceCount; ++i) {
+        [observance_objs[i] release];
     }
 }
 
 - (void)didChangeValueForKey:(NSString *)key {
-    CFMutableArrayRef pendingArray = [self _pendingChangeNotificationsArrayForKey:key create:YES];
+    CFMutableArrayRef pendingArray = [self _pendingChangeNotificationsArrayForKey:key create:NO];
     if(pendingArray) {
         NSUInteger pendingCount = CFArrayGetCount(pendingArray);
         if(pendingCount) {
@@ -114,21 +103,161 @@ extern BOOL isVMWare_doWorkarounds;
 }
 
 - (void)willChange:(NSKeyValueChange)changeKind valuesAtIndexes:(NSIndexSet *)indexes forKey:(NSString *)key {
+    pthread_mutex_lock(&_NSKeyValueObserverRegistrationLock);
+    _NSKeyValueObserverRegistrationLockOwner = pthread_self();
     
+    os_lock_lock(&NSKeyValueObservationInfoSpinLock);
+    NSKeyValueObservationInfo *observationInfo = [(id)self.observationInfo retain];
+    os_lock_unlock(&NSKeyValueObservationInfoSpinLock);
+    
+    NSKeyValueObservationInfo *implicitObservationInfo = [self _implicitObservationInfo];
+    
+    NSUInteger observationInfoObservanceCount = 0;
+    NSUInteger implicitObservationInfoObservanceCount = 0;
+    NSUInteger totalObservanceCount = 0;
+    
+    if(observationInfo) {
+        observationInfoObservanceCount = _NSKeyValueObservationInfoGetObservanceCount(observationInfo);
+    }
+    
+    if(implicitObservationInfo) {
+        implicitObservationInfoObservanceCount = _NSKeyValueObservationInfoGetObservanceCount(implicitObservationInfo);
+    }
+    
+    totalObservanceCount = observationInfoObservanceCount + implicitObservationInfoObservanceCount;
+    
+    NSKeyValueObservance *observance_objs[totalObservanceCount];
+    
+    if(observationInfo) {
+        _NSKeyValueObservationInfoGetObservances(observationInfo, observance_objs, observationInfoObservanceCount);
+    }
+    
+    if(implicitObservationInfo) {
+        _NSKeyValueObservationInfoGetObservances(implicitObservationInfo, observance_objs + observationInfoObservanceCount, implicitObservationInfoObservanceCount);
+    }
+    
+    for (NSUInteger i = 0; i < totalObservanceCount; ++i) {
+        if(!object_isClass(observance_objs[i].observer)) {
+            observance_objs[i] = [observance_objs[i].observer retain];
+        }
+        else {
+            observance_objs[i] = nil;
+        }
+    }
+    
+    _NSKeyValueObserverRegistrationLockOwner = NULL;
+    pthread_mutex_unlock(&_NSKeyValueObserverRegistrationLock);
+    
+    if (observationInfo || implicitObservationInfo) {
+        NSKVOPendingInfoPerThreadPush pendingInfo = {0};
+        pendingInfo.pendingArray = [self _pendingChangeNotificationsArrayForKey:key create:YES];
+        pendingInfo.count = 1;
+        pendingInfo.observationInfo = observationInfo;
+        
+        NSKVOArrayOrSetWillChangeInfo changeInfo = {changeKind, indexes};
+        
+        if (observationInfo) {
+            NSKeyValueWillChange(self, key, NO, observationInfo, NSKeyValueWillChangeByOrderedToManyMutation, &changeInfo, NSKeyValuePushPendingNotificationPerThread, &pendingInfo, nil);
+        }
+        if (implicitObservationInfo) {
+            pendingInfo.observationInfo = NULL;
+            NSKeyValueWillChange(self, key, NO, implicitObservationInfo, NSKeyValueWillChangeByOrderedToManyMutation, &changeInfo, NSKeyValuePushPendingNotificationPerThread, &pendingInfo, nil);
+        }
+    }
+    
+    [observationInfo release];
+    
+    for (NSUInteger i = 0; i < totalObservanceCount; ++i) {
+        [observance_objs[i] release];
+    }
 }
 
 - (void)didChange:(NSKeyValueChange)changeKind valuesAtIndexes:(NSIndexSet *)indexes forKey:(NSString *)key {
-    
+    CFMutableArrayRef pendingArray = [self _pendingChangeNotificationsArrayForKey:key create:NO];
+    if(pendingArray) {
+        NSUInteger pendingCount = CFArrayGetCount(pendingArray);
+        if(pendingCount > 0) {
+            NSKVOPendingInfoPerThreadPop pendingInfo = {pendingArray, pendingCount, NULL, ~0, 0};
+            NSKeyValueDidChange(self,key,NO,NSKeyValueDidChangeByOrderedToManyMutation,(NSKeyValuePopPendingNotificationCallback)NSKeyValuePopPendingNotificationPerThread,&pendingInfo);
+        }
+    }
 }
 
 - (void)willChangeValueForKey:(NSString *)key withSetMutation:(NSKeyValueSetMutationKind)mutationKind usingObjects:(NSSet *)objects {
-
+    pthread_mutex_lock(&_NSKeyValueObserverRegistrationLock);
+    _NSKeyValueObserverRegistrationLockOwner = pthread_self();
+    
+    os_lock_lock(&NSKeyValueObservationInfoSpinLock);
+    NSKeyValueObservationInfo *observationInfo = [(id)self.observationInfo retain];
+    os_lock_unlock(&NSKeyValueObservationInfoSpinLock);
+    
+    NSKeyValueObservationInfo *implicitObservationInfo = [self _implicitObservationInfo];
+    
+    NSUInteger observationInfoObservanceCount = 0;
+    NSUInteger implicitObservationInfoObservanceCount = 0;
+    NSUInteger totalObservanceCount = 0;
+    
+    if(observationInfo) {
+        observationInfoObservanceCount = _NSKeyValueObservationInfoGetObservanceCount(observationInfo);
+    }
+    
+    if(implicitObservationInfo) {
+        implicitObservationInfoObservanceCount = _NSKeyValueObservationInfoGetObservanceCount(implicitObservationInfo);
+    }
+    
+    totalObservanceCount = observationInfoObservanceCount + implicitObservationInfoObservanceCount;
+    
+    NSKeyValueObservance *observance_objs[totalObservanceCount];
+    
+    if(observationInfo) {
+        _NSKeyValueObservationInfoGetObservances(observationInfo, observance_objs, observationInfoObservanceCount);
+    }
+    
+    if(implicitObservationInfo) {
+        _NSKeyValueObservationInfoGetObservances(implicitObservationInfo, observance_objs + observationInfoObservanceCount, implicitObservationInfoObservanceCount);
+    }
+    
+    for (NSUInteger i = 0; i < totalObservanceCount; ++i) {
+        if(!object_isClass(observance_objs[i].observer)) {
+            observance_objs[i] = [observance_objs[i].observer retain];
+        }
+        else {
+            observance_objs[i] = nil;
+        }
+    }
+    
+    _NSKeyValueObserverRegistrationLockOwner = NULL;
+    pthread_mutex_unlock(&_NSKeyValueObserverRegistrationLock);
+    
+    if (observationInfo || implicitObservationInfo) {
+        NSKVOPendingInfoPerThreadPush pendingInfo = {0};
+        pendingInfo.pendingArray = [self _pendingChangeNotificationsArrayForKey:key create:YES];
+        pendingInfo.count = 1;
+        pendingInfo.observationInfo = observationInfo;
+        if (observationInfo) {
+            NSKeyValueWillChange(self, key, NO, observationInfo, NSKeyValueWillChangeBySetMutation, &mutationKind, NSKeyValuePushPendingNotificationPerThread, &pendingInfo, nil);
+        }
+        if (implicitObservationInfo) {
+            pendingInfo.observationInfo = NULL;
+            NSKeyValueWillChange(self, key, NO, implicitObservationInfo, NSKeyValueWillChangeBySetMutation, &mutationKind, NSKeyValuePushPendingNotificationPerThread, &pendingInfo, nil);
+        }
+    }
+    [observationInfo release];
+    for (NSUInteger i = 0; i < totalObservanceCount; ++i) {
+        [observance_objs[i] release];
+    }
 }
 
 - (void)didChangeValueForKey:(NSString *)key withSetMutation:(NSKeyValueSetMutationKind)mutationKind usingObjects:(NSSet *)objects {
-    
+    CFMutableArrayRef pendingArray = [self _pendingChangeNotificationsArrayForKey:key create:NO];
+    if(pendingArray) {
+        NSUInteger pendingCount = CFArrayGetCount(pendingArray);
+        if(pendingCount > 0) {
+            NSKVOPendingInfoPerThreadPop pendingInfo = {pendingArray, pendingCount, NULL, ~0, 0};
+            NSKeyValueDidChange(self,key,NO,NSKeyValueDidChangeBySetMutation,(NSKeyValuePopPendingNotificationCallback)NSKeyValuePopPendingNotificationPerThread,&pendingInfo);
+        }
+    }
 }
-
 
 
 void NSKeyValueObservingAssertRegistrationLockNotHeld() {
@@ -280,8 +409,75 @@ void NSKeyValueDidChangeForObservance(id originalObservable, id dependentValueKe
     //loc_CB4D5
 }
 
+#pragma mark - Will change callbacks
+
+void NSKeyValueWillChangeByOrderedToManyMutation(NSKeyValueChangeDetails *changeDetails, id object, NSString *affectedKeyPath, BOOL match, int options, NSKVOArrayOrSetWillChangeInfo *changeInfo, BOOL *detailsRetained) {
+    if (match) {
+        id oldValue = nil;
+        NSArray *oldObjects = nil;
+        NSMutableData *oldObjectsData = nil;
+        
+        void *TSD1 = _CFGetTSD(0x20);
+        void *TSD2 = _CFGetTSD(0x1F);
+        if (!TSD1 || TSD1 != affectedKeyPath || TSD2 != object) {
+            _CFSetTSD(0x1F, object, NULL);
+            _CFSetTSD(0x20, affectedKeyPath, NULL);
+            
+            oldValue = [object valueForKey:affectedKeyPath];
+            
+            _CFSetTSD(0x1F, NULL, NULL);
+            _CFSetTSD(0x20, NULL, NULL);
+            
+            if (oldValue) {
+                if ([oldValue isKindOfClass:NSOrderedSet.self]) {
+                    if (changeInfo->kind == NSKeyValueChangeReplacement || changeInfo->kind == NSKeyValueChangeInsertion) {
+                        oldObjectsData = [[NSMutableData alloc] initWithLength:[oldValue count] * sizeof(id)];
+                        void *bytes = oldObjectsData.mutableBytes;
+                        [oldValue getObjects:bytes range:NSMakeRange(0, [oldValue count])];
+                    }
+                }
+            }
+        }
+        if (options & NSKeyValueObservingOptionOld && changeInfo->kind != NSKeyValueChangeInsertion) {
+            if (!oldValue) {
+                oldValue = [object valueForKey:affectedKeyPath];
+            }
+            oldObjects = [oldValue objectsAtIndexes:(NSIndexSet *)changeInfo->changeParams];
+        }
+            
+        *detailsRetained = NO;
+        
+        changeDetails->kind = changeInfo->kind;
+        if (oldObjects || !(options & 0x20)) {
+            changeDetails->oldValue = oldObjects;
+        }
+        else {
+            changeDetails->oldValue = oldValue;
+        }
+        changeDetails->newValue = nil;
+        changeDetails->indexes = (NSIndexSet *)changeInfo->changeParams;
+        changeDetails->unknow1 = oldObjectsData;
+    }
+    else {
+        id oldValue = nil;
+        if (options & NSKeyValueObservingOptionOld) {
+            oldValue = [object valueForKeyPath:affectedKeyPath];
+        }
+        if (!oldValue) {
+            oldValue = [NSNull null];
+        }
+        
+        *detailsRetained = NO;
+        
+        changeDetails->kind = NSKeyValueChangeSetting;
+        changeDetails->oldValue = oldValue;
+        changeDetails->newValue = nil;
+        changeDetails->indexes = nil;
+        changeDetails->unknow1 = nil;
+    }
+}
+
 void NSKeyValueWillChangeBySetting(NSKeyValueChangeDetails *changeDetails, id object, NSString *affectedKeyPath, BOOL match, int options, NSDictionary *oldValueDict, BOOL *detailsRetained) {
-    
     id oldValue = nil;
     if(options & NSKeyValueObservingOptionOld) {
         if(oldValueDict) {
@@ -444,7 +640,7 @@ void NSKeyValuePushPendingNotificationLocal(id object, id keyOrKeys, NSKeyValueO
 }
 
 
-void NSKeyValueWillChange(id object, id keyOrKeys, BOOL isASet, NSKeyValueObservationInfo *observationInfo, NSKeyValueWillChangeByCallback willChangeByCallback, NSDictionary *oldValueDict, NSKeyValuePushPendingNotificationCallback pushPendingNotificationCallback, void *pendingInfo, NSKeyValueObservance *observance) {
+void NSKeyValueWillChange(id object, id keyOrKeys, BOOL isASet, NSKeyValueObservationInfo *observationInfo, NSKeyValueWillChangeByCallback willChangeByCallback, void *changeInfo, NSKeyValuePushPendingNotificationCallback pushPendingNotificationCallback, void *pendingInfo, NSKeyValueObservance *observance) {
     
     NSUInteger observanceCount = _NSKeyValueObservationInfoGetObservanceCount(observationInfo);
     
@@ -472,7 +668,7 @@ void NSKeyValueWillChange(id object, id keyOrKeys, BOOL isASet, NSKeyValueObserv
                         BOOL detailsRetained;
                         NSKeyValueChangeDictionary *change = nil;
                         
-                        willChangeByCallback(&changeDetails, object, keyPath,exactMatch,observanceObj.options, oldValueDict, &detailsRetained);
+                        willChangeByCallback(&changeDetails, object, keyPath,exactMatch,observanceObj.options, changeInfo, &detailsRetained);
                         pushPendingNotificationCallback(object, keyOrKeys, observance, changeDetails , forwardingValues, pendingInfo);
                         
                         if(observanceObj.options & NSKeyValueObservingOptionPrior) {

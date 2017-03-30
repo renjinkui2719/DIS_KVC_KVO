@@ -22,6 +22,9 @@ extern pthread_t _NSKeyValueObserverRegistrationLockOwner;
 extern OSSpinLock NSKeyValueObservationInfoCreationSpinLock;
 extern OSSpinLock NSKeyValueObservationInfoSpinLock;
 
+void NSKeyValueObserverRegistrationLockUnlock();
+void NSKeyValueObserverRegistrationLockLock();
+
 static inline NSUInteger _NSKVOPointersHash(NSInteger count,...) {
     void *pointers[count];
     

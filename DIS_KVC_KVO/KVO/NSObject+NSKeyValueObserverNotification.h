@@ -30,6 +30,11 @@ typedef struct {
 }NSKVOPendingNotification;
 
 typedef struct {
+    NSUInteger kind;
+    void *changeParams;
+}NSKVOArrayOrSetWillChangeInfo;
+
+typedef struct {
     CFMutableArrayRef pendingArray;
     NSUInteger count;
     NSKeyValueObservationInfo *observationInfo;
@@ -69,7 +74,7 @@ typedef void (*NSKeyValuePushPendingNotificationCallback)(id , id , NSKeyValueOb
 typedef void (*NSKeyValueDidChangeByCallback)(NSKeyValueChangeDetails *, id , NSString *, BOOL , int , NSKeyValueChangeDetails );
 typedef BOOL (*NSKeyValuePopPendingNotificationCallback)(id ,id , NSKeyValueObservance **, NSKeyValueChangeDetails *,NSKeyValuePropertyForwardingValues *,id *, void * );
 
-void NSKeyValueWillChange(id object, id keyOrKeys, BOOL isASet, NSKeyValueObservationInfo *observationInfo, NSKeyValueWillChangeByCallback willChangeByCallback, NSDictionary *oldValueDict, NSKeyValuePushPendingNotificationCallback pushPendingNotificationCallback, void *pendingInfo, NSKeyValueObservance *observance) ;
+void NSKeyValueWillChange(id object, id keyOrKeys, BOOL isASet, NSKeyValueObservationInfo *observationInfo, NSKeyValueWillChangeByCallback willChangeByCallback, void *changeInfo, NSKeyValuePushPendingNotificationCallback pushPendingNotificationCallback, void *pendingInfo, NSKeyValueObservance *observance) ;
 void NSKeyValueDidChange(id object, id keyOrKeys, BOOL isASet,NSKeyValueDidChangeByCallback didChangeByCallback, NSKeyValuePopPendingNotificationCallback popPendingNotificationCallback, void *pendingInfo);
 
 void NSKeyValueNotifyObserver(id observer,NSString * keyPath, id object, void *context, id originalObservable, BOOL isPriorNotification, NSKeyValueChangeDetails changeDetails, NSKeyValueChangeDictionary **pChange);

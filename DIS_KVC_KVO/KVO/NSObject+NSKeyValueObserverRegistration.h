@@ -10,11 +10,6 @@
 
 @class NSKeyValueProperty;
 
-extern pthread_mutex_t _NSKeyValueObserverRegistrationLock;
-extern pthread_t _NSKeyValueObserverRegistrationLockOwner;
-void NSKeyValueObserverRegistrationLockUnlock();
-void NSKeyValueObserverRegistrationLockLock();
-
 @interface NSObject (NSKeyValueObserverRegistration)
 
 - (void)addObserver:(NSObject *)observer forKeyPath:(NSString *)keyPath options:(NSKeyValueObservingOptions)options context:(nullable void *)context;

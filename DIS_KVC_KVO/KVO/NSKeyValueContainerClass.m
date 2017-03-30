@@ -30,10 +30,10 @@ extern CFMutableDictionaryRef NSKeyValueObservationInfoPerObject;
     if(self = [super init]) {
         _originalClass = originalClass;
         
-        _cachedObservationInfoImplementation = class_getMethodImplementation(originalClass,sel_registerName("observationInfo"));
+        _cachedObservationInfoImplementation = (void * (*)(id,SEL))class_getMethodImplementation(originalClass,sel_registerName("observationInfo"));
         
         Method method = class_getInstanceMethod(_originalClass, sel_registerName("setObservationInfo:"));
-        _cachedSetObservationInfoImplementation = method_getImplementation(method);
+        _cachedSetObservationInfoImplementation = (void  (*)(id,SEL, void *))method_getImplementation(method);
         
         char type = 0;
         method_getArgumentType(method, 2, &type, 1);
