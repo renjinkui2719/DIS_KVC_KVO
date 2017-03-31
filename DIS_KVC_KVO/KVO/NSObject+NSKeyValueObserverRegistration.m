@@ -122,7 +122,7 @@ void NSKeyValueObserverRegistrationLockLock() {
             }
         }
         
-        NSKeyValueChangeDictionary *changeDict = nil;
+        NSKeyValueChangeDictionary *changeDictionary = nil;
         NSKeyValueChangeDetails changeDetails = {0};
         changeDetails.kind = NSKeyValueChangeSetting;
         changeDetails.oldValue = nil;
@@ -130,9 +130,9 @@ void NSKeyValueObserverRegistrationLockLock() {
         changeDetails.indexes = nil;
         changeDetails.unknow1 = nil;
         
-        NSKeyValueNotifyObserver(observer,keyPath, self, context, nil, NO,changeDetails, &changeDict);
+        NSKeyValueNotifyObserver(observer,keyPath, self, context, nil, NO,changeDetails, &changeDictionary);
         
-        [changeDict release];
+        [changeDictionary release];
         
         pthread_mutex_lock(&_NSKeyValueObserverRegistrationLock);
         _NSKeyValueObserverRegistrationLockOwner = pthread_self();
@@ -148,10 +148,11 @@ void NSKeyValueObserverRegistrationLockLock() {
     if (TSD) {
         originalObservable = TSD->implicitObservanceAdditionInfo.object;
     }
-    
     BOOL fromCache = NO;
     NSKeyValueObservance *observance = nil;
+    
     NSKeyValueObservationInfo *createdObservInfo = _NSKeyValueObservationInfoCreateByAdding(retainedObservInfo, observer, property, options, context, originalObservable,&fromCache,&observance);
+   
     _NSKeyValueReplaceObservationInfoForObject(self,property.containerClass,retainedObservInfo,createdObservInfo,0);
     
     [property object:self didAddObservance:observance recurse:YES];
@@ -166,9 +167,7 @@ void NSKeyValueObserverRegistrationLockLock() {
     
     [createdObservInfo release];
     
-    if(retainedObservInfo) {
-        [retainedObservInfo release];
-    }
+    [retainedObservInfo release];
 }
 
 @end

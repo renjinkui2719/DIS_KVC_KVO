@@ -312,6 +312,7 @@ NSKeyValueObservationInfo *_NSKeyValueObservationInfoCreateByAdding(NSKeyValueOb
     NSKeyValueObservationInfo *createdObservationInfo = nil;
     
     os_lock_lock(&NSKeyValueObservationInfoCreationSpinLock);
+    
     if(!NSKeyValueShareableObservationInfos) {
         NSPointerFunctions *pointerFunctions = [[NSPointerFunctions alloc] initWithOptions:NSPointerFunctionsWeakMemory];
         [pointerFunctions setHashFunction:NSKeyValueShareableObservationInfoNSHTHash];
@@ -335,11 +336,11 @@ NSKeyValueObservationInfo *_NSKeyValueObservationInfoCreateByAdding(NSKeyValueOb
     shareableObservationInfoKey.additionOptions = options;
     shareableObservationInfoKey.additionContext = context;
     shareableObservationInfoKey.additionOriginalObservable = originalObservable;
-    NSKeyValueObservationInfo * observationInfoMember = [NSKeyValueShareableObservationInfos member:shareableObservationInfoKey];
+    NSKeyValueObservationInfo * existsObservationInfo = [NSKeyValueShareableObservationInfos member:shareableObservationInfoKey];
     shareableObservationInfoKey.additionOriginalObservable = nil;
     shareableObservationInfoKey.additionObserver = nil;
     shareableObservationInfoKey.baseObservationInfo = nil;
-    if(!observationInfoMember) {
+    if(!existsObservationInfo) {
         if(!NSKeyValueShareableObservances) {
             NSKeyValueShareableObservances = [NSHashTable weakObjectsHashTable];
         }
@@ -351,18 +352,18 @@ NSKeyValueObservationInfo *_NSKeyValueObservationInfoCreateByAdding(NSKeyValueOb
         shareableObservanceKey.options = options;
         shareableObservanceKey.context = context;
         shareableObservanceKey.originalObservable = originalObservable;
-        NSKeyValueObservance *observanceMember = [NSKeyValueShareableObservances member:shareableObservanceKey];
+        NSKeyValueObservance *existsObservance = [NSKeyValueShareableObservances member:shareableObservanceKey];
         shareableObservanceKey.originalObservable = nil;
         shareableObservanceKey.observer = nil;
         NSKeyValueObservance *observance = nil;
-        if (!observanceMember) {
+        if (!existsObservance) {
             observance = [[NSKeyValueObservance alloc] _initWithObserver:observer property:property options:options context:context originalObservable:originalObservable];
             if(observance.cachedIsShareable) {
                 [NSKeyValueShareableObservances addObject:observance];
             }
         }
         else {
-            observance = observanceMember;
+            observance = existsObservance;
         }
         
         if(baseObservationInfo) {
@@ -371,16 +372,18 @@ NSKeyValueObservationInfo *_NSKeyValueObservationInfoCreateByAdding(NSKeyValueOb
         else {
             createdObservationInfo = [[NSKeyValueObservationInfo alloc] _initWithObservances:&observance count:1 hashValue:0];
         }
+        
         if(createdObservationInfo.cachedIsShareable){
             [NSKeyValueShareableObservationInfos addObject:createdObservationInfo];
         }
+        
         *fromCache = NO;
         *pObservance = observance;
     }
     else {
         *fromCache = YES;
-        *pObservance = observationInfoMember.observances.lastObject;
-        createdObservationInfo = observationInfoMember;
+        *pObservance = existsObservationInfo.observances.lastObject;
+        createdObservationInfo = existsObservationInfo;
     }
     
     os_lock_unlock(&NSKeyValueObservationInfoCreationSpinLock);

@@ -29,9 +29,15 @@ typedef struct {
     id forwardingValues_p2;//2c
 }NSKVOPendingNotification;
 
-typedef struct {
-    NSUInteger kind;
-    void *changeParams;
+typedef union {
+    struct {
+        NSKeyValueChange changeKind;
+        NSIndexSet *indexes;
+    };
+    struct {
+        NSKeyValueSetMutationKind mutationKind;
+        NSSet *objects;
+    };
 }NSKVOArrayOrSetWillChangeInfo;
 
 typedef struct {

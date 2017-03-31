@@ -44,7 +44,7 @@ OSSpinLock NSKeyValueOldStyleDependenciesSpinLock = OS_SPINLOCK_INIT;
     }
 }
 
-+ (id)keyPathsForValuesAffectingValueForKey:(NSString *)key {
++ (NSSet<NSString *> *)keyPathsForValuesAffectingValueForKey:(NSString *)key {
    NSUInteger keyBytesLength = [key lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
     char keyCStr[keyBytesLength + 1];
     [key getCString:keyCStr maxLength:keyBytesLength + 1 encoding:NSUTF8StringEncoding];
@@ -67,7 +67,7 @@ OSSpinLock NSKeyValueOldStyleDependenciesSpinLock = OS_SPINLOCK_INIT;
     }
 }
 
-+ (id)_keysForValuesAffectingValueForKey:(NSString *)key {
++ (NSSet<NSString *> *)_keysForValuesAffectingValueForKey:(NSString *)key {
     os_lock_lock(&NSKeyValueOldStyleDependenciesSpinLock);
     
     NSArray *dependencies = nil;

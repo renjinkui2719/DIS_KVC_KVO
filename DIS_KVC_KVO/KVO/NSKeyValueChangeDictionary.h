@@ -15,7 +15,7 @@ typedef struct {
     id oldValue;//4
     id newValue;//8
     NSIndexSet *indexes;//c
-    void * unknow1;
+    id unknow1;
 }NSKeyValueChangeDetails;
 
 @interface NSKeyValueChangeDictionary : NSDictionary

@@ -9,7 +9,7 @@
 #import "NSKeyValueProperty.h"
 
 @interface NSKeyValueUnnestedProperty : NSKeyValueProperty
-//当前keyPath依赖的其他property
+//当前keyPath在KVO中依赖的其他property
 @property (nonatomic, strong) NSArray *affectingProperties;
 @property (nonatomic, assign) BOOL cachedIsaForAutonotifyingIsValid;
 @property (nonatomic, assign) Class cachedIsaForAutonotifying;

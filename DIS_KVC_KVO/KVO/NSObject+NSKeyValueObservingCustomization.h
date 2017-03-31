@@ -17,7 +17,7 @@ extern OSSpinLock NSKeyValueOldStyleDependenciesSpinLock;
 
 - (void *)observationInfo;
 - (void)setObservationInfo:(void *)info ;
-+ (id)keyPathsForValuesAffectingValueForKey:(NSString *)key;
++ (NSSet<NSString *> *)keyPathsForValuesAffectingValueForKey:(NSString *)key;
 + (BOOL)automaticallyNotifiesObserversForKey:(NSString *)key;
 
 @end

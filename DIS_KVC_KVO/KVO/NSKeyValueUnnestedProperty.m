@@ -124,7 +124,9 @@ extern CFMutableSetRef NSKeyValueCachedMutableArrayGetters;
     }
 }
 
-
+/**
+ @return self.keyPath if keys contains self.keyPath, otherwise nil
+*/
 - (NSString*)_keyPathIfAffectedByValueForMemberOfKeys:(NSSet<NSString *> *)keys {
     if([keys containsObject:self.keyPath]) {
         return self.keyPath;
@@ -132,6 +134,9 @@ extern CFMutableSetRef NSKeyValueCachedMutableArrayGetters;
     return nil;
 }
 
+/**
+ @return self.keyPath if keys contains self.keyPath OR keys contains some other keyPath which affecting self.keyPath, otherwise nil
+ */
 - (NSString*)keyPathIfAffectedByValueForMemberOfKeys:(NSSet<NSString *> *)keys {
     NSString *keyPath = nil;
     if((keyPath = [self _keyPathIfAffectedByValueForMemberOfKeys:keys])) {
@@ -145,6 +150,9 @@ extern CFMutableSetRef NSKeyValueCachedMutableArrayGetters;
     return nil;
 }
 
+/**
+ @return self.keyPath if key is equal to self.keyPath and set exactMatch to YES, otherwise returns nil, and set exactMatch to NO
+ */
 - (NSString *)_keyPathIfAffectedByValueForKey:(NSString *)key exactMatch:(BOOL *)exactMatch {
     if(key != self.keyPath && !CFEqual(key, self.keyPath)) {
         return nil;
@@ -155,17 +163,23 @@ extern CFMutableSetRef NSKeyValueCachedMutableArrayGetters;
     return self.keyPath;
 }
 
+/**
+ @return self.keyPath if key is equal to self.keyPath and set exactMatch to YES,
+  otherwise returns self.keyPath if key is equal to some other keyPath which affecting self.keyPath and set exactMatch to NO,
+  otherwise returns nil
+ */
 - (NSString *)keyPathIfAffectedByValueForKey:(NSString *)key exactMatch:(BOOL *)exactMatch {
     NSString *keyPath = [self _keyPathIfAffectedByValueForKey:key exactMatch:exactMatch];
     if(keyPath) {
         return keyPath;
     }
+    
     for(NSKeyValueUnnestedProperty *property in self.affectingProperties) {
         if([property _keyPathIfAffectedByValueForKey:key exactMatch:exactMatch]) {
             if(exactMatch) {
                 *exactMatch = NO;
-                return self.keyPath;
             }
+            return self.keyPath;
         }
     }
     return nil;
