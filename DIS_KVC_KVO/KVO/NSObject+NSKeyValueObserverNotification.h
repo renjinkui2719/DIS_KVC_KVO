@@ -27,7 +27,7 @@ typedef struct {
     id changeDetails_unknow1;//24
     id forwardingValues_p1;//28
     id forwardingValues_p2;//2c
-}NSKVOPendingNotification;
+}NSKVOPendingChangeNotification;
 
 typedef union {
     struct {
@@ -41,19 +41,19 @@ typedef union {
 }NSKVOArrayOrSetWillChangeInfo;
 
 typedef struct {
-    CFMutableArrayRef pendingArray;
-    NSUInteger count;
-    NSKeyValueObservationInfo *observationInfo;
-    NSUInteger index;
-    NSKeyValueObservance *observance;
+    CFMutableArrayRef pendingArray;//0
+    NSUInteger count;//4
+    NSKeyValueObservationInfo *observationInfo;//8
+    NSUInteger index;//c
+    NSKeyValueObservance *observance;//10
 }NSKVOPendingInfoPerThreadPush;
 
 typedef struct {
-    CFMutableArrayRef pendingArray;
-    NSUInteger count;
-    NSKVOPendingNotification * notification;
-    NSUInteger index;
-    NSKeyValueObservance * observance;
+    CFMutableArrayRef pendingArray;//0
+    NSUInteger count;//4
+    NSKVOPendingChangeNotification * notification;//8
+    NSUInteger index;//c
+    NSKeyValueObservance * observance;//10
 }NSKVOPendingInfoPerThreadPop;
 
 typedef struct {

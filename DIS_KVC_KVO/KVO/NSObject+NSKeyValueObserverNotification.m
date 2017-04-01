@@ -502,7 +502,7 @@ void NSKeyValueWillChangeBySetting(NSKeyValueChangeDetails *changeDetails, id ob
 }
 
 void NSKeyValuePushPendingNotificationPerThread(id object, id keyOrKeys, NSKeyValueObservance *observance, NSKeyValueChangeDetails changeDetails , NSKeyValuePropertyForwardingValues forwardingValues, NSKVOPendingInfoPerThreadPush *pendingInfo) {
-    NSKVOPendingNotification *pendingNotification = NSAllocateScannedUncollectable(sizeof(NSKVOPendingNotification));
+    NSKVOPendingChangeNotification *pendingNotification = NSAllocateScannedUncollectable(sizeof(NSKVOPendingChangeNotification));
     pendingNotification->unknow1 = 1;
     pendingNotification->unknow2 = pendingInfo->count;
     pendingNotification->object = [object retain];
@@ -667,7 +667,7 @@ void NSKeyValueWillChange(id object, id keyOrKeys, BOOL isASet, NSKeyValueObserv
                     NSKeyValueChangeDictionary *changeDictionary = nil;
                     
                     willChangeByCallback(&changeDetails, object, affectedKeyPath,keyPathExactMatch,eachObservance.options, changeInfo, &detailsRetained);
-                    pushPendingNotificationCallback(object, keyOrKeys, observance, changeDetails , forwardingValues, pendingInfo);
+                    pushPendingNotificationCallback(object, keyOrKeys, eachObservance, changeDetails , forwardingValues, pendingInfo);
                     
                     if(eachObservance.options & NSKeyValueObservingOptionPrior) {
                         NSKeyValueNotifyObserver(eachObservance.observer, affectedKeyPath,  object, eachObservance.context, eachObservance.originalObservable, YES,changeDetails, &changeDictionary);
@@ -726,48 +726,35 @@ BOOL NSKeyValuePopPendingNotificationPerThread(id object,id keyOrKeys, NSKeyValu
         pendingInfo->index = pendingInfo->count;
     }
     
-    //loc_558F9
-    if(pendingInfo->index > 0) {
-        NSUInteger i = pendingInfo->index - 1;
-        do {
-            NSKVOPendingNotification *pendingNorification = (NSKVOPendingNotification *)CFArrayGetValueAtIndex(pendingInfo->pendingArray, i);
-            if(pendingNorification->object == object) {
-                if([pendingNorification->keyOrKeys isEqual:keyOrKeys]) {
-                    if(!pendingInfo->observance || pendingNorification->observance == pendingInfo->observance) {
-                        if(pendingNorification->observationInfo) {
-                            if(!_NSKeyValueCheckObservationInfoForPendingNotification(pendingNorification->object,pendingNorification->observance, pendingNorification->observationInfo)) {
-                                CFArrayRemoveValueAtIndex(pendingInfo->pendingArray, i);
-                                if(!pendingNorification->unknow2) {
-                                    continue;
-                                }
-                                else {
-                                   //loc_559A3
-                                    break;
-                                }
-                            }
-                        }
-                        //loc_559AE
-                        *observance = pendingNorification->observance;
-                        
-                        changeDetails->unknow1 = pendingNorification->u;
-                        changeDetails->kind = pendingNorification->kind;
-                        changeDetails->oldValue = pendingNorification->oldValue;
-                        changeDetails->newValue = pendingNorification->newValue;
-                        changeDetails->indexes = pendingNorification->indexes;
-                        
-                        forwardValues->p1 = pendingNorification->forwardingValues_p1;
-                        forwardValues->p2 = pendingNorification->forwardingValues_p2;
-                        
-                        *findKeyOrKeys = keyOrKeys;
-                        
-                        pendingInfo->notification = pendingNorification;
-                        pendingInfo->index = i;
-                        //loc_559A3
-                        return YES;
-                    }
-                }
+    for (NSInteger i = pendingInfo->count - 1; i >=0 ; --i) {
+        NSKVOPendingChangeNotification *changeNotification = (NSKVOPendingChangeNotification *)CFArrayGetValueAtIndex(pendingInfo->pendingArray, i);
+        if (changeNotification->object == object && [changeNotification->keyOrKeys isEqual:keyOrKeys] && (!pendingInfo->observance || changeNotification->observance == pendingInfo->observance)) {
+            //loc_55958
+            if (!changeNotification->observationInfo || _NSKeyValueCheckObservationInfoForPendingNotification(changeNotification->object,changeNotification->observance, changeNotification->observationInfo)) {
+                //loc_559AE
+                *observance = changeNotification->observance;
+                
+                changeDetails->kind = changeNotification->kind;
+                changeDetails->oldValue = changeNotification->oldValue;
+                changeDetails->newValue = changeNotification->newValue;
+                changeDetails->indexes = changeNotification->indexes;
+                changeDetails->unknow1 = changeNotification->changeDetails_unknow1;
+                
+                forwardValues->p1 = changeNotification->forwardingValues_p1;
+                forwardValues->p2 = changeNotification->forwardingValues_p2;
+                
+                *findKeyOrKeys = keyOrKeys;
+                
+                pendingInfo->notification = changeNotification;
+                pendingInfo->index = i;
+                //loc_559A3
+                return YES;
             }
-        }while(i-- > 1);
+            CFArrayRemoveValueAtIndex(pendingInfo->pendingArray, i);
+            if (changeNotification->unknow2 != 0) {
+                return NO;
+            }
+        }
     }
     return NO;
 }
