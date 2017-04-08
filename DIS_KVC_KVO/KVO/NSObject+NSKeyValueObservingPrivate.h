@@ -33,6 +33,8 @@ typedef struct {
 }NSKeyValueObservingTSD;
 
 #define NSKeyValueObservingTSDKey 0x15
+#define NSKeyValueObservingKeyPathTSDKey 0x20
+#define NSKeyValueObservingObjectTSDKey 0x1F
 
 void NSKeyValueObservingTSDDestroy(void *data);
 ImplicitObservanceAdditionInfo *NSKeyValueGetImplicitObservanceAdditionInfo();

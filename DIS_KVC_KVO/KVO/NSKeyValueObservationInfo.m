@@ -477,8 +477,12 @@ NSKeyValueObservationInfo *_NSKeyValueObservationInfoCreateByRemoving(NSKeyValue
     return nil;
 }
 
-void _NSKeyValueReplaceObservationInfoForObject(id object, NSKeyValueContainerClass * containerClass, NSKeyValueObservationInfo *oldObservationInfo, NSKeyValueObservationInfo *newObservationInfo, void *unknowparam) {
+void _NSKeyValueReplaceObservationInfoForObject(id object, NSKeyValueContainerClass * containerClass, NSKeyValueObservationInfo *oldObservationInfo, NSKeyValueObservationInfo *newObservationInfo) {
     os_lock_lock(&NSKeyValueObservationInfoSpinLock);
+    
+    if (newObservationInfo) {
+        [newObservationInfo retain];
+    }
     
     NSKeyValueObservingTSD *TSD = _CFGetTSD(NSKeyValueObservingTSDKey);
     if(TSD) {
@@ -493,10 +497,10 @@ void _NSKeyValueReplaceObservationInfoForObject(id object, NSKeyValueContainerCl
         }
     }
     if(containerClass) {
-        containerClass.cachedSetObservationInfoImplementation(object, @selector(setObservationInfo:), observationInfo1);
+        containerClass.cachedSetObservationInfoImplementation(object, @selector(setObservationInfo:), newObservationInfo);
     }
     else {
-        [object setObservationInfo:(__bridge void*)observationInfo1];
+        [object setObservationInfo: newObservationInfo];
     }
     
     os_lock_unlock(&NSKeyValueObservationInfoSpinLock);

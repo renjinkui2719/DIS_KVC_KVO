@@ -24,7 +24,7 @@ typedef struct {
     id oldValue;//18
     id newValue;//1c
     NSIndexSet *indexes;//20
-    id changeDetails_unknow1;//24
+    NSMutableData * oldObjectsData;//24
     id forwardingValues_p1;//28
     id forwardingValues_p2;//2c
 }NSKVOPendingChangeNotification;
@@ -50,9 +50,9 @@ typedef struct {
 
 typedef struct {
     CFMutableArrayRef pendingArray;//0
-    NSUInteger count;//4
-    NSKVOPendingChangeNotification * notification;//8
-    NSUInteger index;//c
+    NSUInteger pendingCount;//4
+    NSKVOPendingChangeNotification * lastPopedNotification;//8
+    NSUInteger lastPopdIndex;//c
     NSKeyValueObservance * observance;//10
 }NSKVOPendingInfoPerThreadPop;
 
