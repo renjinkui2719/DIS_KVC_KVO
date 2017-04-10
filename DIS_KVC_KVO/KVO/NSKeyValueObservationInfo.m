@@ -486,14 +486,14 @@ void _NSKeyValueReplaceObservationInfoForObject(id object, NSKeyValueContainerCl
     
     NSKeyValueObservingTSD *TSD = _CFGetTSD(NSKeyValueObservingTSDKey);
     if(TSD) {
-        void * ebx = *(TSD + 4);
-        while(ebx) {
-            if(*ebx != object) {
-                ebx = *(ebx+8);
-                continue;
+        ObservationInfoWatcher *watcher = TSD->firstWatcher;
+        while(watcher) {
+            if (watcher->object == object) {
+                [watcher->observationInfo release];
+                watcher->observationInfo = [newObservationInfo retain];
+                break;
             }
-            [*(ebx+4) release];
-            *(ebx+4) = observationInfo1.retain;
+            watcher = watcher->next;
         }
     }
     if(containerClass) {

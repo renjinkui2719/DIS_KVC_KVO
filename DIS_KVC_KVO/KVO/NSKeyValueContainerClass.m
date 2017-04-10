@@ -75,42 +75,31 @@ NSKeyValueObservationInfo *_NSKeyValueRetainedObservationInfoForObject(id object
     return  observationInfo;
 }
 
- 
 
-typedef struct {
-    void *p1;
-    void *p2;
-    void *p3;
-    void *p4;
-}ObservationInfoWatcher;
 
-typedef struct {
-    id object;
-    NSKeyValueObservationInfo *observationInfo;
-    void *p3;
-}unknow_stru_1;
-
-void _NSKeyValueAddObservationInfoWatcher(unknow_stru_1 * pstru) {
-    ObservationInfoWatcher *watcher = (ObservationInfoWatcher *)_CFGetTSD(0x15);
-    if (!watcher) {
-        watcher = (ObservationInfoWatcher *)NSAllocateScannedUncollectable(40);
-        _CFSetTSD(0x15, watcher, NSKeyValueObservingTSDDestroy);
+void _NSKeyValueAddObservationInfoWatcher(ObservationInfoWatcher * watcher) {
+    NSKeyValueObservingTSD *TSD = _CFGetTSD(NSKeyValueObservingTSDKey);
+    if (!TSD) {
+        TSD = (NSKeyValueObservingTSD *)NSAllocateScannedUncollectable(sizeof(NSKeyValueObservingTSD));
+        _CFSetTSD(NSKeyValueObservingTSDKey, TSD, NSKeyValueObservingTSDDestroy);
     }
-    pstru->p3 = watcher->p2;
-    watcher->p2 = pstru;
+    watcher->next = TSD->first;
+    TSD->first = watcher;
 }
 
-void _NSKeyValueRemoveObservationInfoWatcher(unknow_stru_1 * pstru) {
-    ObservationInfoWatcher *watcher = (ObservationInfoWatcher *)_CFGetTSD(0x15);
-    if (!watcher) {
-        watcher = (ObservationInfoWatcher *)NSAllocateScannedUncollectable(40);
-        _CFSetTSD(0x15, watcher, NSKeyValueObservingTSDDestroy);
+void _NSKeyValueRemoveObservationInfoWatcher(ObservationInfoWatcher * watcher) {
+    NSKeyValueObservingTSD *TSD = _CFGetTSD(NSKeyValueObservingTSDKey);
+    if (!TSD) {
+        TSD = (NSKeyValueObservingTSD *)NSAllocateScannedUncollectable(sizeof(NSKeyValueObservingTSD));
+        _CFSetTSD(NSKeyValueObservingTSDKey, TSD, NSKeyValueObservingTSDDestroy);
     }
-    if(watcher->p2 != pstru) {
+    
+    if(TSD->first != watcher) {
         NSLog(@"_NSKeyValueRemoveObservationInfoWatcher() was called in a surprising way.");
     }
-    if(watcher->p2) {
-        watcher->p2 = pstru->p3;
+    
+    if(TSD->first) {
+        TSD->first = watcher->next;
     }
 }
 
@@ -147,36 +136,40 @@ void NSKVODeallocateBreak(id object) {
 
 void NSKVODeallocate(id object, SEL selector) {
     NSKeyValueObservationInfo *observationInfo = _NSKeyValueRetainedObservationInfoForObject(object, nil);
-    unknow_stru_1 stru = {0};
-    stru.object = object;
-    stru.observationInfo = observationInfo;
-    stru.p3 = nil;
-    _NSKeyValueAddObservationInfoWatcher(&stru);
-    Class cls = object_getClass(object);
-    void *ivars = object_getIndexedIvars(cls);
-    NSKeyValueNotifyingInfo *notifyInfo = (NSKeyValueNotifyingInfo *)ivars;
+    ObservationInfoWatcher watcher = {object, observationInfo, NULL};
+    _NSKeyValueAddObservationInfoWatcher(&watcher);
+    NSKeyValueNotifyingInfo *notifyInfo = (NSKeyValueNotifyingInfo *)object_getIndexedIvars(object_getClass(object));
     Method originDellocMethod = class_getInstanceMethod(notifyInfo->originalClass, selector);
     ((id (*)(id,Method))method_invoke)(object, originDellocMethod);
     
     if(observationInfo) {
-        Boolean keyExistsAndHasValidFormat = NO;
-        Boolean NSKVODeallocateCleansUpBeforeThrowing = CFPreferencesGetAppBooleanValue(CFSTR("NSKVODeallocateCleansUpBeforeThrowing"), kCFPreferencesCurrentApplication, &keyExistsAndHasValidFormat);
-        if(!NSKVODeallocateCleansUpBeforeThrowing) {
-            NSKVODeallocateCleansUpBeforeThrowing = YES;
+        Boolean keyExistsAndHasValidFormat = false;
+        Boolean NSKVODeallocateCleansUpBeforeThrowing = false;
+        
+        NSKVODeallocateCleansUpBeforeThrowing = CFPreferencesGetAppBooleanValue(CFSTR("NSKVODeallocateCleansUpBeforeThrowing"), kCFPreferencesCurrentApplication, &keyExistsAndHasValidFormat);
+        
+        if (!NSKVODeallocateCleansUpBeforeThrowing) {
+            NSKVODeallocateCleansUpBeforeThrowing = true;
         }
-        unsigned char flag = !NSKVODeallocateCleansUpBeforeThrowing | !keyExistsAndHasValidFormat;
-        if(dyld_get_program_sdk_version() > 0x7FFFF || !flag) {
-            if(!flag) {
+        
+        if(!keyExistsAndHasValidFormat) {
+            keyExistsAndHasValidFormat = true;
+        }
+        
+        if(dyld_get_program_sdk_version() > 0x7FFFF || !(keyExistsAndHasValidFormat || NSKVODeallocateCleansUpBeforeThrowing)) {
+            if(!(keyExistsAndHasValidFormat || NSKVODeallocateCleansUpBeforeThrowing)) {
                 _NSKeyValueRemoveObservationInfoForObject(object, observationInfo);
             }
             [NSException raise:NSInternalInconsistencyException format:@"An instance %p of class %@ was deallocated while key value observers were still registered with it. Current observation info: %@", object, notifyInfo->originalClass, observationInfo];
         }
         else {
             NSLog(@"An instance %p of class %@ was deallocated while key value observers were still registered with it. Observation info was leaked, and may even become mistakenly attached to some other object. Set a breakpoint on NSKVODeallocateBreak to stop here in the debugger. Here's the current observation info:\n%@", object, notifyInfo->originalClass, observationInfo);
+            NSKVODeallocateBreak(object);
         }
-        
-        _NSKeyValueRemoveObservationInfoWatcher(&stru);
     }
+
+    _NSKeyValueRemoveObservationInfoWatcher(&watcher);
+    [observationInfo release];
 }
 
 void NSKVONotifyingSetMethodImplementation(NSKeyValueNotifyingInfo *info, SEL sel, IMP imp, NSString *key) {

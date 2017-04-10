@@ -25,9 +25,15 @@ typedef struct {
     BOOL flag;//24
 }ImplicitObservanceRemovalInfo;
 
+typedef struct ObservationInfoWatcher{
+    id object;
+    NSKeyValueObservationInfo *observationInfo;
+    struct ObservationInfoWatcher *next;
+}ObservationInfoWatcher;
+
 typedef struct {
     CFMutableArrayRef pendingArray;//0
-    void *unknow1;//4
+    ObservationInfoWatcher *firstWatcher;//4
     ImplicitObservanceAdditionInfo  implicitObservanceAdditionInfo;
     ImplicitObservanceRemovalInfo implicitObservanceRemovalInfo;
 }NSKeyValueObservingTSD;

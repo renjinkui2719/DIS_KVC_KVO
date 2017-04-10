@@ -464,9 +464,9 @@ void NSKeyValueWillChangeByOrderedToManyMutation(NSKeyValueChangeDetails *change
         id oldValue = nil;
         if (options & NSKeyValueObservingOptionOld) {
             oldValue = [object valueForKeyPath:keyPath];
-        }
-        if (!oldValue) {
-            oldValue = [NSNull null];
+            if (!oldValue) {
+                oldValue = [NSNull null];
+            }
         }
         
         *detailsRetained = NO;
@@ -585,6 +585,143 @@ void NSKeyValueDidChangeByOrderedToManyMutation(NSKeyValueChangeDetails *resultC
         resultChangeDetails->kind = changeDetails.kind;
         resultChangeDetails->oldValue = changeDetails.oldValue;
         resultChangeDetails->newValue = changeDetails.newValue;
+        resultChangeDetails->indexes = changeDetails.indexes;
+        resultChangeDetails->oldObjectsData = changeDetails.oldObjectsData;
+    }
+}
+
+void NSKeyValueWillChangeBySetMutation(NSKeyValueChangeDetails *changeDetails, id object, NSString *keyPath, BOOL keyPathExactMatch, int options, NSKVOArrayOrSetWillChangeInfo *changeInfo, BOOL *detailsRetained) {
+    if (keyPathExactMatch) {
+        NSKeyValueChange kind = 0;
+        id oldValue = nil;
+        id newValue = nil;
+        NSIndexSet *indexes = nil;
+        NSMutableData *oldObjectsData = nil;
+        
+        switch (changeInfo->mutationKind) {
+            case NSKeyValueUnionSetMutation: {
+                kind = NSKeyValueChangeInsertion;
+                
+                if (options & NSKeyValueObservingOptionNew) {
+                    id currentValue = [object valueForKey:keyPath];
+                    if ([changeInfo->objects intersectsSet:currentValue]) {
+                        newValue = [changeInfo->objects mutableCopy];
+                        if (currentValue) {
+                            [newValue minusSet: currentValue];
+                        }
+                    }
+                    else {
+                        //loc_D0FBF
+                        newValue = [changeInfo->objects copy];
+                    }
+                }
+            }
+                break;
+            case NSKeyValueMinusSetMutation: {
+                kind = NSKeyValueChangeRemoval;
+                
+                if (options & NSKeyValueObservingOptionOld) {
+                    id currentValue = [object valueForKey:keyPath];
+                    if ([changeInfo->objects isSubsetOfSet:currentValue]) {
+                        oldValue = [changeInfo->objects copy];
+                    }
+                    else {
+                        //loc_D0FDB
+                        oldValue = [changeInfo->objects mutableCopy];
+                        if (currentValue) {
+                            [oldValue intersectSet:currentValue];
+                        }
+                    }
+                }
+            }
+                break;
+            case NSKeyValueIntersectSetMutation: {
+                kind = NSKeyValueChangeRemoval;
+                
+                if (options & NSKeyValueObservingOptionOld) {
+                    //loc_D0F6F
+                    oldValue = [[object valueForKey:keyPath] mutableCopy];
+                    if (changeInfo->objects) {
+                        [oldValue minusSet:changeInfo->objects];
+                    }
+                }
+            }
+                break;
+            case NSKeyValueSetSetMutation: {
+                kind = NSKeyValueChangeReplacement;
+                
+                id currentValue = nil;
+                if (options & NSKeyValueObservingOptionOld) {
+                    currentValue = [object valueForKey:keyPath];
+                    oldValue = [currentValue mutableCopy];
+                    if (changeInfo->objects) {
+                        [oldValue minusSet:changeInfo->objects];
+                    }
+                }
+                
+                if (options & NSKeyValueObservingOptionNew) {
+                    if (!currentValue) {
+                        currentValue = [object valueForKey:keyPath];
+                    }
+                    newValue =  [changeInfo->objects mutableCopy];
+                    if (currentValue) {
+                        [newValue minusSet:currentValue];
+                    }
+                }
+            }
+                break;
+            default:
+                break;
+        }
+        
+        *detailsRetained = YES;
+        
+        changeDetails->kind = kind;
+        changeDetails->oldValue = oldValue;
+        changeDetails->newValue = newValue;
+        changeDetails->indexes = indexes;
+        changeDetails->oldObjectsData = oldObjectsData;
+    }
+    else {
+        //loc_D0E23
+        id oldValue = nil;
+        if (options & NSKeyValueObservingOptionOld) {
+            oldValue = [object valueForKeyPath:keyPath];
+            if (!oldValue) {
+                oldValue = [NSNull null];
+            }
+        }
+        
+        *detailsRetained = NO;
+        
+        changeDetails->kind = NSKeyValueChangeSetting;
+        changeDetails->oldValue = oldValue;
+        changeDetails->newValue = nil;
+        changeDetails->indexes = nil;
+        changeDetails->oldObjectsData = nil;
+    }
+}
+
+void NSKeyValueDidChangeBySetMutation(NSKeyValueChangeDetails *resultChangeDetails, id object, NSString *keyPath, BOOL keyPathExactMatch, int options, NSKeyValueChangeDetails changeDetails) {
+    if (keyPathExactMatch) {
+        *resultChangeDetails = changeDetails;
+    }
+    else {
+        id newValue = nil;
+        if (options & NSKeyValueObservingOptionNew) {
+            //loc_D116D
+            newValue = [object valueForKeyPath:keyPath];
+            if (!newValue) {
+                newValue = [NSNull null];
+            }
+        }
+        else {
+            newValue = changeDetails.newValue;
+        }
+        
+        resultChangeDetails->kind = changeDetails.kind;
+        resultChangeDetails->oldValue = changeDetails.oldValue;
+        resultChangeDetails->newValue = newValue;
         resultChangeDetails->indexes = changeDetails.indexes;
         resultChangeDetails->oldObjectsData = changeDetails.oldObjectsData;
     }
@@ -970,7 +1107,7 @@ void NSKeyValueWillChange(id object, id keyOrKeys, BOOL isASet, NSKeyValueObserv
                         [changeDetails.oldValue release];
                         [changeDetails.newValue release];
                         [changeDetails.indexes release];
-                        [changeDetails.unknow1 release];
+                        [changeDetails.oldObjectsData release];
                     }
                     
                     [changeDictionary release];
