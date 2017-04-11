@@ -14,7 +14,7 @@
 @class NSKeyValueObservance;
 
 typedef struct {
-    uint16_t unknow1:16;
+    uint16_t retainCount:16;
     uint16_t unknow2:16;
     id object;//4
     id keyOrKeys;//8
@@ -57,17 +57,30 @@ typedef struct {
 }NSKVOPendingInfoPerThreadPop;
 
 typedef struct {
+    NSKeyValueObservance *observance;//0
+    NSKeyValueChange kind;//4
+    id oldValue;//8
+    id newValue;//c
+    NSIndexSet *indexes;//10
+    NSMutableData * oldObjectsData;//14
+    id forwardingValues_p1;//18
+    id forwardingValues_p2;//1c
+    BOOL p5;//20
+    NSString *keyOrKeys;//24
+}NSKVOPendingInfoLocalDetail;
+
+typedef struct {
     NSUInteger capacity;//0
     BOOL isStackBuff;//4
-    void *detailsBuff;//8
-    NSUInteger count;//c
+    NSKVOPendingInfoLocalDetail *detailsBuff;//8
+    NSUInteger detailsCount;//c
     BOOL p5;//10
     id p6;//14
 }NSKVOPendingInfoLocalPush;
 
 typedef struct {
-    void *detailsBuff;//0
-    NSUInteger count;//4
+    NSKVOPendingInfoLocalDetail *detailsBuff;//0
+    NSUInteger detailsCount;//4
     id observer;//8
     id oldValue;//c
     id forwardValues_p1;//10

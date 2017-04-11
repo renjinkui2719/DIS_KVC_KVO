@@ -23,13 +23,39 @@ extern void os_lock_unlock(void *);
 extern void *_CFGetTSD(uint32_t slot);
 extern void *_CFSetTSD(uint32_t slot, void *newVal,   void (*destructor)(void *));
 extern void *NSAllocateScannedUncollectable(size_t);
+extern dispatch_once_t isVMWare_onceToken;
+extern BOOL isVMWare_doWorkarounds;
 
-void NSKVOPendingNotificationRetain(CFAllocatorRef allocator, const void *value) {
-    //value->p1 ++;
+const void *NSKVOPendingNotificationRetain(CFAllocatorRef allocator, const void *value) {
+    NSKVOPendingChangeNotification *ntf = (NSKVOPendingChangeNotification *)value;
+    ntf->retainCount ++;
+    return ntf;
 }
 
 void NSKVOPendingNotificationRelease(CFAllocatorRef allocator, const void *value) {
-    
+    NSKVOPendingChangeNotification *ntf = (NSKVOPendingChangeNotification *)value;
+    ntf->retainCount --;
+    if (ntf->retainCount <= 0) {
+        if (ntf->observance) {
+            dispatch_once(&isVMWare_onceToken, ^{
+                isVMWare_doWorkarounds =  _CFAppVersionCheckLessThan("com.vmware.fusion", 5, 0, 0x0BFF00000);
+            });
+            if(!isVMWare_doWorkarounds) {
+                [ntf->observance.observer release];
+            }
+        }
+        [ntf->forwardingValues_p2 release];
+        [ntf->forwardingValues_p1 release];
+        [ntf->oldObjectsData release];
+        [ntf->indexes release];
+        [ntf->newValue release];
+        [ntf->oldValue release];
+        [ntf->observationInfo release];
+        [ntf->keyOrKeys release];
+        [ntf->object release];
+        
+        free(ntf);
+    }
 }
 
 const CFArrayCallBacks NSKVOPendingNotificationArrayCallbacks = {
@@ -105,11 +131,7 @@ const CFArrayCallBacks NSKVOPendingNotificationArrayCallbacks = {
     
     pthread_mutex_unlock(&_NSKeyValueObserverRegistrationLock);
     
-#if __LP64__
-     unsigned char detailsBuff[1152]; //72 * 16
-#else
-     unsigned char detailsBuff[640]; //40 * 16
-#endif
+    unsigned char detailsBuff[16 * sizeof(NSKVOPendingInfoLocalDetail)];
     memset(detailsBuff, 0, sizeof(detailsBuff));
     
     NSKVOPendingInfoLocalPush pendingInfoPush = {0};
@@ -118,7 +140,7 @@ const CFArrayCallBacks NSKVOPendingNotificationArrayCallbacks = {
         //loc_12A3AA
         pendingInfoPush.capacity = 16;
         pendingInfoPush.isStackBuff = YES;
-        pendingInfoPush.detailsBuff = detailsBuff;
+        pendingInfoPush.detailsBuff = (NSKVOPendingInfoLocalDetail *)detailsBuff;
         pendingInfoPush.count = 0;
         pendingInfoPush.p5 = YES;
         pendingInfoPush.p6 = 0;
@@ -146,7 +168,7 @@ const CFArrayCallBacks NSKVOPendingNotificationArrayCallbacks = {
     }
     NSKVOPendingInfoLocalPop pendingInfoPop = {0};
     if(pendingInfoPush.count > 0) {
-        pendingInfoPop.detailsBuff = detailsBuff;
+        pendingInfoPop.detailsBuff = (NSKVOPendingInfoLocalDetail *)detailsBuff;
         pendingInfoPop.count = pendingInfoPush.count;
         pendingInfoPop.observer = 0;
         pendingInfoPop.oldValue = 0;
@@ -164,7 +186,7 @@ const CFArrayCallBacks NSKVOPendingNotificationArrayCallbacks = {
         }while(++i != totalObservationCount);
     }
     //loc_12A59B
-    if(detailsBuff != pendingInfoPush.detailsBuff) {
+    if(detailsBuff != (unsigned char *)pendingInfoPush.detailsBuff) {
         free(pendingInfoPush.detailsBuff);
     }
 }

@@ -10,6 +10,7 @@
 
 @class NSKeyValueObservance;
 @class NSKeyValueProperty;
+@class NSKeyValueObservationInfo;
 
 typedef struct {
     id object;//8
@@ -48,6 +49,8 @@ ImplicitObservanceRemovalInfo *NSKeyValueGetImplicitObservanceRemovalInfo();
 
 extern const CFArrayCallBacks NSKVOPendingNotificationArrayCallbacks;
 
+const void *NSKVOPendingNotificationRetain(CFAllocatorRef allocator, const void *value);
+void NSKVOPendingNotificationRelease(CFAllocatorRef allocator, const void *value);
 
 @interface NSObject (NSKeyValueObservingPrivate)
 

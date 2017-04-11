@@ -83,8 +83,8 @@ void _NSKeyValueAddObservationInfoWatcher(ObservationInfoWatcher * watcher) {
         TSD = (NSKeyValueObservingTSD *)NSAllocateScannedUncollectable(sizeof(NSKeyValueObservingTSD));
         _CFSetTSD(NSKeyValueObservingTSDKey, TSD, NSKeyValueObservingTSDDestroy);
     }
-    watcher->next = TSD->first;
-    TSD->first = watcher;
+    watcher->next = TSD->firstWatcher;
+    TSD->firstWatcher = watcher;
 }
 
 void _NSKeyValueRemoveObservationInfoWatcher(ObservationInfoWatcher * watcher) {
@@ -94,12 +94,12 @@ void _NSKeyValueRemoveObservationInfoWatcher(ObservationInfoWatcher * watcher) {
         _CFSetTSD(NSKeyValueObservingTSDKey, TSD, NSKeyValueObservingTSDDestroy);
     }
     
-    if(TSD->first != watcher) {
+    if(TSD->firstWatcher != watcher) {
         NSLog(@"_NSKeyValueRemoveObservationInfoWatcher() was called in a surprising way.");
     }
     
-    if(TSD->first) {
-        TSD->first = watcher->next;
+    if(TSD->firstWatcher) {
+        TSD->firstWatcher = watcher->next;
     }
 }
 

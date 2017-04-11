@@ -753,7 +753,7 @@ void NSKeyValueWillChangeBySetting(NSKeyValueChangeDetails *changeDetails, id ob
 
 void NSKeyValuePushPendingNotificationPerThread(id object, id keyOrKeys, NSKeyValueObservance *observance, NSKeyValueChangeDetails changeDetails , NSKeyValuePropertyForwardingValues forwardingValues, NSKVOPendingInfoPerThreadPush *pendingInfo) {
     NSKVOPendingChangeNotification *pendingNotification = NSAllocateScannedUncollectable(sizeof(NSKVOPendingChangeNotification));
-    pendingNotification->unknow1 = 1;
+    pendingNotification->retainCount = 1;
     pendingNotification->unknow2 = pendingInfo->count;
     pendingNotification->object = [object retain];
     pendingNotification->keyOrKeys = [keyOrKeys copy];
@@ -771,122 +771,97 @@ void NSKeyValuePushPendingNotificationPerThread(id object, id keyOrKeys, NSKeyVa
             isVMWare_doWorkarounds =  _CFAppVersionCheckLessThan("com.vmware.fusion", 5, 0, 0x0BFF00000);
         });
         if(!isVMWare_doWorkarounds) {
-            [pendingNotification->observance.observer release];
+            [pendingNotification->observance.observer retain];
         }
     }
     CFArrayAppendValue(pendingInfo->pendingArray, pendingNotification);
-    NSKVOPendingNotificationRelease(0,pendingNotification);
+    NSKVOPendingNotificationRelease(NULL,pendingNotification);
 }
 
 void NSKeyValuePushPendingNotificationLocal(id object, id keyOrKeys, NSKeyValueObservance *observance, NSKeyValueChangeDetails changeDetails , NSKeyValuePropertyForwardingValues forwardingValues, NSKVOPendingInfoLocalPush *pendingInfo) {
-    
-    /*
-     64 位下：
-     (1) capicity * 72
-     = capacity * 8 * 9 
-     = capacity * 8 * (1 + 8)
-     = capacity * 8 + capacity * 8 * 8
-     = capacity << 3 + capacity << 6
-     (2) 2 * capicity * 72 = capacity << 4 + capacity << 7
-     
-     32 位下：
-     (1) capacity * 40
-     = capcity * 8 * 5 
-     = capacity * 8 * (1 + 4)
-     = capacity * 8 + capacity * 8 * 4
-     = capacity << 3 + capacity << 5
-     (2) 2 * capacity * 40 = capacity << 4 + capacity << 6
-     */
-    
     //count 已经增长到 capacity
-    if(pendingInfo->count == pendingInfo->capacity) {
+    if(pendingInfo->detailsCount == pendingInfo->capacity) {
         //扩容两倍
-        pendingInfo->capacity = pendingInfo->count << 1;
+        pendingInfo->capacity = pendingInfo->detailsCount * 2;
         //detailsBuff来自栈(局部变量)
         if(pendingInfo->isStackBuff) {
             //分配新的内存
-            void *detailsBuff = NSAllocateScannedUncollectable(
-#if __LP64__
-                                                               (pendingInfo->capacity << 4) + (pendingInfo->capacity << 7)
-#else
-                                                               (pendingInfo->capacity << 4) + (pendingInfo->capacity << 6)
-#endif
-                                                               );
+            void *detailsBuff = NSAllocateScannedUncollectable(pendingInfo->capacity * sizeof(NSKVOPendingInfoLocalDetail));
             //将旧的detailsBuff拷贝到新buff
-            memmove(detailsBuff, pendingInfo->detailsBuff,
-#if __LP64__
-                    (pendingInfo->count << 3) + (pendingInfo->count << 6)
-#else
-                    (pendingInfo->count << 3) + (pendingInfo->count << 5)
-#endif
-                    );
+            memmove(detailsBuff, pendingInfo->detailsBuff,pendingInfo->detailsCount * sizeof(NSKVOPendingInfoLocalDetail));
             pendingInfo->detailsBuff = detailsBuff;
             pendingInfo->isStackBuff = NO;
         }
         //detailsBuff来自堆
         else {
-            //realloc内存
-            void *detailsBuff = NSReallocateScannedUncollectable(pendingInfo->detailsBuff,
-#if __LP64__
-                                                                 (pendingInfo->capacity << 4) + (pendingInfo->capacity << 7)
-#else
-                                                                 (pendingInfo->capacity << 4) + (pendingInfo->capacity << 6)
-#endif
-                                                                 );
+            //直接realloc内存
+            void *detailsBuff = NSReallocateScannedUncollectable(pendingInfo->detailsBuff,pendingInfo->capacity * sizeof(NSKVOPendingInfoLocalDetail));
             pendingInfo->detailsBuff = detailsBuff;
         }
-        //loc_4226A
-        
     }
     
-    //loc_42275
-    uint8_t *start = (uint8_t *)pendingInfo->detailsBuff +
-#if __LP64__
-    (pendingInfo->count << 3) + (pendingInfo->count << 6)
-#else
-    (pendingInfo->count << 3) + (pendingInfo->count << 5)
-#endif
-    ;
-    
-    pendingInfo->count += 1;
+    //新detail指针
+    NSKVOPendingInfoLocalDetail *detail = pendingInfo->detailsBuff + pendingInfo->detailsCount;
+    //插入新detail后， count加一
+    pendingInfo->detailsCount += 1;
 
-    *((id *)start) = observance; start += sizeof(id);
-    *((uint32_t *)start) = changeDetails.kind; start += sizeof(uint32_t);
-    *((id *)start) = changeDetails.oldValue; start += sizeof(id);
-    *((id *)start) = changeDetails.newValue; start += sizeof(id);
-    *((id *)start) = changeDetails.indexes; start += sizeof(id);
-    *((id *)start) = changeDetails.unknow1; start += sizeof(id);
-    *((id *)start) = forwardingValues.p1; start += sizeof(id);
-    *((id *)start) = forwardingValues.p2; start += sizeof(id);
-    *((uint32_t *)start) = pendingInfo->p5; start += sizeof(uint32_t);
-    *((id *)start) = keyOrKeys; start += sizeof(id);
+    detail->observance = observance;
+    detail->kind = changeDetails.kind;
+    detail->oldValue = changeDetails.oldValue;
+    detail->newValue = changeDetails.newValue;
+    detail->indexes = changeDetails.indexes;
+    detail->oldObjectsData = changeDetails.oldObjectsData;
+    detail->forwardingValues_p1 = forwardingValues.p1;
+    detail->forwardingValues_p2 = forwardingValues.p2;
+    detail->p5 = pendingInfo->p5;
+    detail->keyOrKeys = keyOrKeys;
     
     [changeDetails.oldValue retain];
     [forwardingValues.p1 retain];
     [observance.observer retain];
+}
+
+BOOL NSKeyValuePopPendingNotificationLocal(id object,id keyOrKeys, NSKeyValueObservance **popedObservance, NSKeyValueChangeDetails *popedChangeDetails,NSKeyValuePropertyForwardingValues *popedForwardValues,id *popedKeyOrKeys, NSKVOPendingInfoLocalPop* pendingInfo) {
     
-    /*
-    edi = eax + eax * sizeof(id);
-    *(buff + edi * 8) = observance;
+    [pendingInfo->observer release];
+    [pendingInfo->oldValue release];
+    [pendingInfo->forwardValues_p1 release];
     
-    *(buff + edi * 8 + 0x04) = changeDetails.kind;
-    *(buff + edi * 8 + 0x08) = changeDetails.oldValue;
-    *(buff + edi * 8 + 0x0c) = changeDetails.newValue;
-    *(buff + edi * 8 + 0x10) = changeDetails.indexes;
-    *(buff + edi * 8 + 0x14) = changeDetails.unknow1;
+    while(pendingInfo->detailsCount > 0) {
+        pendingInfo->detailsCount --;
+        
+        NSKVOPendingInfoLocalDetail *detail = pendingInfo->detailsBuff + pendingInfo->detailsCount;
+        
+        if (detail->observance) {
+            if(!_NSKeyValueCheckObservationInfoForPendingNotification(object, detail->observance, pendingInfo->observationInfo)) {
+                [detail->observance.observer release];
+                [detail->oldValue release];
+                [detail->forwardingValues_p1 release];
+                continue;
+            }
+        }
+        
+        *popedObservance = detail->observance;
+        
+        popedChangeDetails->kind = detail->kind;
+        popedChangeDetails->oldValue = detail->oldValue;
+        popedChangeDetails->newValue = detail->newValue;
+        popedChangeDetails->indexes = detail->indexes;
+        popedChangeDetails->oldObjectsData = detail->oldObjectsData;
+        
+        popedForwardValues->p1 = detail->forwardingValues_p1;
+        popedForwardValues->p2 = detail->forwardingValues_p1;
+        
+        *popedKeyOrKeys = detail->keyOrKeys;
+        
+        pendingInfo->observer = detail->observance.observer;
+        pendingInfo->oldValue = detail->oldValue;
+        pendingInfo->forwardValues_p1 = detail->forwardingValues_p1;
+        
+        return YES;
+    }
     
-    [*(buff + edi * 8 + 0x08) retain];
-    
-    *(buff + edi * 8 + 0x18) = forwardingValues.p1;
-    *(buff + edi * 8 + 0x1C) = forwardingValues.p2;
-    [forwardingValues.p1 retain];
-    
-    *(buff + edi * 8 + 0x20) = pendingInfo->p5;
-    *(buff + edi * 8 + 0x24) = keyOrKeys;
-    
-    [*(buff + edi * 8) retain];
-     */
-    
+    return NO;
 }
 
 
@@ -905,7 +880,7 @@ void NSKeyValueDidChangeBySetting(NSKeyValueChangeDetails *resultChangeDetails, 
     resultChangeDetails->oldValue = changeDetails.oldValue;
     resultChangeDetails->newValue = newValue;
     resultChangeDetails->indexes = changeDetails.indexes;
-    resultChangeDetails->unknow1 = changeDetails.unknow1;
+    resultChangeDetails->oldObjectsData = changeDetails.oldObjectsData;
 }
 
 
@@ -958,7 +933,7 @@ BOOL NSKeyValuePopPendingNotificationPerThread(id object,id keyOrKeys, NSKeyValu
                 popedChangeDetails->oldValue = changeNotification->oldValue;
                 popedChangeDetails->newValue = changeNotification->newValue;
                 popedChangeDetails->indexes = changeNotification->indexes;
-                popedChangeDetails->unknow1 = changeNotification->changeDetails_unknow1;
+                popedChangeDetails->oldObjectsData = changeNotification->oldObjectsData;
                 
                 popedForwardValues->p1 = changeNotification->forwardingValues_p1;
                 popedForwardValues->p2 = changeNotification->forwardingValues_p2;
@@ -977,98 +952,6 @@ BOOL NSKeyValuePopPendingNotificationPerThread(id object,id keyOrKeys, NSKeyValu
     }
     return NO;
 }
-
-BOOL NSKeyValuePopPendingNotificationLocal(id object,id keyOrKeys, NSKeyValueObservance **observance, NSKeyValueChangeDetails *changeDetails,NSKeyValuePropertyForwardingValues *forwardValues,id *findKeyOrKeys, NSKVOPendingInfoLocalPop* pendingInfo) {
-    
-    [pendingInfo->observer release];
-    [pendingInfo->oldValue release];
-    [pendingInfo->forwardValues_p1 release];
-    
-    uint8_t *start = NULL;
-    
-    NSKeyValueObservance *observanceLocal = nil;
-    NSKeyValueChange kind = 0;
-    id oldValue = nil,newValue= nil,indexes= nil,observationInfo= nil;
-    id forwardValues_p1 = nil,  forwardValues_p2 = nil;
-    id keyOrKeysLocal = nil;
-    
-    if(pendingInfo->count > 0) {
-        do {
-            pendingInfo->count --;
-            
-            start = (uint8_t *)pendingInfo->detailsBuff +
-#if __LP64__
-            (pendingInfo->count << 3) + (pendingInfo->count << 6)
-#else
-            (pendingInfo->count << 3) + (pendingInfo->count << 5)
-#endif
-            ;
-
-            observanceLocal = *((id *)start); start += sizeof(id);
-            kind = *((uint32_t *)start); start += sizeof(uint32_t);
-            oldValue = *((id *)start); start += sizeof(id);
-            newValue = *((id *)start); start += sizeof(id);
-            indexes = *((id *)start); start += sizeof(id);
-            observationInfo = *((id *)start); start += sizeof(id);
-            forwardValues_p1 = *((id *)start); start += sizeof(id);
-            forwardValues_p2 = *((id *)start); start += sizeof(id);
-            /*observance = *((id *)start);*/ start += sizeof(uint32_t);
-            keyOrKeysLocal = *((id *)start); start += sizeof(id);
-            
-            if(observanceLocal) {
-                if(!_NSKeyValueCheckObservationInfoForPendingNotification(object, observanceLocal, observationInfo)) {
-                    [observanceLocal.observer release];
-                    [oldValue release];
-                    [forwardValues_p1 release];
-                    
-                    continue;
-                }
-            }
-            
-            *observance = observanceLocal;
-            
-            changeDetails->kind = kind;
-            changeDetails->oldValue = oldValue;
-            changeDetails->newValue = newValue;
-            changeDetails->indexes = indexes;
-            changeDetails->unknow1 = observationInfo;
-            
-            forwardValues->p1 = forwardValues_p1;
-            forwardValues->p2 = forwardValues_p2;
-            
-            *findKeyOrKeys = keyOrKeysLocal;
-            
-            pendingInfo->observer = observanceLocal.observer;
-            pendingInfo->oldValue = oldValue;
-            pendingInfo->forwardValues_p1 = forwardValues_p1;
-
-            
-            /*
-            //loc_4268F
-            *observance = *(ebx+edi*8);
-            
-            changeDetails->kind = *(ebx+edi*8 + 0x04);
-            changeDetails->oldValue = *(ebx+edi*8 + 0x08);
-            changeDetails->newValue = *(ebx+edi*8 + 0x0C);
-            changeDetails->indexes = *(ebx+edi*8 + 0x10);
-            changeDetails->unknow1 = *(ebx+edi*8 + 0x14);
-            
-            forwardValues->p1 = *(ebx+edi*8 + 0x18);
-            forwardValues->p2 = *(ebx+edi*8 + 0x1C);
-            
-            *findKeyOrKeys = *(ebx+edi*8 + 0x24);
-            
-            *(pendingInfo + 0x08) = *(ebx+edi*8).observer;
-            *(pendingInfo + 0x0C) = *(ebx+edi*8 + 0x08);
-            *(pendingInfo + 0x10) = *(ebx+edi*8 + 0x18);
-            */
-            return YES;
-        }
-        while((NSInteger)pendingInfo->count > 0);
-    }
-    return NO;
-}
-
 
 void NSKeyValueWillChange(id object, id keyOrKeys, BOOL isASet, NSKeyValueObservationInfo *observationInfo, NSKeyValueWillChangeByCallback willChangeByCallback, void *changeInfo, NSKeyValuePushPendingNotificationCallback pushPendingNotificationCallback, void *pendingInfo, NSKeyValueObservance *observance) {
     NSUInteger observanceCount = _NSKeyValueObservationInfoGetObservanceCount(observationInfo);
