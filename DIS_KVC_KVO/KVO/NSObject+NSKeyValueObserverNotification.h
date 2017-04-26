@@ -24,7 +24,7 @@ typedef struct {
     id oldValue;//18
     id newValue;//1c
     NSIndexSet *indexes;//20
-    NSMutableData * oldObjectsData;//24
+    NSMutableData * extraData;//24
     id forwardingValues_p1;//28
     id forwardingValues_p2;//2c
 }NSKVOPendingChangeNotification;
@@ -62,7 +62,7 @@ typedef struct {
     id oldValue;//8
     id newValue;//c
     NSIndexSet *indexes;//10
-    NSMutableData * oldObjectsData;//14
+    NSMutableData * extraData;//14
     id forwardingValues_p1;//18
     id forwardingValues_p2;//1c
     BOOL p5;//20

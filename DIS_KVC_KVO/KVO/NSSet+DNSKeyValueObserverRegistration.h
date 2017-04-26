@@ -1,5 +1,5 @@
 //
-//  NSSet+NSKeyValueObserverRegistration.h
+//  NSSet+DNSKeyValueObserverRegistration.h
 //  DIS_KVC_KVO
 //
 //  Created by renjinkui on 2017/3/29.
@@ -8,6 +8,6 @@
 
 #import <Foundation/Foundation.h>
 
-@interface NSSet (NSKeyValueObserverRegistration)
+@interface NSSet (DNSKeyValueObserverRegistration)
 
 @end

@@ -46,7 +46,7 @@ void NSKVOPendingNotificationRelease(CFAllocatorRef allocator, const void *value
         }
         [ntf->forwardingValues_p2 release];
         [ntf->forwardingValues_p1 release];
-        [ntf->oldObjectsData release];
+        [ntf->extraData release];
         [ntf->indexes release];
         [ntf->newValue release];
         [ntf->oldValue release];
@@ -141,7 +141,7 @@ const CFArrayCallBacks NSKVOPendingNotificationArrayCallbacks = {
         pendingInfoPush.capacity = 16;
         pendingInfoPush.isStackBuff = YES;
         pendingInfoPush.detailsBuff = (NSKVOPendingInfoLocalDetail *)detailsBuff;
-        pendingInfoPush.count = 0;
+        pendingInfoPush.detailsCount = 0;
         pendingInfoPush.p5 = YES;
         pendingInfoPush.p6 = 0;
         if(observationInfo && keyCount) {
@@ -167,9 +167,9 @@ const CFArrayCallBacks NSKVOPendingNotificationArrayCallbacks = {
         block();
     }
     NSKVOPendingInfoLocalPop pendingInfoPop = {0};
-    if(pendingInfoPush.count > 0) {
+    if(pendingInfoPush.detailsCount > 0) {
         pendingInfoPop.detailsBuff = (NSKVOPendingInfoLocalDetail *)detailsBuff;
-        pendingInfoPop.count = pendingInfoPush.count;
+        pendingInfoPop.detailsCount = pendingInfoPush.detailsCount;
         pendingInfoPop.observer = 0;
         pendingInfoPop.oldValue = 0;
         pendingInfoPop.forwardValues_p1 = 0;
@@ -262,7 +262,7 @@ const CFArrayCallBacks NSKVOPendingNotificationArrayCallbacks = {
                     }
                     //loc_B45BE
                     changeDetails.indexes = [change objectForKey:NSKeyValueChangeIndexesKey];
-                    changeDetails.unknow1 = nil;
+                    changeDetails.extraData = nil;
                     
                     NSKeyValueNotifyObserver(observance.observer,
                                              [observance.property keyPath],
@@ -282,7 +282,7 @@ const CFArrayCallBacks NSKVOPendingNotificationArrayCallbacks = {
                         changeDetails.oldValue = nil;
                         changeDetails.newValue = nil;
                         changeDetails.indexes = [change objectForKey:NSKeyValueChangeIndexesKey];
-                        changeDetails.unknow1 = nil;
+                        changeDetails.extraData = nil;
                         
                         NSKeyValueNotifyObserver(observance.observer,
                                                  [observance.property keyPath],

@@ -1,5 +1,5 @@
 //
-//  NSKeyValueCodingCommon.h
+//  DSKeyValueCodingCommon.h
 //  DIS_KVC_KVO
 //
 //  Created by renjinkui on 2017/3/11.
@@ -16,16 +16,19 @@ extern void *_CFGetTSD(uint32_t slot);
 extern void *_CFSetTSD(uint32_t slot, void *newVal, void (*destructor)(void *));
 extern void *NSAllocateScannedUncollectable(size_t);
 extern void *NSReallocateScannedUncollectable(void *, size_t);
+extern BOOL _CFAppVersionCheckLessThan(const char *, uint64_t, uint64_t, uint64_t);
+extern NSUInteger dyld_get_program_sdk_version();
 
-extern pthread_mutex_t _NSKeyValueObserverRegistrationLock;
-extern pthread_t _NSKeyValueObserverRegistrationLockOwner;
-extern OSSpinLock NSKeyValueObservationInfoCreationSpinLock;
-extern OSSpinLock NSKeyValueObservationInfoSpinLock;
 
-void NSKeyValueObserverRegistrationLockUnlock();
-void NSKeyValueObserverRegistrationLockLock();
+extern pthread_mutex_t _DSKeyValueObserverRegistrationLock;
+extern pthread_t _DSKeyValueObserverRegistrationLockOwner;
+extern OSSpinLock DSKeyValueObservationInfoCreationSpinLock;
+extern OSSpinLock DSKeyValueObservationInfoSpinLock;
 
-static inline NSUInteger _NSKVOPointersHash(NSInteger count,...) {
+void DSKeyValueObserverRegistrationLockUnlock();
+void DSKeyValueObserverRegistrationLockLock();
+
+static inline NSUInteger _DSKVOPointersHash(NSInteger count,...) {
     void *pointers[count];
     
     va_list ap;

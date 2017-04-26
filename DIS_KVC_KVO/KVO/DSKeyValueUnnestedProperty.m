@@ -1,27 +1,27 @@
-#import "NSKeyValueUnnestedProperty.h"
-#import "NSKeyValueContainerClass.h"
-#import "NSKeyValueMethodGetter.h"
-#import "NSKeyValueMethodSetter.h"
-#import "NSKeyValueMutatingArrayMethodSet.h"
-#import "NSKeyValueMutatingOrderedSetMethodSet.h"
-#import "NSKeyValueMutatingSetMethodSet.h"
-#import "NSObject+NSKeyValueCoding.h"
-#import "NSObject+NSKeyValueCodingPrivate.h"
-#import "NSKeyValuePropertyCreate.h"
-#import "NSSetValueAndNotify.h"
+#import "DSKeyValueUnnestedProperty.h"
+#import "DSKeyValueContainerClass.h"
+#import "DSKeyValueMethodGetter.h"
+#import "DSKeyValueMethodSetter.h"
+#import "DSKeyValueMutatingArrayMethodSet.h"
+#import "DSKeyValueMutatingOrderedSetMethodSet.h"
+#import "DSKeyValueMutatingSetMethodSet.h"
+#import "NSObject+DSKeyValueCoding.h"
+#import "NSObject+DSKeyValueCodingPrivate.h"
+#import "DSKeyValuePropertyCreate.h"
+#import "DSSetValueAndNotify.h"
 #import <pthread.h>
 #import <objc/runtime.h>
 #import <objc/objc.h>
 #import <objc/message.h>
 
-extern OSSpinLock NSKeyValueCachedAccessorSpinLock;
-extern CFMutableSetRef NSKeyValueCachedSetters;
-extern CFMutableSetRef NSKeyValueCachedMutableArrayGetters;
+extern OSSpinLock DSKeyValueCachedAccessorSpinLock;
+extern CFMutableSetRef DSKeyValueCachedSetters;
+extern CFMutableSetRef DSKeyValueCachedMutableArrayGetters;
 
 
-@implementation NSKeyValueUnnestedProperty
+@implementation DSKeyValueUnnestedProperty
 
-- (id)_initWithContainerClass:(NSKeyValueContainerClass *)containerClass key:(NSString *)key propertiesBeingInitialized:(CFMutableSetRef)propertiesBeingInitialized {
+- (id)_initWithContainerClass:(DSKeyValueContainerClass *)containerClass key:(NSString *)key propertiesBeingInitialized:(CFMutableSetRef)propertiesBeingInitialized {
 	if(self = [super _initWithContainerClass:containerClass keyPath:key propertiesBeingInitialized:propertiesBeingInitialized]) {
 		NSMutableSet *affectingProperties = [[NSMutableSet alloc] init];
 		[self _givenPropertiesBeingInitialized:propertiesBeingInitialized getAffectingProperties:affectingProperties];
@@ -34,7 +34,7 @@ extern CFMutableSetRef NSKeyValueCachedMutableArrayGetters;
 		}
 		[affectingProperties release];
         
-        for (NSKeyValueUnnestedProperty *property in _affectingProperties) {
+        for (DSKeyValueProperty *property in _affectingProperties) {
         	[property _addDependentValueKey: self.keyPath];
         }
 	}
@@ -57,14 +57,14 @@ extern CFMutableSetRef NSKeyValueCachedMutableArrayGetters;
     else {
         isaForAutoNotifying = (void *)CFSTR("not cached yet");
     }
-    return [NSString stringWithFormat:@"<%@:Container class:%@, key:%@, isa for autonotifying:%@,key paths of directly and indirectly affecting properties:%@>",self.class, self.containerClass.originalClass, self.keyPath, isaForAutoNotifying, valuesString.length ? valuesString : (NSString *)CFSTR("none")];
+    return [NSString stringWithFormat:@"<%@:Container class:%@, key:%@, isa for autonotifying:%@,key paths of directly and indirectly affecting properties:%@>",self.class, self.containerClass.originalClass, self.keyPath, isaForAutoNotifying, valuesString.length ? valuesString : @"none"];
 }
 
 - (Class)isaForAutonotifying {
     if(!_cachedIsaForAutonotifyingIsValid) {
         Class isaForAutonotifying = [self _isaForAutonotifying];
         _cachedIsaForAutonotifying = isaForAutonotifying;
-        for (NSKeyValueProperty *property in _affectingProperties) {
+        for (DSKeyValueProperty *property in _affectingProperties) {
             if((isaForAutonotifying = [property _isaForAutonotifying])) {
                 _cachedIsaForAutonotifying = isaForAutonotifying;
             }
@@ -77,9 +77,9 @@ extern CFMutableSetRef NSKeyValueCachedMutableArrayGetters;
 - (Class)_isaForAutonotifying {
     BOOL autoNotify = [self.containerClass.originalClass automaticallyNotifiesObserversForKey:self.keyPath];
     if(autoNotify) {
-        NSKeyValueNotifyingInfo *info = _NSKeyValueContainerClassGetNotifyingInfo(self.containerClass);
+        DSKeyValueNotifyingInfo *info = _DSKeyValueContainerClassGetNotifyingInfo(self.containerClass);
         if (info) {
-            _NSKVONotifyingEnableForInfoAndKey(info,self.keyPath);
+            _DSKVONotifyingEnableForInfoAndKey(info,self.keyPath);
             return info->containerClass;
         }
     }
@@ -112,7 +112,7 @@ extern CFMutableSetRef NSKeyValueCachedMutableArrayGetters;
                 }
                 else {
                     //创建被依赖的每个keyPath对应的property
-                    NSKeyValueProperty *property = NSKeyValuePropertyForIsaAndKeyPathInner(self.containerClass.originalClass ,eachKeyPath, propertiesBeingInitialized);
+                    DSKeyValueProperty *property = DSKeyValuePropertyForIsaAndKeyPathInner(self.containerClass.originalClass ,eachKeyPath, propertiesBeingInitialized);
                     if(![affectingProperties containsObject:property]) {
                         [affectingProperties addObject:property];
                         //被依赖property本身也会有自己的其他依赖项,获取之
@@ -142,7 +142,7 @@ extern CFMutableSetRef NSKeyValueCachedMutableArrayGetters;
     if((keyPath = [self _keyPathIfAffectedByValueForMemberOfKeys:keys])) {
         return keyPath;
     }
-    for(NSKeyValueUnnestedProperty *property in self.affectingProperties) {
+    for(DSKeyValueUnnestedProperty *property in self.affectingProperties) {
         if([property _keyPathIfAffectedByValueForMemberOfKeys:keys]) {
             return self.keyPath;
         }
@@ -174,7 +174,7 @@ extern CFMutableSetRef NSKeyValueCachedMutableArrayGetters;
         return keyPath;
     }
     
-    for(NSKeyValueUnnestedProperty *property in self.affectingProperties) {
+    for(DSKeyValueUnnestedProperty *property in self.affectingProperties) {
         if([property _keyPathIfAffectedByValueForKey:key exactMatch:exactMatch]) {
             if(exactMatch) {
                 *exactMatch = NO;
@@ -192,13 +192,13 @@ extern CFMutableSetRef NSKeyValueCachedMutableArrayGetters;
     return CFEqual(self.keyPath, keyPath);
 }
 
-- (BOOL)object:(id)object withObservance:(NSKeyValueObservance *)observance willChangeValueForKeyOrKeys:(id)keyOrKeys recurse:(BOOL)recurse forwardingValues:(NSKeyValuePropertyForwardingValues *)forwardingValues {
+- (BOOL)object:(id)object withObservance:(DSKeyValueObservance *)observance willChangeValueForKeyOrKeys:(id)keyOrKeys recurse:(BOOL)recurse forwardingValues:(DSKeyValuePropertyForwardingValues *)forwardingValues {
     
     NSMutableDictionary *var_8C = nil;
-    NSKeyValuePropertyForwardingValues forwardingValuesLocal;
+    DSKeyValuePropertyForwardingValues forwardingValuesLocal;
     
     if(recurse && self.affectingProperties) {
-        for(NSKeyValueUnnestedProperty *property in self.affectingProperties) {
+        for(DSKeyValueUnnestedProperty *property in self.affectingProperties) {
             NSString *keyPath = nil;
             if([keyOrKeys isKindOfClass:NSSet.self]) {
                 keyPath = [property keyPathIfAffectedByValueForMemberOfKeys:keyOrKeys];
@@ -237,9 +237,9 @@ extern CFMutableSetRef NSKeyValueCachedMutableArrayGetters;
     return YES;
 }
 
-- (void)object:(id)object withObservance:(NSKeyValueObservance *)observance didChangeValueForKeyOrKeys:(id)keyOrKeys recurse:(BOOL)recurse forwardingValues:(NSKeyValuePropertyForwardingValues)forwardingValues {
-    for(NSKeyValueUnnestedProperty *key in forwardingValues.p2) {
-        NSKeyValuePropertyForwardingValues forwardingValuesLocal = {key, nil};
+- (void)object:(id)object withObservance:(DSKeyValueObservance *)observance didChangeValueForKeyOrKeys:(id)keyOrKeys recurse:(BOOL)recurse forwardingValues:(DSKeyValuePropertyForwardingValues)forwardingValues {
+    for(DSKeyValueUnnestedProperty *key in forwardingValues.p2) {
+        DSKeyValuePropertyForwardingValues forwardingValuesLocal = {key, nil};
         [key object:object withObservance:observance didChangeValueForKeyOrKeys:keyOrKeys recurse:NO forwardingValues:forwardingValuesLocal];
     }
 }

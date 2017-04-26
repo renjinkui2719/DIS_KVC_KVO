@@ -19,8 +19,8 @@
 #import <pthread.h>
 #import <objc/runtime.h>
 
-pthread_mutex_t _NSKeyValueObserverRegistrationLock = PTHREAD_MUTEX_INITIALIZER;
-pthread_t _NSKeyValueObserverRegistrationLockOwner = NULL;
+pthread_mutex_t _DNSKeyValueObserverRegistrationLock = PTHREAD_MUTEX_INITIALIZER;
+pthread_t _DNSKeyValueObserverRegistrationLockOwner = NULL;
 
 void NSKeyValueObserverRegistrationLockUnlock() {
     _NSKeyValueObserverRegistrationLockOwner = NULL;
@@ -90,7 +90,7 @@ void NSKeyValueObserverRegistrationLockLock() {
         NSKeyValueObservationInfo *createdObservationInfo = _NSKeyValueObservationInfoCreateByRemoving(retainedObervationInfo, observer, property, context, flag, originalObservable, &fromCache, &observance);
         if (observance) {
             [observance retain];
-            _NSKeyValueReplaceObservationInfoForObject(self, property.containerClass, retainedObervationInfo, createdObservationInfo, NULL);
+            _NSKeyValueReplaceObservationInfoForObject(self, property.containerClass, retainedObervationInfo, createdObservationInfo);
             [property object:self didRemoveObservance:observance recurse:YES];
             if (!createdObservationInfo) {
                 if (self.class != property.containerClass.originalClass) {
@@ -128,7 +128,7 @@ void NSKeyValueObserverRegistrationLockLock() {
         changeDetails.oldValue = nil;
         changeDetails.newValue = newValue;
         changeDetails.indexes = nil;
-        changeDetails.unknow1 = nil;
+        changeDetails.extraData = nil;
         
         NSKeyValueNotifyObserver(observer,keyPath, self, context, nil, NO,changeDetails, &changeDictionary);
         
@@ -153,7 +153,7 @@ void NSKeyValueObserverRegistrationLockLock() {
     
     NSKeyValueObservationInfo *createdObservInfo = _NSKeyValueObservationInfoCreateByAdding(retainedObservInfo, observer, property, options, context, originalObservable,&fromCache,&observance);
    
-    _NSKeyValueReplaceObservationInfoForObject(self,property.containerClass,retainedObservInfo,createdObservInfo,0);
+    _NSKeyValueReplaceObservationInfoForObject(self,property.containerClass,retainedObservInfo,createdObservInfo);
     
     [property object:self didAddObservance:observance recurse:YES];
     

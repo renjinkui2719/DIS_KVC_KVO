@@ -499,7 +499,7 @@ void NSKeyValueDidChangeByOrderedToManyMutation(NSKeyValueChangeDetails *resultC
             if (newValue) {
                 if ([newValue isKindOfClass:NSOrderedSet.self]) {
                     if (changeDetails.kind == NSKeyValueChangeReplacement) {
-                        id *oldObjs = (id *)[changeDetails.oldObjectsData bytes];
+                        id *oldObjs = (id *)[changeDetails.extraData bytes];
                         __block NSMutableIndexSet *copiedIndexes = nil;
                         [changeDetails.indexes enumerateIndexesUsingBlock:^(NSUInteger idx, BOOL * stop) {
                             id eachObject = [newValue objectAtIndex:idx];
@@ -514,14 +514,14 @@ void NSKeyValueDidChangeByOrderedToManyMutation(NSKeyValueChangeDetails *resultC
                             [copiedIndexes autorelease];
                             indexes = copiedIndexes;
                         }
-                        [changeDetails.oldObjectsData release];
-                        changeDetails.oldObjectsData = nil;
+                        [changeDetails.extraData release];
+                        changeDetails.extraData = nil;
                     }
                     if (changeDetails.kind == NSKeyValueChangeInsertion) {
                         __block NSUInteger offset = 0;
                         __block NSMutableIndexSet *copiedIndexes = nil;
-                        id *oldObjs = (id *)[changeDetails.oldObjectsData bytes];
-                        NSUInteger oldObjsCount = changeDetails.oldObjectsData.length / sizeof(id);
+                        id *oldObjs = (id *)[changeDetails.extraData bytes];
+                        NSUInteger oldObjsCount = changeDetails.extraData.length / sizeof(id);
                         
                         [changeDetails.indexes enumerateIndexesUsingBlock:^(NSUInteger idx, BOOL * _Nonnull stop) {
                             NSUInteger i = idx - offset;
@@ -549,8 +549,8 @@ void NSKeyValueDidChangeByOrderedToManyMutation(NSKeyValueChangeDetails *resultC
                             [copiedIndexes autorelease];
                             indexes = copiedIndexes;
                         }
-                        [changeDetails.oldObjectsData release];
-                        changeDetails.oldObjectsData = nil;
+                        [changeDetails.extraData release];
+                        changeDetails.extraData = nil;
                     }
                 }
             }
@@ -569,7 +569,7 @@ void NSKeyValueDidChangeByOrderedToManyMutation(NSKeyValueChangeDetails *resultC
         resultChangeDetails->oldValue = changeDetails.oldValue;
         resultChangeDetails->newValue = newObjects;
         resultChangeDetails->indexes = indexes;
-        resultChangeDetails->oldObjectsData = changeDetails.oldObjectsData;
+        resultChangeDetails->extraData = changeDetails.extraData;
     }
     else {
         id newValue = nil;
@@ -586,7 +586,7 @@ void NSKeyValueDidChangeByOrderedToManyMutation(NSKeyValueChangeDetails *resultC
         resultChangeDetails->oldValue = changeDetails.oldValue;
         resultChangeDetails->newValue = changeDetails.newValue;
         resultChangeDetails->indexes = changeDetails.indexes;
-        resultChangeDetails->oldObjectsData = changeDetails.oldObjectsData;
+        resultChangeDetails->extraData = changeDetails.extraData;
     }
 }
 
@@ -680,7 +680,7 @@ void NSKeyValueWillChangeBySetMutation(NSKeyValueChangeDetails *changeDetails, i
         changeDetails->oldValue = oldValue;
         changeDetails->newValue = newValue;
         changeDetails->indexes = indexes;
-        changeDetails->oldObjectsData = oldObjectsData;
+        changeDetails->extraData = oldObjectsData;
     }
     else {
         //loc_D0E23
@@ -698,7 +698,7 @@ void NSKeyValueWillChangeBySetMutation(NSKeyValueChangeDetails *changeDetails, i
         changeDetails->oldValue = oldValue;
         changeDetails->newValue = nil;
         changeDetails->indexes = nil;
-        changeDetails->oldObjectsData = nil;
+        changeDetails->extraData = nil;
     }
 }
 
@@ -723,7 +723,7 @@ void NSKeyValueDidChangeBySetMutation(NSKeyValueChangeDetails *resultChangeDetai
         resultChangeDetails->oldValue = changeDetails.oldValue;
         resultChangeDetails->newValue = newValue;
         resultChangeDetails->indexes = changeDetails.indexes;
-        resultChangeDetails->oldObjectsData = changeDetails.oldObjectsData;
+        resultChangeDetails->extraData = changeDetails.extraData;
     }
 }
 
@@ -748,7 +748,7 @@ void NSKeyValueWillChangeBySetting(NSKeyValueChangeDetails *changeDetails, id ob
     changeDetails->oldValue = oldValue;
     changeDetails->newValue = nil;
     changeDetails->indexes = nil;
-    changeDetails->oldObjectsData = nil;
+    changeDetails->extraData = nil;
 }
 
 void NSKeyValuePushPendingNotificationPerThread(id object, id keyOrKeys, NSKeyValueObservance *observance, NSKeyValueChangeDetails changeDetails , NSKeyValuePropertyForwardingValues forwardingValues, NSKVOPendingInfoPerThreadPush *pendingInfo) {
@@ -763,7 +763,7 @@ void NSKeyValuePushPendingNotificationPerThread(id object, id keyOrKeys, NSKeyVa
     pendingNotification->oldValue = [changeDetails.oldValue retain];
     pendingNotification->newValue = [changeDetails.newValue retain];
     pendingNotification->indexes = [changeDetails.indexes retain];
-    pendingNotification->oldObjectsData = [changeDetails.oldObjectsData retain];
+    pendingNotification->extraData = [changeDetails.extraData retain];
     pendingNotification->forwardingValues_p1 = [forwardingValues.p1 retain];
     pendingNotification->forwardingValues_p2 = [forwardingValues.p2 retain];
     if(pendingNotification->observance) {
@@ -810,7 +810,7 @@ void NSKeyValuePushPendingNotificationLocal(id object, id keyOrKeys, NSKeyValueO
     detail->oldValue = changeDetails.oldValue;
     detail->newValue = changeDetails.newValue;
     detail->indexes = changeDetails.indexes;
-    detail->oldObjectsData = changeDetails.oldObjectsData;
+    detail->extraData = changeDetails.extraData;
     detail->forwardingValues_p1 = forwardingValues.p1;
     detail->forwardingValues_p2 = forwardingValues.p2;
     detail->p5 = pendingInfo->p5;
@@ -847,7 +847,7 @@ BOOL NSKeyValuePopPendingNotificationLocal(id object,id keyOrKeys, NSKeyValueObs
         popedChangeDetails->oldValue = detail->oldValue;
         popedChangeDetails->newValue = detail->newValue;
         popedChangeDetails->indexes = detail->indexes;
-        popedChangeDetails->oldObjectsData = detail->oldObjectsData;
+        popedChangeDetails->extraData = detail->extraData;
         
         popedForwardValues->p1 = detail->forwardingValues_p1;
         popedForwardValues->p2 = detail->forwardingValues_p1;
@@ -880,7 +880,7 @@ void NSKeyValueDidChangeBySetting(NSKeyValueChangeDetails *resultChangeDetails, 
     resultChangeDetails->oldValue = changeDetails.oldValue;
     resultChangeDetails->newValue = newValue;
     resultChangeDetails->indexes = changeDetails.indexes;
-    resultChangeDetails->oldObjectsData = changeDetails.oldObjectsData;
+    resultChangeDetails->extraData = changeDetails.extraData;
 }
 
 
@@ -933,7 +933,7 @@ BOOL NSKeyValuePopPendingNotificationPerThread(id object,id keyOrKeys, NSKeyValu
                 popedChangeDetails->oldValue = changeNotification->oldValue;
                 popedChangeDetails->newValue = changeNotification->newValue;
                 popedChangeDetails->indexes = changeNotification->indexes;
-                popedChangeDetails->oldObjectsData = changeNotification->oldObjectsData;
+                popedChangeDetails->extraData = changeNotification->extraData;
                 
                 popedForwardValues->p1 = changeNotification->forwardingValues_p1;
                 popedForwardValues->p2 = changeNotification->forwardingValues_p2;
@@ -990,7 +990,7 @@ void NSKeyValueWillChange(id object, id keyOrKeys, BOOL isASet, NSKeyValueObserv
                         [changeDetails.oldValue release];
                         [changeDetails.newValue release];
                         [changeDetails.indexes release];
-                        [changeDetails.oldObjectsData release];
+                        [changeDetails.extraData release];
                     }
                     
                     [changeDictionary release];

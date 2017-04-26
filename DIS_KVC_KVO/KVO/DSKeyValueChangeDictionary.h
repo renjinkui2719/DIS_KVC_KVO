@@ -1,5 +1,5 @@
 //
-//  NSKeyValueChangeDictionary.h
+//  DSKeyValueChangeDictionary.h
 //  DIS_KVC_KVO
 //
 //  Created by renjinkui on 2017/1/13.
@@ -8,26 +8,26 @@
 
 #import <Foundation/Foundation.h>
 
-@class NSKeyValueObservationInfo;
+@class DSKeyValueObservationInfo;
 
 typedef struct {
     NSKeyValueChange kind;//0
     id oldValue;//4
     id newValue;//8
     NSIndexSet *indexes;//c
-    NSMutableData *oldObjectsData;//10
-}NSKeyValueChangeDetails;
+    id extraData;//10
+}DSKeyValueChangeDetails;
 
-@interface NSKeyValueChangeDictionary : NSDictionary
+@interface DSKeyValueChangeDictionary : NSDictionary
 
-@property (nonatomic, assign) NSKeyValueChangeDetails details;
+@property (nonatomic, assign) DSKeyValueChangeDetails details;
 @property (nonatomic, strong) id originalObservable;
 @property (nonatomic, assign) BOOL isPriorNotification;
 @property (nonatomic, assign) BOOL isRetainingObjects;
 
 
-- (id)initWithDetailsNoCopy:(NSKeyValueChangeDetails)details originalObservable:(id)originalObservable isPriorNotification:(BOOL)isPriorNotification;
-- (void)setDetailsNoCopy:(NSKeyValueChangeDetails)details originalObservable:(id)originalObservable;
+- (id)initWithDetailsNoCopy:(DSKeyValueChangeDetails)details originalObservable:(id)originalObservable isPriorNotification:(BOOL)isPriorNotification;
+- (void)setDetailsNoCopy:(DSKeyValueChangeDetails)details originalObservable:(id)originalObservable;
 - (void)setOriginalObservable:(id)originalObservable;
 - (void)retainObjects;
 

@@ -1,19 +1,19 @@
-#import "NSKeyValueComputedProperty.h"
-#import "NSKeyValueContainerClass.h"
-#import "NSKeyValuePropertyCreate.h"
+#import "DSKeyValueComputedProperty.h"
+#import "DSKeyValueContainerClass.h"
+#import "DSKeyValuePropertyCreate.h"
 
-@implementation NSKeyValueComputedProperty
+@implementation DSKeyValueComputedProperty
 
-- (id)_initWithContainerClass:(NSKeyValueContainerClass *)containerClass keyPath:(NSString *)keyPath propertiesBeingInitialized:(CFMutableSetRef)propertiesBeingInitialized {
+- (id)_initWithContainerClass:(DSKeyValueContainerClass *)containerClass keyPath:(NSString *)keyPath propertiesBeingInitialized:(CFMutableSetRef)propertiesBeingInitialized {
     if(self = [super _initWithContainerClass:containerClass keyPath:keyPath propertiesBeingInitialized:propertiesBeingInitialized]) {
-        NSRange range = [keyPath rangeOfString:@"."];
-        if(range.length) {
-            self.operationName = [keyPath substringWithRange:NSMakeRange(1, range.location - 1)].copy;
-            self.operationArgumentKeyPath = [keyPath substringFromIndex:range.location + 1].copy;
-            self.operationArgumentProperty = NSKeyValuePropertyForIsaAndKeyPathInner(self.containerClass.originalClass, self.operationArgumentKeyPath, propertiesBeingInitialized);
+        NSRange dotRange = [keyPath rangeOfString:@"."];
+        if(dotRange.length) {
+            _operationName = [keyPath substringWithRange:NSMakeRange(1, dotRange.location - 1)].copy;
+            _operationArgumentKeyPath = [keyPath substringFromIndex:dotRange.location + 1].copy;
+            _operationArgumentProperty = DSKeyValuePropertyForIsaAndKeyPathInner(self.containerClass.originalClass, _operationArgumentKeyPath, propertiesBeingInitialized);
         }
         else {
-            self.operationName = keyPath;
+            _operationName = keyPath.copy;
         }
     }
 	return self;
@@ -50,19 +50,19 @@
     return nil;
 }
 
-- (void)object:(id)object didAddObservance:(NSKeyValueObservance *)observance recurse:(BOOL)recurse {
+- (void)object:(id)object didAddObservance:(DSKeyValueObservance *)observance recurse:(BOOL)recurse {
     [self.operationArgumentProperty object:object didAddObservance:observance recurse:recurse];
 }
 
-- (void)object:(id)object didRemoveObservance:(NSKeyValueObservance *)observance recurse:(BOOL)recurse {
+- (void)object:(id)object didRemoveObservance:(DSKeyValueObservance *)observance recurse:(BOOL)recurse {
     [self.operationArgumentProperty object:object didRemoveObservance:observance recurse:recurse];
 }
 
-- (BOOL)object:(id)object withObservance:(NSKeyValueObservance *)observance willChangeValueForKeyOrKeys:(id)keyOrKeys recurse:(BOOL)recurse forwardingValues:(NSKeyValuePropertyForwardingValues *)forwardingValues {
+- (BOOL)object:(id)object withObservance:(DSKeyValueObservance *)observance willChangeValueForKeyOrKeys:(id)keyOrKeys recurse:(BOOL)recurse forwardingValues:(DSKeyValuePropertyForwardingValues *)forwardingValues {
    return [self.operationArgumentProperty object:object withObservance:observance willChangeValueForKeyOrKeys:keyOrKeys recurse:recurse forwardingValues:forwardingValues];
 }
 
-- (void)object:(id)object withObservance:(NSKeyValueObservance *)observance didChangeValueForKeyOrKeys:(id)keyOrKeys recurse:(BOOL)recurse forwardingValues:(NSKeyValuePropertyForwardingValues)forwardingValues {
+- (void)object:(id)object withObservance:(DSKeyValueObservance *)observance didChangeValueForKeyOrKeys:(id)keyOrKeys recurse:(BOOL)recurse forwardingValues:(DSKeyValuePropertyForwardingValues)forwardingValues {
     [self.operationArgumentProperty object:object withObservance:observance didChangeValueForKeyOrKeys:keyOrKeys recurse:recurse forwardingValues:forwardingValues];
 }
 

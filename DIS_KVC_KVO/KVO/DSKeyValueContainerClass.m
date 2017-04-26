@@ -1,30 +1,22 @@
-#import "NSKeyValueContainerClass.h"
-#import "NSKeyValueObservationInfo.h"
-#import "NSObject+NSKeyValueObservingPrivate.h"
-#import "NSObject+NSKeyValueCodingPrivate.h"
-#import "NSSetValueAndNotify.h"
-#import "NSKeyValueGetter.h"
-#import "NSKeyValueSetter.h"
-#import "NSKeyValueMethodSetter.h"
-#import "NSKeyValueMutatingArrayMethodSet.h"
-#import "NSKeyValueMutatingOrderedSetMethodSet.h"
-#import "NSKeyValueMutatingSetMethodSet.h"
-#import "NSKeyValueObserverCommon.h"
+#import "DNSKeyValueContainerClass.h"
+#import "DNSKeyValueObservationInfo.h"
+#import "NSObject+DNSKeyValueObservingPrivate.h"
+#import "NSObject+DNSKeyValueCodingPrivate.h"
+#import "DNSSetValueAndNotify.h"
+#import "DNSKeyValueGetter.h"
+#import "DNSKeyValueSetter.h"
+#import "DNSKeyValueMethodSetter.h"
+#import "DNSKeyValueMutatingArrayMethodSet.h"
+#import "DNSKeyValueMutatingOrderedSetMethodSet.h"
+#import "DNSKeyValueMutatingSetMethodSet.h"
+#import "DNSKeyValueObserverCommon.h"
 #import <objc/runtime.h>
 #import <objc/objc.h>
 #import <objc/message.h>
 
-extern Class NSClassFromObject(id);
-extern OSSpinLock NSKeyValueObservationInfoSpinLock;
-extern void os_lock_lock(void *);
-extern void os_lock_unlock(void *);
-extern void *_CFGetTSD(uint32_t slot);
-extern void *_CFSetTSD(uint32_t slot, void *newVal, void (*destructor)(void *));
-extern void * NSAllocateScannedUncollectable(size_t);
-extern NSUInteger dyld_get_program_sdk_version();
-extern CFMutableDictionaryRef NSKeyValueObservationInfoPerObject;
+CFMutableDictionaryRef NSKeyValueObservationInfoPerObject;
 
-@implementation NSKeyValueContainerClass 
+@implementation DNSKeyValueContainerClass
 
 - (id)initWithOriginalClass:(Class)originalClass {
     if(self = [super init]) {
@@ -50,48 +42,47 @@ extern CFMutableDictionaryRef NSKeyValueObservationInfoPerObject;
         notifyingClass = _notifyingInfo->containerClass;
     }
     else {
-        notifyingClass = NSClassFromObject(@"not cached yet");
+        notifyingClass = @"not cached yet".class;
     }
-    return [NSString stringWithFormat:@"<%@: Original class: %@, Notifying class: %@>",NSClassFromObject(self), _originalClass,notifyingClass];
+    return [NSString stringWithFormat:@"<%@: Original class: %@, Notifying class: %@>",self.class, _originalClass,notifyingClass];
 }
 
 @end
 
-NSKeyValueObservationInfo *_NSKeyValueRetainedObservationInfoForObject(id object, NSKeyValueContainerClass *containerClass) {
-    NSKeyValueObservationInfo *observationInfo = nil;
+DNSKeyValueObservationInfo *_DNSKeyValueRetainedObservationInfoForObject(id object, DNSKeyValueContainerClass *containerClass) {
+    DNSKeyValueObservationInfo *observationInfo = nil;
     
-    os_lock_lock(&NSKeyValueObservationInfoSpinLock);
+    os_lock_lock(&DNSKeyValueObservationInfoSpinLock);
     if (containerClass) {
-       observationInfo = ((NSKeyValueObservationInfo * (*)(id,SEL))containerClass.cachedObservationInfoImplementation)(object, @selector(observationInfo));
+       observationInfo = ((DNSKeyValueObservationInfo * (*)(id,SEL))containerClass.cachedObservationInfoImplementation)(object, @selector(observationInfo));
     }
     else {
-        observationInfo = (NSKeyValueObservationInfo *)[object observationInfo];
+        observationInfo = (DNSKeyValueObservationInfo *)[object observationInfo];
     }
     
     [observationInfo retain];
     
-    os_lock_unlock(&NSKeyValueObservationInfoSpinLock);
+    os_lock_unlock(&DNSKeyValueObservationInfoSpinLock);
     
     return  observationInfo;
 }
 
 
-
-void _NSKeyValueAddObservationInfoWatcher(ObservationInfoWatcher * watcher) {
-    NSKeyValueObservingTSD *TSD = _CFGetTSD(NSKeyValueObservingTSDKey);
+void _DNSKeyValueAddObservationInfoWatcher(ObservationInfoWatcher * watcher) {
+    DNSKeyValueObservingTSD *TSD = _CFGetTSD(DNSKeyValueObservingTSDKey);
     if (!TSD) {
-        TSD = (NSKeyValueObservingTSD *)NSAllocateScannedUncollectable(sizeof(NSKeyValueObservingTSD));
-        _CFSetTSD(NSKeyValueObservingTSDKey, TSD, NSKeyValueObservingTSDDestroy);
+        TSD = (DNSKeyValueObservingTSD *)NSAllocateScannedUncollectable(sizeof(DNSKeyValueObservingTSD));
+        _CFSetTSD(DNSKeyValueObservingTSDKey, TSD, DNSKeyValueObservingTSDDestroy);
     }
     watcher->next = TSD->firstWatcher;
     TSD->firstWatcher = watcher;
 }
 
-void _NSKeyValueRemoveObservationInfoWatcher(ObservationInfoWatcher * watcher) {
-    NSKeyValueObservingTSD *TSD = _CFGetTSD(NSKeyValueObservingTSDKey);
+void _DNSKeyValueRemoveObservationInfoWatcher(ObservationInfoWatcher * watcher) {
+    DNSKeyValueObservingTSD *TSD = _CFGetTSD(DNSKeyValueObservingTSDKey);
     if (!TSD) {
-        TSD = (NSKeyValueObservingTSD *)NSAllocateScannedUncollectable(sizeof(NSKeyValueObservingTSD));
-        _CFSetTSD(NSKeyValueObservingTSDKey, TSD, NSKeyValueObservingTSDDestroy);
+        TSD = (DNSKeyValueObservingTSD *)NSAllocateScannedUncollectable(sizeof(DNSKeyValueObservingTSD));
+        _CFSetTSD(DNSKeyValueObservingTSDKey, TSD, DNSKeyValueObservingTSDDestroy);
     }
     
     if(TSD->firstWatcher != watcher) {
@@ -103,22 +94,22 @@ void _NSKeyValueRemoveObservationInfoWatcher(ObservationInfoWatcher * watcher) {
     }
 }
 
-void _NSKeyValueRemoveObservationInfoForObject(id object, NSKeyValueObservationInfo *observationInfo) {
-    os_lock_lock(&NSKeyValueObservationInfoSpinLock);
-    if(!NSKeyValueObservationInfoPerObject) {
-        NSKeyValueObservationInfoPerObject = CFDictionaryCreateMutable(NULL, 0, NULL, NULL);
+void _DNSKeyValueRemoveObservationInfoForObject(id object, DNSKeyValueObservationInfo *observationInfo) {
+    os_lock_lock(&DNSKeyValueObservationInfoSpinLock);
+    if(!DNSKeyValueObservationInfoPerObject) {
+        DNSKeyValueObservationInfoPerObject = CFDictionaryCreateMutable(NULL, 0, NULL, NULL);
     }
-    CFDictionaryRemoveValue(NSKeyValueObservationInfoPerObject, (void*)~(NSUInteger)(void *)object);
-    os_lock_unlock(&NSKeyValueObservationInfoSpinLock);
+    CFDictionaryRemoveValue(DNSKeyValueObservationInfoPerObject, (void*)~(NSUInteger)(void *)object);
+    os_lock_unlock(&DNSKeyValueObservationInfoSpinLock);
 }
 
-BOOL NSKVOIsAutonotifying() {
+BOOL DNSKVOIsAutonotifying() {
     return YES;
 }
 
-Class NSKVOClass(id object, SEL selector) {
+Class DNSKVOClass(id object, SEL selector) {
     Class objClass = object_getClass(object);
-    Class originalClass =  _NSKVONotifyingOriginalClassForIsa(objClass);
+    Class originalClass =  _DNSKVONotifyingOriginalClassForIsa(objClass);
     if (objClass == originalClass) {
         Method m = class_getInstanceMethod(objClass, selector);
         return ((id (*)(id,Method))method_invoke)(object, m);
@@ -128,17 +119,17 @@ Class NSKVOClass(id object, SEL selector) {
     }
 }
 
-void NSKVODeallocateBreak(id object) {
+void DNSKVODeallocateBreak(id object) {
     if (!object) {
         NSLog(@"");
     }
 }
 
-void NSKVODeallocate(id object, SEL selector) {
+void DNSKVODeallocate(id object, SEL selector) {
     NSKeyValueObservationInfo *observationInfo = _NSKeyValueRetainedObservationInfoForObject(object, nil);
     ObservationInfoWatcher watcher = {object, observationInfo, NULL};
-    _NSKeyValueAddObservationInfoWatcher(&watcher);
-    NSKeyValueNotifyingInfo *notifyInfo = (NSKeyValueNotifyingInfo *)object_getIndexedIvars(object_getClass(object));
+    _DNSKeyValueAddObservationInfoWatcher(&watcher);
+    DNSKeyValueNotifyingInfo *notifyInfo = (NSKeyValueNotifyingInfo *)object_getIndexedIvars(object_getClass(object));
     Method originDellocMethod = class_getInstanceMethod(notifyInfo->originalClass, selector);
     ((id (*)(id,Method))method_invoke)(object, originDellocMethod);
     
@@ -158,21 +149,21 @@ void NSKVODeallocate(id object, SEL selector) {
         
         if(dyld_get_program_sdk_version() > 0x7FFFF || !(keyExistsAndHasValidFormat || NSKVODeallocateCleansUpBeforeThrowing)) {
             if(!(keyExistsAndHasValidFormat || NSKVODeallocateCleansUpBeforeThrowing)) {
-                _NSKeyValueRemoveObservationInfoForObject(object, observationInfo);
+                _DNSKeyValueRemoveObservationInfoForObject(object, observationInfo);
             }
             [NSException raise:NSInternalInconsistencyException format:@"An instance %p of class %@ was deallocated while key value observers were still registered with it. Current observation info: %@", object, notifyInfo->originalClass, observationInfo];
         }
         else {
             NSLog(@"An instance %p of class %@ was deallocated while key value observers were still registered with it. Observation info was leaked, and may even become mistakenly attached to some other object. Set a breakpoint on NSKVODeallocateBreak to stop here in the debugger. Here's the current observation info:\n%@", object, notifyInfo->originalClass, observationInfo);
-            NSKVODeallocateBreak(object);
+            DNSKVODeallocateBreak(object);
         }
     }
 
-    _NSKeyValueRemoveObservationInfoWatcher(&watcher);
+    _DNSKeyValueRemoveObservationInfoWatcher(&watcher);
     [observationInfo release];
 }
 
-void NSKVONotifyingSetMethodImplementation(NSKeyValueNotifyingInfo *info, SEL sel, IMP imp, NSString *key) {
+void DNSKVONotifyingSetMethodImplementation(NSKeyValueNotifyingInfo *info, SEL sel, IMP imp, NSString *key) {
     Method m = class_getInstanceMethod(info->originalClass, sel);
     if (m) {
         if (key) {
@@ -187,8 +178,8 @@ void NSKVONotifyingSetMethodImplementation(NSKeyValueNotifyingInfo *info, SEL se
     }
 }
 
-NSKeyValueNotifyingInfo *_NSKVONotifyingCreateInfoWithOriginalClass(Class originalClass) {
-    static const char *notifyingClassNamePrefix = "NSKVONotifying_";
+NSKeyValueNotifyingInfo *_DSKVONotifyingCreateInfoWithOriginalClass(Class originalClass) {
+    static const char *notifyingClassNamePrefix = "DSKVONotifying_";
     
     static IMP NSObjectWillChange;
     static IMP NSObjectDidChange;

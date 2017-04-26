@@ -1,5 +1,5 @@
 //
-//  NSArray+NSKeyValueObserverRegistration.h
+//  NSOrderedSet+DNSKeyValueObserverRegistration.h
 //  DIS_KVC_KVO
 //
 //  Created by renjinkui on 2017/3/29.
@@ -8,6 +8,6 @@
 
 #import <Foundation/Foundation.h>
 
-@interface NSArray (NSKeyValueObserverRegistration)
+@interface NSOrderedSet (DNSKeyValueObserverRegistration)
 
 @end

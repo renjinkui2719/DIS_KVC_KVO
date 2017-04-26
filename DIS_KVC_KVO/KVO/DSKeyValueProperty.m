@@ -1,7 +1,7 @@
-#import "NSKeyValueProperty.h"
-#import "NSKeyValueContainerClass.h"
+#import "DSKeyValueProperty.h"
+#import "DSKeyValueContainerClass.h"
 
-@implementation NSKeyValueProperty
+@implementation DSKeyValueProperty
 
 - (NSString *)restOfKeyPathIfContainedByValueForKeyPath:(NSString *)keyPath {
     if(keyPath != self.keyPath &&
@@ -23,17 +23,17 @@
     return NO;
 }
 
-- (void)object:(id)object withObservance:(NSKeyValueObservance *)observance didChangeValueForKeyOrKeys:(id)keyOrKeys recurse:(BOOL)recurse forwardingValues:(NSKeyValuePropertyForwardingValues)forwardingValues { }
+- (void)object:(id)object withObservance:(DSKeyValueObservance *)observance didChangeValueForKeyOrKeys:(id)keyOrKeys recurse:(BOOL)recurse forwardingValues:(DSKeyValuePropertyForwardingValues)forwardingValues { }
 
-- (BOOL)object:(id)object withObservance:(NSKeyValueObservance *)observance willChangeValueForKeyOrKeys:(id)keyOrKeys recurse:(BOOL)recurse forwardingValues:(NSKeyValuePropertyForwardingValues *)forwardingValues {
+- (BOOL)object:(id)object withObservance:(DSKeyValueObservance *)observance willChangeValueForKeyOrKeys:(id)keyOrKeys recurse:(BOOL)recurse forwardingValues:(DSKeyValuePropertyForwardingValues *)forwardingValues {
     forwardingValues->p1 = nil;
     forwardingValues->p2 = nil;
     return YES;
 }
 
-- (void)object:(id)object didAddObservance:(NSKeyValueObservance *)observance recurse:(BOOL)recurse {}
+- (void)object:(id)object didAddObservance:(DSKeyValueObservance *)observance recurse:(BOOL)recurse {}
 
-- (void)object:(id)object didRemoveObservance:(NSKeyValueObservance *)observance recurse:(BOOL)recurse {}
+- (void)object:(id)object didRemoveObservance:(DSKeyValueObservance *)observance recurse:(BOOL)recurse {}
 
 - (NSString *)keyPathIfAffectedByValueForMemberOfKeys:(id)keys {
     return [self _keyPathIfAffectedByValueForMemberOfKeys:keys];
@@ -58,7 +58,7 @@
     [super dealloc];
 }
 
-- (id)_initWithContainerClass:(NSKeyValueContainerClass *)containerClass keyPath:(id)keyPath propertiesBeingInitialized:(CFMutableSetRef)propertiesBeingInitialized {
+- (id)_initWithContainerClass:(DSKeyValueContainerClass *)containerClass keyPath:(id)keyPath propertiesBeingInitialized:(CFMutableSetRef)propertiesBeingInitialized {
 	if(self = [super init]) {
         self.containerClass = [containerClass retain];
         self.keyPath = [keyPath copy];

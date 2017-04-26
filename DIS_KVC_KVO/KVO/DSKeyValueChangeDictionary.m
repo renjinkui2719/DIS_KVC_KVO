@@ -1,20 +1,20 @@
 //
-//  NSKeyValueChangeDictionary.m
+//  DSKeyValueChangeDictionary.m
 //  DIS_KVC_KVO
 //
 //  Created by renjinkui on 2017/1/13.
 //  Copyright © 2017年 JK. All rights reserved.
 //
 
-#import "NSKeyValueChangeDictionary.h"
+#import "DSKeyValueChangeDictionary.h"
 #import <libkern/OSAtomic.h>
 
-NSNumber* NSKeyValueChangeDictionaryNumberWithKind_numbersByKind[] = { (NSNumber*)0x0FEEDFACE,nil,nil,nil,nil,(NSNumber*)0x0FEEDFACE};
+NSNumber* DSKeyValueChangeDictionaryNumberWithKind_numbersByKind[] = { (NSNumber*)0x0FEEDFACE,nil,nil,nil,nil,(NSNumber*)0x0FEEDFACE};
 extern NSString * const NSKeyValueChangeOriginalObservableKey;
 
-@implementation NSKeyValueChangeDictionary
+@implementation DSKeyValueChangeDictionary
 
-- (id)initWithDetailsNoCopy:(NSKeyValueChangeDetails)details originalObservable:(id)originalObservable isPriorNotification:(BOOL)isPriorNotification {
+- (id)initWithDetailsNoCopy:(DSKeyValueChangeDetails)details originalObservable:(id)originalObservable isPriorNotification:(BOOL)isPriorNotification {
     if(self = [super init]) {
         _details = details;
         _originalObservable = originalObservable;
@@ -35,10 +35,10 @@ extern NSString * const NSKeyValueChangeOriginalObservableKey;
 }
 
 
-#define NSKeyValueChangeKindCacheCheck() do {\
-    if(NSKeyValueChangeDictionaryNumberWithKind_numbersByKind[_details.kind] == 0) {\
+#define DSKeyValueChangeKindCacheCheck() do {\
+    if(DSKeyValueChangeDictionaryNumberWithKind_numbersByKind[_details.kind] == 0) {\
         NSNumber *n = [[NSNumber alloc] initWithInteger:_details.kind];\
-        if(!OSAtomicCompareAndSwapPtr(NULL, n, (void **)(NSKeyValueChangeDictionaryNumberWithKind_numbersByKind + _details.kind))) {\
+        if(!OSAtomicCompareAndSwapPtr(NULL, n, (void **)(DSKeyValueChangeDictionaryNumberWithKind_numbersByKind + _details.kind))) {\
             [n release];\
         }\
     }\
@@ -46,8 +46,8 @@ extern NSString * const NSKeyValueChangeOriginalObservableKey;
 
 - (id)objectForKey:(NSString *)aKey {
     if(aKey == NSKeyValueChangeKindKey) {
-        NSKeyValueChangeKindCacheCheck();
-        return NSKeyValueChangeDictionaryNumberWithKind_numbersByKind[_details.kind];
+        DSKeyValueChangeKindCacheCheck();
+        return DSKeyValueChangeDictionaryNumberWithKind_numbersByKind[_details.kind];
     }
     else if(aKey == NSKeyValueChangeNewKey) {
         return _details.newValue;
@@ -66,8 +66,8 @@ extern NSString * const NSKeyValueChangeOriginalObservableKey;
     }
     else {
         if([aKey isEqualToString:NSKeyValueChangeKindKey]) {
-            NSKeyValueChangeKindCacheCheck();
-            return NSKeyValueChangeDictionaryNumberWithKind_numbersByKind[_details.kind];
+            DSKeyValueChangeKindCacheCheck();
+            return DSKeyValueChangeDictionaryNumberWithKind_numbersByKind[_details.kind];
         }
         else if([aKey isEqualToString:NSKeyValueChangeNewKey]) {
             return _details.newValue;
@@ -90,7 +90,7 @@ extern NSString * const NSKeyValueChangeOriginalObservableKey;
     }
 }
 
-- (void)setDetailsNoCopy:(NSKeyValueChangeDetails)details originalObservable:(id)originalObservable {
+- (void)setDetailsNoCopy:(DSKeyValueChangeDetails)details originalObservable:(id)originalObservable {
     if(_isRetainingObjects) {
         [_details.oldValue release];
         [_details.newValue release];
