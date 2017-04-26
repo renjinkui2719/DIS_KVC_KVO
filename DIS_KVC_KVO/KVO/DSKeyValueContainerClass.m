@@ -1,22 +1,20 @@
-#import "DNSKeyValueContainerClass.h"
-#import "DNSKeyValueObservationInfo.h"
-#import "NSObject+DNSKeyValueObservingPrivate.h"
-#import "NSObject+DNSKeyValueCodingPrivate.h"
-#import "DNSSetValueAndNotify.h"
-#import "DNSKeyValueGetter.h"
-#import "DNSKeyValueSetter.h"
-#import "DNSKeyValueMethodSetter.h"
-#import "DNSKeyValueMutatingArrayMethodSet.h"
-#import "DNSKeyValueMutatingOrderedSetMethodSet.h"
-#import "DNSKeyValueMutatingSetMethodSet.h"
-#import "DNSKeyValueObserverCommon.h"
-#import <objc/runtime.h>
-#import <objc/objc.h>
-#import <objc/message.h>
+#import "DSKeyValueContainerClass.h"
+#import "DSKeyValueObservationInfo.h"
+#import "NSObject+DSKeyValueObservingPrivate.h"
+#import "NSObject+DSKeyValueCodingPrivate.h"
+#import "DSSetValueAndNotify.h"
+#import "DSKeyValueGetter.h"
+#import "DSKeyValueSetter.h"
+#import "DSKeyValueMethodSetter.h"
+#import "DSKeyValueMutatingArrayMethodSet.h"
+#import "DSKeyValueMutatingOrderedSetMethodSet.h"
+#import "DSKeyValueMutatingSetMethodSet.h"
+#import "DSKeyValueObserverCommon.h"
 
-CFMutableDictionaryRef NSKeyValueObservationInfoPerObject;
 
-@implementation DNSKeyValueContainerClass
+CFMutableDictionaryRef DSKeyValueObservationInfoPerObject;
+
+@implementation DSKeyValueContainerClass
 
 - (id)initWithOriginalClass:(Class)originalClass {
     if(self = [super init]) {
@@ -49,40 +47,40 @@ CFMutableDictionaryRef NSKeyValueObservationInfoPerObject;
 
 @end
 
-DNSKeyValueObservationInfo *_DNSKeyValueRetainedObservationInfoForObject(id object, DNSKeyValueContainerClass *containerClass) {
-    DNSKeyValueObservationInfo *observationInfo = nil;
+DSKeyValueObservationInfo *_DSKeyValueRetainedObservationInfoForObject(id object, DSKeyValueContainerClass *containerClass) {
+    DSKeyValueObservationInfo *observationInfo = nil;
     
-    os_lock_lock(&DNSKeyValueObservationInfoSpinLock);
+    os_lock_lock(&DSKeyValueObservationInfoSpinLock);
     if (containerClass) {
-       observationInfo = ((DNSKeyValueObservationInfo * (*)(id,SEL))containerClass.cachedObservationInfoImplementation)(object, @selector(observationInfo));
+       observationInfo = ((DSKeyValueObservationInfo * (*)(id,SEL))containerClass.cachedObservationInfoImplementation)(object, @selector(observationInfo));
     }
     else {
-        observationInfo = (DNSKeyValueObservationInfo *)[object observationInfo];
+        observationInfo = (DSKeyValueObservationInfo *)[object observationInfo];
     }
     
     [observationInfo retain];
     
-    os_lock_unlock(&DNSKeyValueObservationInfoSpinLock);
+    os_lock_unlock(&DSKeyValueObservationInfoSpinLock);
     
     return  observationInfo;
 }
 
 
-void _DNSKeyValueAddObservationInfoWatcher(ObservationInfoWatcher * watcher) {
-    DNSKeyValueObservingTSD *TSD = _CFGetTSD(DNSKeyValueObservingTSDKey);
+void _DSKeyValueAddObservationInfoWatcher(ObservationInfoWatcher * watcher) {
+    DSKeyValueObservingTSD *TSD = _CFGetTSD(DSKeyValueObservingTSDKey);
     if (!TSD) {
-        TSD = (DNSKeyValueObservingTSD *)NSAllocateScannedUncollectable(sizeof(DNSKeyValueObservingTSD));
-        _CFSetTSD(DNSKeyValueObservingTSDKey, TSD, DNSKeyValueObservingTSDDestroy);
+        TSD = (DSKeyValueObservingTSD *)NSAllocateScannedUncollectable(sizeof(DNSKeyValueObservingTSD));
+        _CFSetTSD(DNSKeyValueObservingTSDKey, TSD, DSKeyValueObservingTSDDestroy);
     }
     watcher->next = TSD->firstWatcher;
     TSD->firstWatcher = watcher;
 }
 
-void _DNSKeyValueRemoveObservationInfoWatcher(ObservationInfoWatcher * watcher) {
-    DNSKeyValueObservingTSD *TSD = _CFGetTSD(DNSKeyValueObservingTSDKey);
+void _DSKeyValueRemoveObservationInfoWatcher(ObservationInfoWatcher * watcher) {
+    DSKeyValueObservingTSD *TSD = _CFGetTSD(DSKeyValueObservingTSDKey);
     if (!TSD) {
-        TSD = (DNSKeyValueObservingTSD *)NSAllocateScannedUncollectable(sizeof(DNSKeyValueObservingTSD));
-        _CFSetTSD(DNSKeyValueObservingTSDKey, TSD, DNSKeyValueObservingTSDDestroy);
+        TSD = (DSKeyValueObservingTSD *)NSAllocateScannedUncollectable(sizeof(DSKeyValueObservingTSD));
+        _CFSetTSD(DSKeyValueObservingTSDKey, TSD, DSKeyValueObservingTSDDestroy);
     }
     
     if(TSD->firstWatcher != watcher) {
@@ -94,22 +92,22 @@ void _DNSKeyValueRemoveObservationInfoWatcher(ObservationInfoWatcher * watcher) 
     }
 }
 
-void _DNSKeyValueRemoveObservationInfoForObject(id object, DNSKeyValueObservationInfo *observationInfo) {
-    os_lock_lock(&DNSKeyValueObservationInfoSpinLock);
-    if(!DNSKeyValueObservationInfoPerObject) {
-        DNSKeyValueObservationInfoPerObject = CFDictionaryCreateMutable(NULL, 0, NULL, NULL);
+void _DSKeyValueRemoveObservationInfoForObject(id object, DSKeyValueObservationInfo *observationInfo) {
+    os_lock_lock(&DSKeyValueObservationInfoSpinLock);
+    if(!DSKeyValueObservationInfoPerObject) {
+        DSKeyValueObservationInfoPerObject = CFDictionaryCreateMutable(NULL, 0, NULL, NULL);
     }
-    CFDictionaryRemoveValue(DNSKeyValueObservationInfoPerObject, (void*)~(NSUInteger)(void *)object);
-    os_lock_unlock(&DNSKeyValueObservationInfoSpinLock);
+    CFDictionaryRemoveValue(DSKeyValueObservationInfoPerObject, (void*)~(NSUInteger)(void *)object);
+    os_lock_unlock(&DSKeyValueObservationInfoSpinLock);
 }
 
-BOOL DNSKVOIsAutonotifying() {
+BOOL DSKVOIsAutonotifying() {
     return YES;
 }
 
-Class DNSKVOClass(id object, SEL selector) {
+Class DSKVOClass(id object, SEL selector) {
     Class objClass = object_getClass(object);
-    Class originalClass =  _DNSKVONotifyingOriginalClassForIsa(objClass);
+    Class originalClass =  _DSKVONotifyingOriginalClassForIsa(objClass);
     if (objClass == originalClass) {
         Method m = class_getInstanceMethod(objClass, selector);
         return ((id (*)(id,Method))method_invoke)(object, m);
@@ -119,17 +117,17 @@ Class DNSKVOClass(id object, SEL selector) {
     }
 }
 
-void DNSKVODeallocateBreak(id object) {
+void DSKVODeallocateBreak(id object) {
     if (!object) {
         NSLog(@"");
     }
 }
 
-void DNSKVODeallocate(id object, SEL selector) {
-    NSKeyValueObservationInfo *observationInfo = _NSKeyValueRetainedObservationInfoForObject(object, nil);
+void DSKVODeallocate(id object, SEL selector) {
+    DSKeyValueObservationInfo *observationInfo = _DSKeyValueRetainedObservationInfoForObject(object, nil);
     ObservationInfoWatcher watcher = {object, observationInfo, NULL};
-    _DNSKeyValueAddObservationInfoWatcher(&watcher);
-    DNSKeyValueNotifyingInfo *notifyInfo = (NSKeyValueNotifyingInfo *)object_getIndexedIvars(object_getClass(object));
+    _DSKeyValueAddObservationInfoWatcher(&watcher);
+    DSKeyValueNotifyingInfo *notifyInfo = (DSKeyValueNotifyingInfo *)object_getIndexedIvars(object_getClass(object));
     Method originDellocMethod = class_getInstanceMethod(notifyInfo->originalClass, selector);
     ((id (*)(id,Method))method_invoke)(object, originDellocMethod);
     
@@ -149,7 +147,7 @@ void DNSKVODeallocate(id object, SEL selector) {
         
         if(dyld_get_program_sdk_version() > 0x7FFFF || !(keyExistsAndHasValidFormat || NSKVODeallocateCleansUpBeforeThrowing)) {
             if(!(keyExistsAndHasValidFormat || NSKVODeallocateCleansUpBeforeThrowing)) {
-                _DNSKeyValueRemoveObservationInfoForObject(object, observationInfo);
+                _DSKeyValueRemoveObservationInfoForObject(object, observationInfo);
             }
             [NSException raise:NSInternalInconsistencyException format:@"An instance %p of class %@ was deallocated while key value observers were still registered with it. Current observation info: %@", object, notifyInfo->originalClass, observationInfo];
         }
@@ -159,11 +157,11 @@ void DNSKVODeallocate(id object, SEL selector) {
         }
     }
 
-    _DNSKeyValueRemoveObservationInfoWatcher(&watcher);
+    _DSKeyValueRemoveObservationInfoWatcher(&watcher);
     [observationInfo release];
 }
 
-void DNSKVONotifyingSetMethodImplementation(NSKeyValueNotifyingInfo *info, SEL sel, IMP imp, NSString *key) {
+void DSKVONotifyingSetMethodImplementation(DSKeyValueNotifyingInfo *info, SEL sel, IMP imp, NSString *key) {
     Method m = class_getInstanceMethod(info->originalClass, sel);
     if (m) {
         if (key) {
@@ -178,11 +176,11 @@ void DNSKVONotifyingSetMethodImplementation(NSKeyValueNotifyingInfo *info, SEL s
     }
 }
 
-NSKeyValueNotifyingInfo *_DSKVONotifyingCreateInfoWithOriginalClass(Class originalClass) {
+DSKeyValueNotifyingInfo *_DSKVONotifyingCreateInfoWithOriginalClass(Class originalClass) {
     static const char *notifyingClassNamePrefix = "DSKVONotifying_";
     
-    static IMP NSObjectWillChange;
-    static IMP NSObjectDidChange;
+    static IMP DSObjectWillChange;
+    static IMP DSObjectDidChange;
     
     const char *originalClassName = class_getName(originalClass);
     size_t size = strlen(originalClassName) + 16;
@@ -212,45 +210,45 @@ NSKeyValueNotifyingInfo *_DSKVONotifyingCreateInfoWithOriginalClass(Class origin
     
     static dispatch_once_t NSObjectIMPLookupOnce;
     dispatch_once(&NSObjectIMPLookupOnce, ^{
-        NSObjectWillChange = class_getMethodImplementation([NSObject class], @selector(willChangeValueForKey:));
-        NSObjectDidChange = class_getMethodImplementation([NSObject class], @selector(didChangeValueForKey:));
+        DSObjectWillChange = class_getMethodImplementation([NSObject class], @selector(d_willChangeValueForKey:));
+        DSObjectDidChange = class_getMethodImplementation([NSObject class], @selector(d_didChangeValueForKey:));
     });
     
     BOOL flag = YES;
-    if(class_getMethodImplementation(notifyingInfo->originalClass, @selector(willChangeValueForKey:)) == NSObjectWillChange) {
-        flag = class_getMethodImplementation(notifyingInfo->originalClass, @selector(didChangeValueForKey:)) != NSObjectDidChange;
+    if(class_getMethodImplementation(notifyingInfo->originalClass, @selector(d_willChangeValueForKey:)) == DSObjectWillChange) {
+        flag = class_getMethodImplementation(notifyingInfo->originalClass, @selector(d_didChangeValueForKey:)) != DSObjectDidChange;
     }
     notifyingInfo->flag = flag;
     
-    NSKVONotifyingSetMethodImplementation(notifyingInfo, ISKVOASelector, (IMP)NSKVOIsAutonotifying, NULL);
-    NSKVONotifyingSetMethodImplementation(notifyingInfo, @selector(dealloc), (IMP)NSKVODeallocate, NULL);
-    NSKVONotifyingSetMethodImplementation(notifyingInfo, @selector(class), (IMP)NSKVOClass, NULL);
+    DSKVONotifyingSetMethodImplementation(notifyingInfo, ISKVOASelector, (IMP)DSKVOIsAutonotifying, NULL);
+    DSKVONotifyingSetMethodImplementation(notifyingInfo, @selector(dealloc), (IMP)DSKVODeallocate, NULL);
+    DSKVONotifyingSetMethodImplementation(notifyingInfo, @selector(class), (IMP)DSKVOClass, NULL);
     
     return notifyingInfo;
 }
 
-NSKeyValueNotifyingInfo *_NSKeyValueContainerClassGetNotifyingInfo(NSKeyValueContainerClass *containerClass) {
+DSKeyValueNotifyingInfo *_DSKeyValueContainerClassGetNotifyingInfo(DSKeyValueContainerClass *containerClass) {
     if(!containerClass.notifyingInfo) {
         if(!class_isMetaClass(containerClass.originalClass)) {
-             containerClass.notifyingInfo = _NSKVONotifyingCreateInfoWithOriginalClass(containerClass.originalClass);;
+             containerClass.notifyingInfo = _DSKVONotifyingCreateInfoWithOriginalClass(containerClass.originalClass);;
         }
     }
     return containerClass.notifyingInfo;
 }
 
-Class _NSKVONotifyingOriginalClassForIsa(Class isa) {
-    if(class_getMethodImplementation(isa, ISKVOASelector) == (IMP)NSKVOIsAutonotifying) {
+Class _DSKVONotifyingOriginalClassForIsa(Class isa) {
+    if(class_getMethodImplementation(isa, ISKVOASelector) == (IMP)DSKVOIsAutonotifying) {
         void *ivars = object_getIndexedIvars(isa);
-        return ((NSKeyValueNotifyingInfo *)ivars)->originalClass;
+        return ((DSKeyValueNotifyingInfo *)ivars)->originalClass;
     }
     return isa;
 }
 
 
-BOOL _NSKVONotifyingMutatorsShouldNotifyForIsaAndKey(Class isa, NSString *key) {
+BOOL _DSKVONotifyingMutatorsShouldNotifyForIsaAndKey(Class isa, NSString *key) {
     IMP imp =  class_getMethodImplementation(isa, ISKVOASelector);
-    if(imp == (IMP)NSKVOIsAutonotifying) {
-        NSKeyValueNotifyingInfo *info = (NSKeyValueNotifyingInfo *)object_getIndexedIvars(isa);
+    if(imp == (IMP)DSKVOIsAutonotifying) {
+        DSKeyValueNotifyingInfo *info = (DSKeyValueNotifyingInfo *)object_getIndexedIvars(isa);
         pthread_mutex_lock(&info->mutex);
         BOOL contains = CFSetContainsValue(info->keys, (CFTypeRef)key);
         pthread_mutex_unlock(&info->mutex);
@@ -259,24 +257,24 @@ BOOL _NSKVONotifyingMutatorsShouldNotifyForIsaAndKey(Class isa, NSString *key) {
     return NO;
 }
 
-NSKeyValueContainerClass * _NSKeyValueContainerClassForIsa(Class isa) {
+DSKeyValueContainerClass * _DSKeyValueContainerClassForIsa(Class isa) {
     static void * isaCacheKey = NULL;
-    static CFMutableDictionaryRef NSKeyValueContainerClassPerOriginalClass = NULL;
-    static NSKeyValueContainerClass * cachedContainerClass = NULL;
+    static CFMutableDictionaryRef DSKeyValueContainerClassPerOriginalClass = NULL;
+    static DSKeyValueContainerClass * cachedContainerClass = NULL;
 
     if(isa != isaCacheKey) {
-        Class originClass  = _NSKVONotifyingOriginalClassForIsa(isa);
-        NSKeyValueContainerClass * containerClass = nil;
-        if(NSKeyValueContainerClassPerOriginalClass) {
-            containerClass = CFDictionaryGetValue(NSKeyValueContainerClassPerOriginalClass, originClass);
+        Class originClass  = _DSKVONotifyingOriginalClassForIsa(isa);
+        DSKeyValueContainerClass * containerClass = nil;
+        if(DSKeyValueContainerClassPerOriginalClass) {
+            containerClass = CFDictionaryGetValue(DSKeyValueContainerClassPerOriginalClass, originClass);
         }
         else {
-            NSKeyValueContainerClassPerOriginalClass = CFDictionaryCreateMutable(NULL,0,NULL,&kCFTypeDictionaryValueCallBacks);
+            DSKeyValueContainerClassPerOriginalClass = CFDictionaryCreateMutable(NULL,0,NULL,&kCFTypeDictionaryValueCallBacks);
         }
 
         if (!containerClass) {
-            containerClass = [[NSKeyValueContainerClass alloc] initWithOriginalClass:originClass];
-            CFDictionarySetValue(NSKeyValueContainerClassPerOriginalClass, originClass, containerClass);
+            containerClass = [[DSKeyValueContainerClass alloc] initWithOriginalClass:originClass];
+            CFDictionarySetValue(DKeyValueContainerClassPerOriginalClass, originClass, containerClass);
         }
         
         isaCacheKey = isa;
@@ -287,92 +285,92 @@ NSKeyValueContainerClass * _NSKeyValueContainerClassForIsa(Class isa) {
 }
 
 
-void NSKVOForwardInvocation(id object, SEL selector, void *param) {
+void DSKVOForwardInvocation(id object, SEL selector, void *param) {
     
 }
 
-const char *NSKVOOriginalImplementationSelectorForSelector_originalImplementationMethodNamePrefix = "_original_";
+const char *DSKVOOriginalImplementationSelectorForSelector_originalImplementationMethodNamePrefix = "_original_";
 
-void _NSKVONotifyingEnableForInfoAndKey(NSKeyValueNotifyingInfo *info, NSString *key) {
+void _DSKVONotifyingEnableForInfoAndKey(DSKeyValueNotifyingInfo *info, NSString *key) {
     pthread_mutex_lock(&info->mutex);
     CFSetAddValue(info->keys, (CFStringRef)key);
     pthread_mutex_unlock(&info->mutex);
     
-    NSKeyValueSetter * setter = _NSKeyValueSetterForClassAndKey(info->originalClass, key, info->originalClass);
-    if([setter isKindOfClass: [NSKeyValueMethodSetter class]]) {
-        Method setMethod = [(NSKeyValueMethodSetter *)setter method];
+    DSKeyValueSetter * setter = _DSKeyValueSetterForClassAndKey(info->originalClass, key, info->originalClass);
+    if([setter isKindOfClass: [DSKeyValueMethodSetter class]]) {
+        Method setMethod = [(DSKeyValueMethodSetter *)setter method];
         const char *encoding = method_getTypeEncoding(setMethod);
         if (*encoding == 'v') {
             char *argType = method_copyArgumentType(setMethod, 2);
             IMP imp = NULL;
             switch (*argType) {
                 case 'c': {
-                    imp = (IMP)_NSSetCharValueAndNotify;
+                    imp = (IMP)_DSSetCharValueAndNotify;
                 } break;
                 case 'd': {
-                    imp = (IMP)_NSSetDoubleValueAndNotify;
+                    imp = (IMP)_DSSetDoubleValueAndNotify;
                 } break;
                 case 'f': {
-                    imp = (IMP)_NSSetFloatValueAndNotify;
+                    imp = (IMP)_DSSetFloatValueAndNotify;
                 } break;
                 case 'i': {
-                    imp = (IMP)_NSSetIntValueAndNotify;
+                    imp = (IMP)_DSSetIntValueAndNotify;
                 } break;
                 case 'l': {
-                    imp = (IMP)_NSSetLongValueAndNotify;
+                    imp = (IMP)_DSSetLongValueAndNotify;
                 } break;
                 case 'q': {
-                    imp = (IMP)_NSSetLongLongValueAndNotify;
+                    imp = (IMP)_DSSetLongLongValueAndNotify;
                 } break;
                 case 's': {
-                    imp = (IMP)_NSSetShortValueAndNotify;
+                    imp = (IMP)_DSSetShortValueAndNotify;
                 } break;
                 case 'S': {
-                    imp = (IMP)_NSSetUnsignedShortValueAndNotify;
+                    imp = (IMP)_DSSetUnsignedShortValueAndNotify;
                 } break;
                 case '{': {
                     if(strcmp(argType, "{CGPoint=ff}") ==0) {
-                        imp = (IMP)_NSSetPointValueAndNotify;
+                        imp = (IMP)_DSSetPointValueAndNotify;
                     }
                     else if (strcmp(argType, "{_NSPoint=ff}") == 0) {
-                        imp = (IMP)_NSSetPointValueAndNotify;
+                        imp = (IMP)_DSSetPointValueAndNotify;
                     }
                     else if (strcmp (argType, "{_NSRange=II}") == 0) {
-                        imp = (IMP)_NSSetRangeValueAndNotify;
+                        imp = (IMP)_DSSetRangeValueAndNotify;
                     }
                     else if (strcmp(argType,"{CGRect={CGPoint=ff}{CGSize=ff}}") == 0) {
-                        imp = (IMP)_NSSetRectValueAndNotify;
+                        imp = (IMP)_DSSetRectValueAndNotify;
                     }
                     else if (strcmp(argType,"{_NSRect={_NSPoint=ff}{_NSSize=ff}}") == 0) {
-                        imp = (IMP)_NSSetRectValueAndNotify;
+                        imp = (IMP)_DSSetRectValueAndNotify;
                     }
                     else if(strcmp(argType, "{CGSize=ff}") == 0) {
-                        imp = (IMP)_NSSetSizeValueAndNotify;
+                        imp = (IMP)_DSSetSizeValueAndNotify;
                     }
                     else if (strcmp(argType, "{_NSSize=ff}") == 0) {
-                        imp = (IMP)_NSSetSizeValueAndNotify;
+                        imp = (IMP)_DSSetSizeValueAndNotify;
                     }
                     else {
                         imp = (IMP)_CF_forwarding_prep_0;
                     }
                 } break;
                 case 'B': {
-                    imp = (IMP)_NSSetBoolValueAndNotify;
+                    imp = (IMP)_DSSetBoolValueAndNotify;
                 } break;
                 case 'C': {
-                    imp = (IMP)_NSSetUnsignedCharValueAndNotify;
+                    imp = (IMP)_DSSetUnsignedCharValueAndNotify;
                 } break;
                 case 'I': {
-                    imp = (IMP)_NSSetUnsignedIntValueAndNotify;
+                    imp = (IMP)_DSSetUnsignedIntValueAndNotify;
                 } break;
                 case 'L': {
-                    imp = (IMP)_NSSetUnsignedLongValueAndNotify;
+                    imp = (IMP)_DSSetUnsignedLongValueAndNotify;
                 } break;
                 case 'Q': {
-                    imp = (IMP)_NSSetUnsignedLongLongValueAndNotify;
+                    imp = (IMP)_DSSetUnsignedLongLongValueAndNotify;
                 } break;
                 case '#': {
-                    imp = (IMP)_NSSetObjectValueAndNotify;
+                    imp = (IMP)_DSSetObjectValueAndNotify;
                 } break;
                 default: {
                     //
@@ -383,16 +381,16 @@ void _NSKVONotifyingEnableForInfoAndKey(NSKeyValueNotifyingInfo *info, NSString 
                 free(argType);
                 
                 SEL setMethodSelector = method_getName(setMethod);
-                NSKVONotifyingSetMethodImplementation(info, setMethodSelector, imp, key);
+                DSKVONotifyingSetMethodImplementation(info, setMethodSelector, imp, key);
                 
                 if (imp == (IMP)_CF_forwarding_prep_0) {
-                    NSKVONotifyingSetMethodImplementation(info, @selector(forwardInvocation:), (IMP)NSKVOForwardInvocation, nil);
+                    DSKVONotifyingSetMethodImplementation(info, @selector(forwardInvocation:), (IMP)DSKVOForwardInvocation, nil);
                     
                     const char *setMethodSelectorName = sel_getName(setMethodSelector);
                     size_t setMethodSelectorNameLen = strlen(setMethodSelectorName);
                     char prefixedName[setMethodSelectorNameLen + 11];
                     strlcpy(prefixedName,
-                            NSKVOOriginalImplementationSelectorForSelector_originalImplementationMethodNamePrefix,
+                            DSKVOOriginalImplementationSelectorForSelector_originalImplementationMethodNamePrefix,
                             setMethodSelectorNameLen + 11);
                     strlcat(prefixedName, setMethodSelectorName, setMethodSelectorNameLen + 11);
                     
@@ -401,7 +399,7 @@ void _NSKVONotifyingEnableForInfoAndKey(NSKeyValueNotifyingInfo *info, NSString 
             }
             else {
                 free(argType);
-                NSLog(@"KVO autonotifying only supports -set<Key>: methods that take id, \
+                NSLog(@"KVO autonotifyin only supports -set<Key>: methods that take id, \
                       NSNumber-supported scalar types, and some NSValue-supported structure \
                       types. Autonotifying will not be done for invocations of -[%s %s].",
                       class_getName(info->originalClass), sel_getName(method_getName(setMethod))
@@ -415,77 +413,77 @@ void _NSKVONotifyingEnableForInfoAndKey(NSKeyValueNotifyingInfo *info, NSString 
         }
     }
     
-    NSKeyValueGetter* getter = _NSKeyValueMutableArrayGetterForIsaAndKey(info->originalClass, key);
+    DSKeyValueGetter* getter = _DSKeyValueMutableArrayGetterForIsaAndKey(info->originalClass, key);
     if([getter respondsToSelector:@selector(mutatingMethods)]) {
-        NSKeyValueMutatingArrayMethodSet *mutatingMethods = [getter mutatingMethods];
+        DSKeyValueMutatingArrayMethodSet *mutatingMethods = [getter mutatingMethods];
         if(mutatingMethods) {
             if(mutatingMethods.insertObjectAtIndex) {
-                NSKVONotifyingSetMethodImplementation(info,method_getName(mutatingMethods.insertObjectAtIndex),(IMP)NSKVOInsertObjectAtIndexAndNotify,key);
+                DSKVONotifyingSetMethodImplementation(info,method_getName(mutatingMethods.insertObjectAtIndex),(IMP)DSKVOInsertObjectAtIndexAndNotify,key);
             }
             if(mutatingMethods.insertObjectsAtIndexes) {
-                NSKVONotifyingSetMethodImplementation(info,method_getName(mutatingMethods.insertObjectsAtIndexes),(IMP)NSKVOInsertObjectsAtIndexesAndNotify,key);
+                DSKVONotifyingSetMethodImplementation(info,method_getName(mutatingMethods.insertObjectsAtIndexes),(IMP)DSKVOInsertObjectsAtIndexesAndNotify,key);
             }
             if(mutatingMethods.removeObjectAtIndex) {
-                NSKVONotifyingSetMethodImplementation(info,method_getName(mutatingMethods.removeObjectAtIndex),(IMP)NSKVORemoveObjectAtIndexAndNotify,key);
+                DSKVONotifyingSetMethodImplementation(info,method_getName(mutatingMethods.removeObjectAtIndex),(IMP)DSKVORemoveObjectAtIndexAndNotify,key);
             }
             if(mutatingMethods.removeObjectsAtIndexes) {
-                NSKVONotifyingSetMethodImplementation(info,method_getName(mutatingMethods.removeObjectsAtIndexes),(IMP)NSKVORemoveObjectsAtIndexesAndNotify,key);
+                DSKVONotifyingSetMethodImplementation(info,method_getName(mutatingMethods.removeObjectsAtIndexes),(IMP)DSKVORemoveObjectsAtIndexesAndNotify,key);
             }
             if(mutatingMethods.replaceObjectAtIndex) {
-                NSKVONotifyingSetMethodImplementation(info,method_getName(mutatingMethods.replaceObjectAtIndex),(IMP)NSKVOReplaceObjectAtIndexAndNotify,key);
+                DSKVONotifyingSetMethodImplementation(info,method_getName(mutatingMethods.replaceObjectAtIndex),(IMP)DSKVOReplaceObjectAtIndexAndNotify,key);
             }
             if(mutatingMethods.replaceObjectsAtIndexes) {
-                NSKVONotifyingSetMethodImplementation(info,method_getName(mutatingMethods.replaceObjectsAtIndexes),(IMP)NSKVOReplaceObjectsAtIndexesAndNotify,key);
+                DSKVONotifyingSetMethodImplementation(info,method_getName(mutatingMethods.replaceObjectsAtIndexes),(IMP)DSKVOReplaceObjectsAtIndexesAndNotify,key);
             }
         }
     }
     
-    getter = _NSKeyValueMutableOrderedSetGetterForIsaAndKey(info->originalClass, key);
+    getter = _DSKeyValueMutableOrderedSetGetterForIsaAndKey(info->originalClass, key);
     if([getter respondsToSelector:@selector(mutatingMethods)]) {
-        NSKeyValueMutatingOrderedSetMethodSet *mutatingMethods = [getter mutatingMethods];
+        DSKeyValueMutatingOrderedSetMethodSet *mutatingMethods = [getter mutatingMethods];
         if(mutatingMethods) {
             if(mutatingMethods.insertObjectAtIndex) {
-                NSKVONotifyingSetMethodImplementation(info,method_getName(mutatingMethods.insertObjectAtIndex),(IMP)NSKVOInsertObjectAtIndexAndNotify,key);
+                DSKVONotifyingSetMethodImplementation(info,method_getName(mutatingMethods.insertObjectAtIndex),(IMP)DSKVOInsertObjectAtIndexAndNotify,key);
             }
             if(mutatingMethods.insertObjectsAtIndexes) {
-                NSKVONotifyingSetMethodImplementation(info,method_getName(mutatingMethods.insertObjectsAtIndexes),(IMP)NSKVOInsertObjectsAtIndexesAndNotify,key);
+                DSKVONotifyingSetMethodImplementation(info,method_getName(mutatingMethods.insertObjectsAtIndexes),(IMP)DSKVOInsertObjectsAtIndexesAndNotify,key);
             }
             if(mutatingMethods.removeObjectAtIndex) {
-                NSKVONotifyingSetMethodImplementation(info,method_getName(mutatingMethods.removeObjectAtIndex),(IMP)NSKVORemoveObjectAtIndexAndNotify,key);
+                DSKVONotifyingSetMethodImplementation(info,method_getName(mutatingMethods.removeObjectAtIndex),(IMP)DSKVORemoveObjectAtIndexAndNotify,key);
             }
             if(mutatingMethods.removeObjectsAtIndexes) {
-                NSKVONotifyingSetMethodImplementation(info,method_getName(mutatingMethods.removeObjectsAtIndexes),(IMP)NSKVORemoveObjectsAtIndexesAndNotify,key);
+                DSKVONotifyingSetMethodImplementation(info,method_getName(mutatingMethods.removeObjectsAtIndexes),(IMP)DSKVORemoveObjectsAtIndexesAndNotify,key);
             }
             if(mutatingMethods.replaceObjectAtIndex) {
-                NSKVONotifyingSetMethodImplementation(info,method_getName(mutatingMethods.replaceObjectAtIndex),(IMP)NSKVOReplaceObjectAtIndexAndNotify,key);
+                DSKVONotifyingSetMethodImplementation(info,method_getName(mutatingMethods.replaceObjectAtIndex),(IMP)DSKVOReplaceObjectAtIndexAndNotify,key);
             }
             if(mutatingMethods.replaceObjectsAtIndexes) {
-                NSKVONotifyingSetMethodImplementation(info,method_getName(mutatingMethods.replaceObjectsAtIndexes),(IMP)NSKVOReplaceObjectsAtIndexesAndNotify,key);
+                DSKVONotifyingSetMethodImplementation(info,method_getName(mutatingMethods.replaceObjectsAtIndexes),(IMP)DSKVOReplaceObjectsAtIndexesAndNotify,key);
             }
         }
     }
     
-    getter = _NSKeyValueMutableSetGetterForClassAndKey(info->originalClass, key, info->originalClass);
+    getter = _DSKeyValueMutableSetGetterForClassAndKey(info->originalClass, key, info->originalClass);
     if([getter respondsToSelector:@selector(mutatingMethods)]) {
-        NSKeyValueMutatingSetMethodSet *mutatingMethods = [getter mutatingMethods];
+        DSKeyValueMutatingSetMethodSet *mutatingMethods = [getter mutatingMethods];
         if(mutatingMethods) {
             if(mutatingMethods.addObject) {
-                NSKVONotifyingSetMethodImplementation(info,method_getName(mutatingMethods.addObject),(IMP)NSKVOAddObjectAndNotify,key);
+                DSKVONotifyingSetMethodImplementation(info,method_getName(mutatingMethods.addObject),(IMP)DSKVOAddObjectAndNotify,key);
             }
             if(mutatingMethods.intersectSet) {
-                NSKVONotifyingSetMethodImplementation(info,method_getName(mutatingMethods.intersectSet),(IMP)NSKVOIntersectSetAndNotify,key);
+                DSKVONotifyingSetMethodImplementation(info,method_getName(mutatingMethods.intersectSet),(IMP)DSKVOIntersectSetAndNotify,key);
             }
             if(mutatingMethods.minusSet) {
-                NSKVONotifyingSetMethodImplementation(info,method_getName(mutatingMethods.minusSet),(IMP)NSKVOMinusSetAndNotify,key);
+                DSKVONotifyingSetMethodImplementation(info,method_getName(mutatingMethods.minusSet),(IMP)DSKVOMinusSetAndNotify,key);
             }
             if(mutatingMethods.removeObject) {
-                NSKVONotifyingSetMethodImplementation(info,method_getName(mutatingMethods.removeObject),(IMP)NSKVORemoveObjectAndNotify,key);
+                DSKVONotifyingSetMethodImplementation(info,method_getName(mutatingMethods.removeObject),(IMP)DSKVORemoveObjectAndNotify,key);
             }
             if(mutatingMethods.unionSet) {
-                NSKVONotifyingSetMethodImplementation(info,method_getName(mutatingMethods.unionSet),(IMP)NSKVOUnionSetAndNotify,key);
+                DSKVONotifyingSetMethodImplementation(info,method_getName(mutatingMethods.unionSet),(IMP)DSKVOUnionSetAndNotify,key);
             }
         }
     }
     
-    _NSKeyValueInvalidateCachedMutatorsForIsaAndKey(info->containerClass, key);
+    _DSKeyValueInvalidateCachedMutatorsForIsaAndKey(info->containerClass, key);
 }

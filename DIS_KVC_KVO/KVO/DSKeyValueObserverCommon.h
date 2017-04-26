@@ -8,6 +8,10 @@
 
 #import <Foundation/Foundation.h>
 #import <stdarg.h>
+#import <objc/runtime.h>
+#import <objc/objc.h>
+#import <objc/message.h>
+#import <pthread.h>
 
 extern void _CF_forwarding_prep_0(void *);
 extern void os_lock_lock(void *);
@@ -19,6 +23,7 @@ extern void *NSReallocateScannedUncollectable(void *, size_t);
 extern BOOL _CFAppVersionCheckLessThan(const char *, uint64_t, uint64_t, uint64_t);
 extern NSUInteger dyld_get_program_sdk_version();
 
+extern NSString * const NSKeyValueChangeOriginalObservableKey;
 
 extern pthread_mutex_t _DSKeyValueObserverRegistrationLock;
 extern pthread_t _DSKeyValueObserverRegistrationLockOwner;

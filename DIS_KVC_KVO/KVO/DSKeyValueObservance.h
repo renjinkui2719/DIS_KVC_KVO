@@ -1,5 +1,5 @@
 //
-//  NSKeyValueObservance.h
+//  DSKeyValueObservance.h
 //  DIS_KVC_KVO
 //
 //  Created by renjinkui on 2016/12/31.
@@ -8,16 +8,16 @@
 
 #import <Foundation/Foundation.h>
 
-@class NSKeyValueProperty;
+@class DSKeyValueProperty;
 
-@interface NSKeyValueObservance : NSObject
+@interface DSKeyValueObservance : NSObject
 {
     int _options:7;
     int _cachedIsShareable:1;
 }
 
 @property (nonatomic, strong) id observer;
-@property (nonatomic, strong) NSKeyValueProperty * property;
+@property (nonatomic, strong) DSKeyValueProperty * property;
 @property (nonatomic, assign) void * context;
 @property (nonatomic, strong) id originalObservable;
 @property (nonatomic, assign) int options;
@@ -28,6 +28,6 @@
 
 @end
 
-@interface NSKeyValueShareableObservanceKey : NSKeyValueObservance
+@interface DSKeyValueShareableObservanceKey : DSKeyValueObservance
 
 @end

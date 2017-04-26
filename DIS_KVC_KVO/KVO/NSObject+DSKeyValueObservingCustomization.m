@@ -1,20 +1,20 @@
 //
-//  NSObject+NSKeyValueObservingCustomization.m
+//  NSObject+DSKeyValueObservingCustomization.m
 //  DIS_KVC_KVO
 //
 //  Created by renjinkui on 2017/2/25.
 //  Copyright © 2017年 JK. All rights reserved.
 //
 
-#import "NSObject+NSKeyValueObservingCustomization.h"
-#import "NSKeyValueObserverCommon.h"
+#import "NSObject+DSKeyValueObservingCustomization.h"
+#import "DSKeyValueObserverCommon.h"
 #import <objc/runtime.h>
 #import <objc/message.h>
 
-CFMutableDictionaryRef NSKeyValueObservationInfoPerObject = NULL;
-CFMutableDictionaryRef NSKeyValueOldStyleDependenciesByClass = NULL;
+CFMutableDictionaryRef DSKeyValueObservationInfoPerObject = NULL;
+CFMutableDictionaryRef DSKeyValueOldStyleDependenciesByClass = NULL;
 
-OSSpinLock NSKeyValueOldStyleDependenciesSpinLock = OS_SPINLOCK_INIT;
+OSSpinLock DSKeyValueOldStyleDependenciesSpinLock = OS_SPINLOCK_INIT;
 
 
 #define KeyPathsForValuesAffectingPrefix "keyPathsForValuesAffecting"
@@ -22,29 +22,29 @@ OSSpinLock NSKeyValueOldStyleDependenciesSpinLock = OS_SPINLOCK_INIT;
 #define AutomaticallyNotifiesObserversOfPrefix "automaticallyNotifiesObserversOf"
 
 
-@implementation NSObject (NSKeyValueObservingCustomization)
+@implementation NSObject (DSKeyValueObservingCustomization)
 
 - (void *)_observationInfoKey {
     return ((void *)(~(NSUInteger)self));
 }
 
-- (void *)observationInfo {
-    return NSKeyValueObservationInfoPerObject ? (void *)CFDictionaryGetValue(NSKeyValueObservationInfoPerObject, [self _observationInfoKey]) : NULL;
+- (void *)d_observationInfo {
+    return DSKeyValueObservationInfoPerObject ? (void *)CFDictionaryGetValue(DSKeyValueObservationInfoPerObject, [self _observationInfoKey]) : NULL;
 }
 
-- (void)setObservationInfo:(void *)info {
-    if(!NSKeyValueObservationInfoPerObject) {
-        NSKeyValueObservationInfoPerObject = CFDictionaryCreateMutable(NULL, 0, NULL, NULL);
+- (void)d_setObservationInfo:(void *)info {
+    if(!DSKeyValueObservationInfoPerObject) {
+        DSKeyValueObservationInfoPerObject = CFDictionaryCreateMutable(NULL, 0, NULL, NULL);
     }
     if(info) {
-        CFDictionarySetValue(NSKeyValueObservationInfoPerObject, [self _observationInfoKey], info);
+        CFDictionarySetValue(DSKeyValueObservationInfoPerObject, [self _observationInfoKey], info);
     }
     else {
-        CFDictionaryRemoveValue(NSKeyValueObservationInfoPerObject, [self _observationInfoKey]);
+        CFDictionaryRemoveValue(DSKeyValueObservationInfoPerObject, [self _observationInfoKey]);
     }
 }
 
-+ (NSSet<NSString *> *)keyPathsForValuesAffectingValueForKey:(NSString *)key {
++ (NSSet<NSString *> *)d_keyPathsForValuesAffectingValueForKey:(NSString *)key {
    NSUInteger keyBytesLength = [key lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
     char keyCStr[keyBytesLength + 1];
     [key getCString:keyCStr maxLength:keyBytesLength + 1 encoding:NSUTF8StringEncoding];
@@ -63,22 +63,22 @@ OSSpinLock NSKeyValueOldStyleDependenciesSpinLock = OS_SPINLOCK_INIT;
         return ((id (*)(id,Method))method_invoke)(self,prefixedMethod);
     }
     else {
-        return [self _keysForValuesAffectingValueForKey:key];
+        return [self _d_keysForValuesAffectingValueForKey:key];
     }
 }
 
-+ (NSSet<NSString *> *)_keysForValuesAffectingValueForKey:(NSString *)key {
-    os_lock_lock(&NSKeyValueOldStyleDependenciesSpinLock);
++ (NSSet<NSString *> *)_d_keysForValuesAffectingValueForKey:(NSString *)key {
+    os_lock_lock(&DSKeyValueOldStyleDependenciesSpinLock);
     
     NSArray *dependencies = nil;
-    if(NSKeyValueOldStyleDependenciesByClass) {
-        CFDictionaryRef dic = CFDictionaryGetValue(NSKeyValueOldStyleDependenciesByClass, self);
+    if(DSKeyValueOldStyleDependenciesByClass) {
+        CFDictionaryRef dic = CFDictionaryGetValue(DSKeyValueOldStyleDependenciesByClass, self);
         if(dic) {
             dependencies = CFDictionaryGetValue(dic, key);
         }
     }
     
-    os_lock_unlock(&NSKeyValueOldStyleDependenciesSpinLock);
+    os_lock_unlock(&DSKeyValueOldStyleDependenciesSpinLock);
     
     NSMutableSet *keySet = [NSMutableSet set];
     
@@ -91,7 +91,7 @@ OSSpinLock NSKeyValueOldStyleDependenciesSpinLock = OS_SPINLOCK_INIT;
     return keySet;
 }
 
-+ (BOOL)automaticallyNotifiesObserversForKey:(NSString *)key {
++ (BOOL)d_automaticallyNotifiesObserversForKey:(NSString *)key {
     NSUInteger keyBytesLength = [key lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
     char keyCStr[keyBytesLength + 1];
     [key getCString:keyCStr maxLength:keyBytesLength + 1 encoding:NSUTF8StringEncoding];

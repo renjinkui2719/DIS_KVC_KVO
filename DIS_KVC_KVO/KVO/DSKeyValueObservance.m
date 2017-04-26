@@ -1,15 +1,10 @@
-#import "NSKeyValueObservance.h"
-#import "NSKeyValueProperty.h"
-#import "NSKeyValueChangeDictionary.h"
-#import "NSKeyValueObserverCommon.h"
+#import "DSKeyValueObservance.h"
+#import "DSKeyValueProperty.h"
+#import "DSKeyValueChangeDictionary.h"
+#import "DSKeyValueObserverCommon.h"
+#import "NSObject+DSKeyValueObserverRegistration.h"
 
-const NSString * const NSKeyValueChangeOriginalObservableKey = @"originalObservable";
-
-void NSKeyValueWillChangeForObservance(id,id,BOOL,id);
-void NSKeyValueDidChangeForObservance(id,id,BOOL,id);
-void NSKVONotify(id, NSString *, id, NSDictionary *, void *);
-
-@implementation NSKeyValueObservance
+@implementation DSKeyValueObservance
 
 - (id)_initWithObserver:(id)observer property:(id)property options:(int)options context:(void *)context originalObservable:(id)originalObservable {
     if (self = [super init]) {
@@ -18,30 +13,30 @@ void NSKVONotify(id, NSString *, id, NSDictionary *, void *);
         _options = options;
         _context = context;
         _originalObservable = originalObservable;
-        _cachedIsShareable = !([observer isKindOfClass:[NSKeyValueObservance class]]);
+        _cachedIsShareable = !([observer isKindOfClass:[DSKeyValueObservance class]]);
     }
     return self;
 }
 
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
-    id originalObservable = change[NSKeyValueChangeOriginalObservableKey];
+    id originalObservable = change[DSKeyValueChangeOriginalObservableKey];
 	if(originalObservable) {
 		if (context) {
 			BOOL isASet = NO;
-			id dependentValueKeyOrKeys = [(NSKeyValueProperty *)context dependentValueKeyOrKeysIsASet: &isASet];
+			id dependentValueKeyOrKeys = [(DSKeyValueProperty *)context dependentValueKeyOrKeysIsASet: &isASet];
             BOOL isPrior = [change[NSKeyValueChangeNotificationIsPriorKey] boolValue];
 			if(isPrior) {
-				NSKeyValueWillChangeForObservance(originalObservable, dependentValueKeyOrKeys, isASet, self);
+				DSKeyValueWillChangeForObservance(originalObservable, dependentValueKeyOrKeys, isASet, self);
 			}
 			else {
-				NSKeyValueDidChangeForObservance(originalObservable, dependentValueKeyOrKeys, isASet, self);
+				DSKeyValueDidChangeForObservance(originalObservable, dependentValueKeyOrKeys, isASet, self);
 			}
 		}
 		else {
-			if([change isKindOfClass: [NSKeyValueChangeDictionary class]]) {
-				[(NSKeyValueChangeDictionary *)change setOriginalObservable:_originalObservable];
-                NSKVONotify(_observer, [_property keyPath], originalObservable, change, _context);
+			if([change isKindOfClass: [DSKeyValueChangeDictionary class]]) {
+				[(DSKeyValueChangeDictionary *)change setOriginalObservable:_originalObservable];
+                DSKVONotify(_observer, [_property keyPath], originalObservable, change, _context);
 			}
 			else {
                 NSMutableDictionary *change_copy = [change mutableCopy];
@@ -51,7 +46,7 @@ void NSKVONotify(id, NSString *, id, NSDictionary *, void *);
                 else {
                     [change_copy removeObjectForKey:NSKeyValueChangeOriginalObservableKey];
                 }
-                NSKVONotify(_observer, [_property keyPath], originalObservable, change_copy, _context);
+                DSKVONotify(_observer, [_property keyPath], originalObservable, change_copy, _context);
 			}
 		}
 	}
@@ -59,7 +54,7 @@ void NSKVONotify(id, NSString *, id, NSDictionary *, void *);
 
 
 - (NSUInteger)hash {
-	return _PointersHash(5, _observer, _property, (void *)((unsigned char)_options & 0x7F), _context, _originalObservable);
+	return _DSKVOPointersHash(5, _observer, _property, (void *)(NSUInteger)(_options), _context, _originalObservable);
 }
 
 - (BOOL)isEqual:(id)object {
@@ -71,7 +66,7 @@ void NSKVONotify(id, NSString *, id, NSDictionary *, void *);
 		return NO;
 	}
 
-	NSKeyValueObservance *other = (NSKeyValueObservance *)object;
+	DSKeyValueObservance *other = (DSKeyValueObservance *)object;
 	if (other.observer != self.observer) {
 		return NO;
 	}

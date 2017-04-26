@@ -10,7 +10,6 @@
 #import <libkern/OSAtomic.h>
 
 NSNumber* DSKeyValueChangeDictionaryNumberWithKind_numbersByKind[] = { (NSNumber*)0x0FEEDFACE,nil,nil,nil,nil,(NSNumber*)0x0FEEDFACE};
-extern NSString * const NSKeyValueChangeOriginalObservableKey;
 
 @implementation DSKeyValueChangeDictionary
 

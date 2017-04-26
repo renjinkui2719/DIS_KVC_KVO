@@ -14,7 +14,7 @@
 @class DSKeyValueContainerClass;
 @class DSKeyValueObservationInfo;
 
-typedef struct DNSKeyValueNotifyingInfo {
+typedef struct DSKeyValueNotifyingInfo {
     Class originalClass;
     Class containerClass;
     CFMutableSetRef keys;

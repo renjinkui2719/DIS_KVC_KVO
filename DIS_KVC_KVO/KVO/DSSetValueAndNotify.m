@@ -1,20 +1,18 @@
 //
-//  NSKVOSetAndNotify.m
+//  DSKVOSetAndNotify.m
 //  DIS_KVC_KVO
 //
 //  Created by renjinkui on 2017/2/18.
 //  Copyright © 2017年 JK. All rights reserved.
 //
 
-#import "NSSetValueAndNotify.h"
-#import "NSKeyValueContainerClass.h"
-#import "NSObject+NSKeyValueObservingPrivate.h"
-#import <objc/runtime.h>
-#import <objc/message.h>
-#import <pthread.h>
+#import "DSSetValueAndNotify.h"
+#import "DSKeyValueContainerClass.h"
+#import "NSObject+DSKeyValueObservingPrivate.h"
+#import "DSKeyValueObserverCommon.h"
 
-#define __NSSetValueAndNotify(object, selector, value) do {\
-    NSKeyValueNotifyingInfo *info = object_getIndexedIvars(object_getClass(object));\
+#define __DSSetValueAndNotify(object, selector, value) do {\
+    DSKeyValueNotifyingInfo *info = object_getIndexedIvars(object_getClass(object));\
 \
     pthread_mutex_lock(&info->mutex);\
 \
@@ -32,7 +30,7 @@
         [object didChangeValueForKey:key];\
     }\
     else {\
-        [object _changeValueForKey:key key:nil key:nil usingBlock:^{\
+        [object _d_changeValueForKey:key key:nil key:nil usingBlock:^{\
             IMP imp = class_getMethodImplementation(info->originalClass, selector);\
             ((void (*)(id ,SEL , ... ))imp)(object, selector, value);\
         }];\
@@ -41,80 +39,81 @@
     [key release];\
 }while(0)
 
-void _NSSetCharValueAndNotify(id object,SEL selector, char value) {
-    __NSSetValueAndNotify(object, selector, value);
+
+void _DSSetCharValueAndNotify(id object,SEL selector, char value) {
+    __DSSetValueAndNotify(object, selector, value);
 }
 
-void _NSSetDoubleValueAndNotify(id object,SEL selector, double value) {
-    __NSSetValueAndNotify(object, selector, value);
+void _DSSetDoubleValueAndNotify(id object,SEL selector, double value) {
+    __DSSetValueAndNotify(object, selector, value);
 }
 
-void _NSSetFloatValueAndNotify(id object,SEL selector, float value) {
-    __NSSetValueAndNotify(object, selector, value);
+void _DSSetFloatValueAndNotify(id object,SEL selector, float value) {
+    __DSSetValueAndNotify(object, selector, value);
 }
 
-void _NSSetIntValueAndNotify(id object,SEL selector, int value) {
-    __NSSetValueAndNotify(object, selector, value);
+void _DSSetIntValueAndNotify(id object,SEL selector, int value) {
+    __DSSetValueAndNotify(object, selector, value);
 }
 
-void _NSSetLongValueAndNotify(id object,SEL selector, long value) {
-    __NSSetValueAndNotify(object, selector, value);
+void _DSSetLongValueAndNotify(id object,SEL selector, long value) {
+    __DSSetValueAndNotify(object, selector, value);
 }
 
-void _NSSetLongLongValueAndNotify(id object,SEL selector, long long value) {
-    __NSSetValueAndNotify(object, selector, value);
+void _DSSetLongLongValueAndNotify(id object,SEL selector, long long value) {
+    __DSSetValueAndNotify(object, selector, value);
 }
 
-void _NSSetShortValueAndNotify(id object,SEL selector, short value) {
-    __NSSetValueAndNotify(object, selector, value);
+void _DSSetShortValueAndNotify(id object,SEL selector, short value) {
+    __DSSetValueAndNotify(object, selector, value);
 }
 
-void _NSSetUnsignedShortValueAndNotify(id object,SEL selector, unsigned short value) {
-    __NSSetValueAndNotify(object, selector, value);
+void _DSSetUnsignedShortValueAndNotify(id object,SEL selector, unsigned short value) {
+    __DSSetValueAndNotify(object, selector, value);
 }
 
-void _NSSetPointValueAndNotify(id object,SEL selector, NSPoint value) {
-    __NSSetValueAndNotify(object, selector, value);
+void _DSSetPointValueAndNotify(id object,SEL selector, NSPoint value) {
+    __DSSetValueAndNotify(object, selector, value);
 }
 
-void _NSSetRangeValueAndNotify(id object,SEL selector, NSRange value) {
-    __NSSetValueAndNotify(object, selector, value);
+void _DSSetRangeValueAndNotify(id object,SEL selector, NSRange value) {
+    __DSSetValueAndNotify(object, selector, value);
 }
 
-void _NSSetRectValueAndNotify(id object,SEL selector, NSRect value) {
-    __NSSetValueAndNotify(object, selector, value);
+void _DSSetRectValueAndNotify(id object,SEL selector, NSRect value) {
+    __DSSetValueAndNotify(object, selector, value);
 }
 
-void _NSSetSizeValueAndNotify(id object,SEL selector, NSSize value) {
-    __NSSetValueAndNotify(object, selector, value);
+void _DSSetSizeValueAndNotify(id object,SEL selector, NSSize value) {
+    __DSSetValueAndNotify(object, selector, value);
 }
 
-void _NSSetBoolValueAndNotify(id object,SEL selector, BOOL value) {
-    __NSSetValueAndNotify(object, selector, value);
+void _DSSetBoolValueAndNotify(id object,SEL selector, BOOL value) {
+    __DSSetValueAndNotify(object, selector, value);
 }
 
-void _NSSetUnsignedCharValueAndNotify(id object,SEL selector, unsigned char value) {
-    __NSSetValueAndNotify(object, selector, value);
+void _DSSetUnsignedCharValueAndNotify(id object,SEL selector, unsigned char value) {
+    __DSSetValueAndNotify(object, selector, value);
 }
 
-void _NSSetUnsignedIntValueAndNotify(id object,SEL selector, unsigned int value) {
-    __NSSetValueAndNotify(object, selector, value);
+void _DSSetUnsignedIntValueAndNotify(id object,SEL selector, unsigned int value) {
+    __DSSetValueAndNotify(object, selector, value);
 }
 
-void _NSSetUnsignedLongValueAndNotify(id object,SEL selector, unsigned long value) {
-    __NSSetValueAndNotify(object, selector, value);
+void _DSSetUnsignedLongValueAndNotify(id object,SEL selector, unsigned long value) {
+    __DSSetValueAndNotify(object, selector, value);
 }
 
-void _NSSetUnsignedLongLongValueAndNotify(id object,SEL selector, unsigned long long value) {
-    __NSSetValueAndNotify(object, selector, value);
+void _DSSetUnsignedLongLongValueAndNotify(id object,SEL selector, unsigned long long value) {
+    __DSSetValueAndNotify(object, selector, value);
 }
 
-void _NSSetObjectValueAndNotify(id object,SEL selector, id value) {
-    __NSSetValueAndNotify(object, selector, value);
+void _DSSetObjectValueAndNotify(id object,SEL selector, id value) {
+    __DSSetValueAndNotify(object, selector, value);
 }
 
-void NSKVOInsertObjectAtIndexAndNotify(id object,SEL selector, id value, NSUInteger idx) {
-    NSKeyValueNotifyingInfo *info = object_getIndexedIvars(object_getClass(object));
+void DSKVOInsertObjectAtIndexAndNotify(id object,SEL selector, id value, NSUInteger idx) {
+    DSKeyValueNotifyingInfo *info = object_getIndexedIvars(object_getClass(object));
     
     pthread_mutex_lock(&info->mutex);
     
@@ -136,8 +135,8 @@ void NSKVOInsertObjectAtIndexAndNotify(id object,SEL selector, id value, NSUInte
     [key release];
 }
 
-void NSKVOInsertObjectsAtIndexesAndNotify(id object,SEL selector, id values, NSIndexSet *indexes) {
-    NSKeyValueNotifyingInfo *info = object_getIndexedIvars(object_getClass(object));
+void DSKVOInsertObjectsAtIndexesAndNotify(id object,SEL selector, id values, NSIndexSet *indexes) {
+    DSKeyValueNotifyingInfo *info = object_getIndexedIvars(object_getClass(object));
     
     pthread_mutex_lock(&info->mutex);
     
@@ -156,8 +155,8 @@ void NSKVOInsertObjectsAtIndexesAndNotify(id object,SEL selector, id values, NSI
     [key release];
 }
 
-void NSKVORemoveObjectAtIndexAndNotify(id object,SEL selector, NSUInteger idx) {
-    NSKeyValueNotifyingInfo *info = object_getIndexedIvars(object_getClass(object));
+void DSKVORemoveObjectAtIndexAndNotify(id object,SEL selector, NSUInteger idx) {
+    DSKeyValueNotifyingInfo *info = object_getIndexedIvars(object_getClass(object));
     
     pthread_mutex_lock(&info->mutex);
     
@@ -179,8 +178,8 @@ void NSKVORemoveObjectAtIndexAndNotify(id object,SEL selector, NSUInteger idx) {
     [key release];
 }
 
-void NSKVORemoveObjectsAtIndexesAndNotify(id object, SEL selector, NSIndexSet *indexes) {
-    NSKeyValueNotifyingInfo *info = object_getIndexedIvars(object_getClass(object));
+void DSKVORemoveObjectsAtIndexesAndNotify(id object, SEL selector, NSIndexSet *indexes) {
+    DSKeyValueNotifyingInfo *info = object_getIndexedIvars(object_getClass(object));
     
     pthread_mutex_lock(&info->mutex);
     
@@ -199,8 +198,8 @@ void NSKVORemoveObjectsAtIndexesAndNotify(id object, SEL selector, NSIndexSet *i
     [key release];
 }
 
-void NSKVOReplaceObjectAtIndexAndNotify(id object,SEL selector, NSUInteger idx, id value) {
-    NSKeyValueNotifyingInfo *info = object_getIndexedIvars(object_getClass(object));
+void DSKVOReplaceObjectAtIndexAndNotify(id object,SEL selector, NSUInteger idx, id value) {
+    DSKeyValueNotifyingInfo *info = object_getIndexedIvars(object_getClass(object));
     
     pthread_mutex_lock(&info->mutex);
     
@@ -221,8 +220,8 @@ void NSKVOReplaceObjectAtIndexAndNotify(id object,SEL selector, NSUInteger idx, 
     [key release];
 }
 
-void NSKVOReplaceObjectsAtIndexesAndNotify(id object, SEL selector, NSIndexSet *indexes, id values) {
-    NSKeyValueNotifyingInfo *info = object_getIndexedIvars(object_getClass(object));
+void DSKVOReplaceObjectsAtIndexesAndNotify(id object, SEL selector, NSIndexSet *indexes, id values) {
+    DSKeyValueNotifyingInfo *info = object_getIndexedIvars(object_getClass(object));
     
     pthread_mutex_lock(&info->mutex);
     
@@ -241,8 +240,8 @@ void NSKVOReplaceObjectsAtIndexesAndNotify(id object, SEL selector, NSIndexSet *
     [key release];
 }
 
-void NSKVOAddObjectAndNotify(id object, SEL selector, id value) {
-    NSKeyValueNotifyingInfo *info = object_getIndexedIvars(object_getClass(object));
+void DSKVOAddObjectAndNotify(id object, SEL selector, id value) {
+    DSKeyValueNotifyingInfo *info = object_getIndexedIvars(object_getClass(object));
     
     pthread_mutex_lock(&info->mutex);
     
@@ -263,8 +262,8 @@ void NSKVOAddObjectAndNotify(id object, SEL selector, id value) {
     [key release];
 }
 
-void NSKVORemoveObjectAndNotify(id object, SEL selector, id value) {
-    NSKeyValueNotifyingInfo *info = object_getIndexedIvars(object_getClass(object));
+void DSKVORemoveObjectAndNotify(id object, SEL selector, id value) {
+    DSKeyValueNotifyingInfo *info = object_getIndexedIvars(object_getClass(object));
     
     pthread_mutex_lock(&info->mutex);
     
@@ -286,8 +285,8 @@ void NSKVORemoveObjectAndNotify(id object, SEL selector, id value) {
 }
 
 
-void NSKVOIntersectSetAndNotify(id object, SEL selector, id values) {
-    NSKeyValueNotifyingInfo *info = object_getIndexedIvars(object_getClass(object));
+void DSKVOIntersectSetAndNotify(id object, SEL selector, id values) {
+    DSKeyValueNotifyingInfo *info = object_getIndexedIvars(object_getClass(object));
     
     pthread_mutex_lock(&info->mutex);
     
@@ -306,8 +305,8 @@ void NSKVOIntersectSetAndNotify(id object, SEL selector, id values) {
     [key release];
 }
 
-void NSKVOMinusSetAndNotify(id object, SEL selector, id values) {
-    NSKeyValueNotifyingInfo *info = object_getIndexedIvars(object_getClass(object));
+void DSKVOMinusSetAndNotify(id object, SEL selector, id values) {
+    DSKeyValueNotifyingInfo *info = object_getIndexedIvars(object_getClass(object));
     
     pthread_mutex_lock(&info->mutex);
     
@@ -326,8 +325,8 @@ void NSKVOMinusSetAndNotify(id object, SEL selector, id values) {
     [key release];
 }
 
-void NSKVOUnionSetAndNotify(id object, SEL selector, id values) {
-    NSKeyValueNotifyingInfo *info = object_getIndexedIvars(object_getClass(object));
+void DSKVOUnionSetAndNotify(id object, SEL selector, id values) {
+    DSKeyValueNotifyingInfo *info = object_getIndexedIvars(object_getClass(object));
     
     pthread_mutex_lock(&info->mutex);
     
