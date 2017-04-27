@@ -136,7 +136,7 @@ void _DSSetValueAndNotifyForKeyInIvar(id object, SEL selector, id value, NSStrin
         void *extraArguments[3];
         NSUInteger argumentCount = 0;
         
-        if (_NSKVONotifyingMutatorsShouldNotifyForIsaAndKey(containerIsa, key)) {
+        if (_DSKVONotifyingMutatorsShouldNotifyForIsaAndKey(containerIsa, key)) {
             sel = NULL;
             
             extraArguments[0] = key;

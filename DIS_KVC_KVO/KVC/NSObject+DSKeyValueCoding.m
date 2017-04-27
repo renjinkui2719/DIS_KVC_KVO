@@ -24,17 +24,7 @@
 #import "DSKeyValueFastMutableArray.h"
 #import "DSKeyValueFastMutableCollection2Getter.h"
 #import "DSKeyValueCodingCommon.h"
-
-
-extern CFMutableSetRef DSKeyValueCachedGetters;
-extern CFMutableSetRef DSKeyValueCachedSetters;
-extern OSSpinLock DSKeyValueCachedAccessorSpinLock;
-extern BOOL __UsePedanticKVCNilKeyBehavior_throwOnNil;
-extern dispatch_once_t pedanticKVCKeyOnce;
-
-extern void DSKeyValueObservingAssertRegistrationLockNotHeld();
-extern NSString * _NSMethodExceptionProem(id,SEL);
-
+#import "NSObject+DSKeyValueCodingPrivate.h"
 
 @implementation NSObject (DSKeyValueCoding)
 
@@ -65,13 +55,7 @@ extern NSString * _NSMethodExceptionProem(id,SEL);
         return _DSGetUsingKeyValueGetter(self, getter);
     }
     else {
-        dispatch_once(&pedanticKVCKeyOnce, ^{
-            __UsePedanticKVCNilKeyBehavior_throwOnNil =  _NSFoundationLinkedOnAfter(0x529);
-        });
-        //loc_4743E
-        if (__UsePedanticKVCNilKeyBehavior_throwOnNil) {
-            [NSException raise:NSInvalidArgumentException format:@"%@: attempt to retrieve a value for a nil key",_NSMethodExceptionProem(self,_cmd)];
-        }
+        [NSException raise:NSInvalidArgumentException format:@"%@: attempt to retrieve a value for a nil key",_NSMethodExceptionProem(self,_cmd)];
     }
     return nil;
 }
@@ -149,13 +133,7 @@ extern NSString * _NSMethodExceptionProem(id,SEL);
         _DSSetUsingKeyValueSetter(self,setter, value);
     }
     else {
-        dispatch_once(&pedanticKVCKeyOnce, ^{
-            __UsePedanticKVCNilKeyBehavior_throwOnNil =  _NSFoundationLinkedOnAfter(0x529);
-        });
-        //loc_4743E
-        if (__UsePedanticKVCNilKeyBehavior_throwOnNil) {
-            [NSException raise:NSInvalidArgumentException format:@"%@: attempt to set a value for a nil key",_NSMethodExceptionProem(self,_cmd)];
-        }
+        [NSException raise:NSInvalidArgumentException format:@"%@: attempt to set a value for a nil key",_NSMethodExceptionProem(self,_cmd)];
     }
 }
 

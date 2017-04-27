@@ -52,6 +52,10 @@ extern const CFArrayCallBacks DSKVOPendingNotificationArrayCallbacks;
 const void *DSKVOPendingNotificationRetain(CFAllocatorRef allocator, const void *value);
 void DSKVOPendingNotificationRelease(CFAllocatorRef allocator, const void *value);
 
+
+extern dispatch_once_t isVMWare_onceToken;
+extern BOOL isVMWare_doWorkarounds;
+
 @interface NSObject (DSKeyValueObservingPrivate)
 
 - (void)_d_changeValueForKey:(NSString *)key usingBlock:(void (^)())block;

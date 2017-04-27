@@ -9,8 +9,8 @@
 #import "DSKeyValueNotifyingMutableSet.h"
 #import "DSKeyValueGetter.h"
 #import "DSKeyValueProxyShareKey.h"
-
-
+#import "NSObject+DSKeyValueObserverRegistration.h"
+#import "NSObject+DSKeyValueObserverNotification.h"
 
 @implementation DSKeyValueNotifyingMutableSet
 
@@ -53,77 +53,77 @@
 
 - (void)addObject:(id)object {
     NSSet *objSet = [[NSSet alloc] initWithObjects:&object count:1];
-    [self.container willChangeValueForKey:self.key withSetMutation:DSKeyValueUnionSetMutation usingObjects:objSet];
+    [self.container d_willChangeValueForKey:self.key withSetMutation:DSKeyValueUnionSetMutation usingObjects:objSet];
     
     [_mutableSet addObject:object];
     
-    [self.container didChangeValueForKey:self.key withSetMutation:DSKeyValueUnionSetMutation usingObjects:objSet];
+    [self.container d_didChangeValueForKey:self.key withSetMutation:DSKeyValueUnionSetMutation usingObjects:objSet];
     
     [objSet release];
 }
 
 - (void)addObjectsFromArray:(NSArray *)array {
     NSSet *objSet = [[NSSet alloc] initWithArray:array];
-    [self.container willChangeValueForKey:self.key withSetMutation:DSKeyValueUnionSetMutation usingObjects:objSet];
+    [self.container d_willChangeValueForKey:self.key withSetMutation:DSKeyValueUnionSetMutation usingObjects:objSet];
     
     [_mutableSet addObjectsFromArray:array];
     
-    [self.container didChangeValueForKey:self.key withSetMutation:DSKeyValueUnionSetMutation usingObjects:objSet];
+    [self.container d_didChangeValueForKey:self.key withSetMutation:DSKeyValueUnionSetMutation usingObjects:objSet];
     [objSet release];
 }
 
 
 - (void)intersectSet:(NSSet *)otherSet {
-    [self.container willChangeValueForKey:self.key withSetMutation:DSKeyValueIntersectSetMutation usingObjects:otherSet];
+    [self.container d_willChangeValueForKey:self.key withSetMutation:DSKeyValueIntersectSetMutation usingObjects:otherSet];
     
     [_mutableSet intersectSet:otherSet];
     
-    [self.container didChangeValueForKey:self.key withSetMutation:DSKeyValueIntersectSetMutation usingObjects:otherSet];
+    [self.container d_didChangeValueForKey:self.key withSetMutation:DSKeyValueIntersectSetMutation usingObjects:otherSet];
 }
 
 - (void)minusSet:(NSSet *)otherSet {
-    [self.container willChangeValueForKey:self.key withSetMutation:DSKeyValueMinusSetMutation usingObjects:otherSet];
+    [self.container d_willChangeValueForKey:self.key withSetMutation:DSKeyValueMinusSetMutation usingObjects:otherSet];
     
     [_mutableSet minusSet:otherSet];
     
-    [self.container didChangeValueForKey:self.key withSetMutation:DSKeyValueMinusSetMutation usingObjects:otherSet];
+    [self.container d_didChangeValueForKey:self.key withSetMutation:DSKeyValueMinusSetMutation usingObjects:otherSet];
 }
 
 - (void)removeAllObjects {
     NSSet *objSet = [NSSet set];
-    [self.container willChangeValueForKey:self.key withSetMutation:DSKeyValueIntersectSetMutation usingObjects:objSet];
+    [self.container d_willChangeValueForKey:self.key withSetMutation:DSKeyValueIntersectSetMutation usingObjects:objSet];
     
     [_mutableSet removeAllObjects];
     
-    [self.container didChangeValueForKey:self.key withSetMutation:DSKeyValueIntersectSetMutation usingObjects:objSet];
+    [self.container d_didChangeValueForKey:self.key withSetMutation:DSKeyValueIntersectSetMutation usingObjects:objSet];
     
 }
 
 - (void)removeObject:(id)object {
     NSSet *objSet = [[NSSet alloc] initWithObjects:&object count:1];
-    [self.container willChangeValueForKey:self.key withSetMutation:DSKeyValueMinusSetMutation usingObjects:objSet];
+    [self.container d_willChangeValueForKey:self.key withSetMutation:DSKeyValueMinusSetMutation usingObjects:objSet];
     
     [_mutableSet removeObject:object];
     
-    [self.container didChangeValueForKey:self.key withSetMutation:DSKeyValueMinusSetMutation usingObjects:objSet];
+    [self.container d_didChangeValueForKey:self.key withSetMutation:DSKeyValueMinusSetMutation usingObjects:objSet];
     [objSet release];
 
 }
 
 - (void)setSet:(NSSet *)otherSet {
-    [self.container willChangeValueForKey:self.key withSetMutation:DSKeyValueSetSetMutation usingObjects:otherSet];
+    [self.container d_willChangeValueForKey:self.key withSetMutation:DSKeyValueSetSetMutation usingObjects:otherSet];
     
     [_mutableSet setSet:otherSet];
     
-    [self.container didChangeValueForKey:self.key withSetMutation:DSKeyValueSetSetMutation usingObjects:otherSet];
+    [self.container d_didChangeValueForKey:self.key withSetMutation:DSKeyValueSetSetMutation usingObjects:otherSet];
 }
 
 - (void)unionSet:(NSSet *)otherSet {
-    [self.container willChangeValueForKey:self.key withSetMutation:DSKeyValueUnionSetMutation usingObjects:otherSet];
+    [self.container d_willChangeValueForKey:self.key withSetMutation:DSKeyValueUnionSetMutation usingObjects:otherSet];
     
     [_mutableSet unionSet:otherSet];
     
-    [self.container didChangeValueForKey:self.key withSetMutation:DSKeyValueUnionSetMutation usingObjects:otherSet];
+    [self.container d_didChangeValueForKey:self.key withSetMutation:DSKeyValueUnionSetMutation usingObjects:otherSet];
 }
 
 @end

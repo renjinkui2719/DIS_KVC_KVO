@@ -8,6 +8,8 @@
 
 #import "DSKeyValueNotifyingMutableArray.h"
 #import "DSKeyValueNotifyingMutableCollectionGetter.h"
+#import "NSObject+DSKeyValueObserverRegistration.h"
+#import "NSObject+DSKeyValueObserverNotification.h"
 
 @implementation DSKeyValueNotifyingMutableArray
 
@@ -42,22 +44,22 @@
 
 - (void)addObject:(id)anObject {
     NSIndexSet *indexes = [[NSIndexSet alloc] initWithIndex:_mutableArray.count];
-    [self.container willChange:DSKeyValueChangeInsertion valuesAtIndexes:indexes forKey:self.key];
+    [self.container d_willChange:DSKeyValueChangeInsertion valuesAtIndexes:indexes forKey:self.key];
     
     [_mutableArray addObject:anObject];
     
-    [self.container didChange:DSKeyValueChangeInsertion valuesAtIndexes:indexes forKey:self.key];
+    [self.container d_didChange:DSKeyValueChangeInsertion valuesAtIndexes:indexes forKey:self.key];
     
     [indexes release];
 }
 
 - (void)insertObject:(id)anObject atIndex:(NSUInteger)index {
     NSIndexSet *indexes = [[NSIndexSet alloc] initWithIndex:index];
-    [self.container willChange:DSKeyValueChangeInsertion valuesAtIndexes:indexes forKey:self.key];
+    [self.container d_willChange:DSKeyValueChangeInsertion valuesAtIndexes:indexes forKey:self.key];
     
     [_mutableArray insertObject:anObject atIndex:index];
     
-    [self.container didChange:DSKeyValueChangeInsertion valuesAtIndexes:indexes forKey:self.key];
+    [self.container d_didChange:DSKeyValueChangeInsertion valuesAtIndexes:indexes forKey:self.key];
     
     [indexes release];
 }
@@ -73,11 +75,11 @@
 
 - (void)removeObjectAtIndex:(NSUInteger)index {
     NSIndexSet *indexes = [[NSIndexSet alloc] initWithIndex:index];
-    [self.container willChange:DSKeyValueChangeRemoval valuesAtIndexes:indexes forKey:self.key];
+    [self.container d_willChange:DSKeyValueChangeRemoval valuesAtIndexes:indexes forKey:self.key];
     
     [_mutableArray removeObjectAtIndex:index];
     
-    [self.container didChange:DSKeyValueChangeRemoval valuesAtIndexes:indexes forKey:self.key];
+    [self.container d_didChange:DSKeyValueChangeRemoval valuesAtIndexes:indexes forKey:self.key];
     
     [indexes release];
 }
@@ -87,50 +89,50 @@
 }
 
 - (void)insertObjects:(NSArray *)objects atIndexes:(NSIndexSet *)indexes {
-    [self.container willChange:DSKeyValueChangeInsertion valuesAtIndexes:indexes forKey:self.key];
+    [self.container d_willChange:DSKeyValueChangeInsertion valuesAtIndexes:indexes forKey:self.key];
     
     [_mutableArray insertObjects:objects atIndexes:indexes];
     
-    [self.container didChange:DSKeyValueChangeInsertion valuesAtIndexes:indexes forKey:self.key];
+    [self.container d_didChange:DSKeyValueChangeInsertion valuesAtIndexes:indexes forKey:self.key];
 }
 
 - (void)removeLastObject {
      NSIndexSet *indexes = [[NSIndexSet alloc] initWithIndex:_mutableArray.count];
-    [self.container willChange:DSKeyValueChangeRemoval valuesAtIndexes:indexes forKey:self.key];
+    [self.container d_willChange:DSKeyValueChangeRemoval valuesAtIndexes:indexes forKey:self.key];
     
     [_mutableArray removeLastObject];
     
-    [self.container didChange:DSKeyValueChangeRemoval valuesAtIndexes:indexes forKey:self.key];
+    [self.container d_didChange:DSKeyValueChangeRemoval valuesAtIndexes:indexes forKey:self.key];
     
     [indexes release];
 }
 
 - (void)removeObjectsAtIndexes:(NSIndexSet *)indexes {
-    [self.container willChange:DSKeyValueChangeRemoval valuesAtIndexes:indexes forKey:self.key];
+    [self.container d_willChange:DSKeyValueChangeRemoval valuesAtIndexes:indexes forKey:self.key];
     
     [_mutableArray removeObjectsAtIndexes:indexes];
     
-    [self.container didChange:DSKeyValueChangeRemoval valuesAtIndexes:indexes forKey:self.key];
+    [self.container d_didChange:DSKeyValueChangeRemoval valuesAtIndexes:indexes forKey:self.key];
 }
 
 
 - (void)replaceObjectAtIndex:(NSUInteger)index withObject:(id)anObject {
     NSIndexSet *indexes = [[NSIndexSet alloc] initWithIndex:index];
-    [self.container willChange:DSKeyValueChangeReplacement valuesAtIndexes:indexes forKey:self.key];
+    [self.container d_willChange:DSKeyValueChangeReplacement valuesAtIndexes:indexes forKey:self.key];
     
     [_mutableArray replaceObjectAtIndex:index withObject:anObject];
     
-    [self.container didChange:DSKeyValueChangeReplacement valuesAtIndexes:indexes forKey:self.key];
+    [self.container d_didChange:DSKeyValueChangeReplacement valuesAtIndexes:indexes forKey:self.key];
     
     [indexes release];
 }
 
 - (void)replaceObjectsAtIndexes:(NSIndexSet *)indexes withObjects:(NSArray *)objects {
-    [self.container willChange:DSKeyValueChangeReplacement valuesAtIndexes:indexes forKey:self.key];
+    [self.container d_willChange:DSKeyValueChangeReplacement valuesAtIndexes:indexes forKey:self.key];
     
     [_mutableArray replaceObjectsAtIndexes:indexes withObjects:objects];
     
-    [self.container didChange:DSKeyValueChangeReplacement valuesAtIndexes:indexes forKey:self.key];
+    [self.container d_didChange:DSKeyValueChangeReplacement valuesAtIndexes:indexes forKey:self.key];
 }
 
 @end

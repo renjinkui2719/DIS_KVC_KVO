@@ -25,7 +25,7 @@ typedef struct DSKeyValueNotifyingInfo {
 
 #define ISKVOASelector NSSelectorFromString(@"_isKVOA")
 
-DSKeyValueNotifyingInfo *_DDSKeyValueContainerClassGetNotifyingInfo(DSKeyValueContainerClass *containerClass);
+DSKeyValueNotifyingInfo *_DSKeyValueContainerClassGetNotifyingInfo(DSKeyValueContainerClass *containerClass);
 
 void DSKVONotifyingSetMethodImplementation(DSKeyValueNotifyingInfo *info, SEL sel, IMP imp, NSString *key);
 

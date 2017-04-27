@@ -15,12 +15,8 @@
 #import "DSKeyValueCodingCommon.h"
 #import "NSObject+DSKeyValueObserverRegistration.h"
 
-extern pthread_mutex_t _DSKeyValueObserverRegistrationLock;
-extern OSSpinLock DSKeyValueObservationInfoSpinLock;
-extern pthread_t  _DSKeyValueObserverRegistrationLockOwner;
-
-extern dispatch_once_t isVMWare_onceToken;
-extern BOOL isVMWare_doWorkarounds;
+dispatch_once_t isVMWare_onceToken;
+BOOL isVMWare_doWorkarounds;
 
 const void *DSKVOPendingNotificationRetain(CFAllocatorRef allocator, const void *value) {
     DSKVOPendingChangeNotification *ntf = (DSKVOPendingChangeNotification *)value;

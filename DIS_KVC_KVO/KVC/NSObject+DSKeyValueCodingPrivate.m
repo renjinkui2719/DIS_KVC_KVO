@@ -43,17 +43,16 @@
 #import "DSKeyValueContainerClass.h"
 #import "DSKeyValueCodingCommon.h"
 
+CFMutableSetRef DSKeyValueCachedGetters = NULL;
+CFMutableSetRef DSKeyValueCachedSetters = NULL;
+
 CFMutableSetRef DSKeyValueCachedMutableArrayGetters = NULL;
 CFMutableSetRef DSKeyValueCachedMutableOrderedSetGetters = NULL;
 CFMutableSetRef DSKeyValueCachedMutableSetGetters = NULL;
 CFMutableSetRef DSKeyValueCachedPrimitiveSetters = NULL;
 CFMutableSetRef DSKeyValueCachedPrimitiveGetters = NULL;
 
-
-
-extern OSSpinLock DSKeyValueCachedAccessorSpinLock;
-extern BOOL __UsePedanticKVCNilKeyBehavior_throwOnNil;
-extern dispatch_once_t pedanticKVCKeyOnce;
+OSSpinLock DSKeyValueCachedAccessorSpinLock = OS_SPINLOCK_INIT;
 
 extern void DSKeyValueObservingAssertRegistrationLockNotHeld();
 

@@ -40,8 +40,8 @@ extern NSString *const DSKeyValueChangeOriginalObservableKey;
 
 @interface NSObject (DSKeyValueObserverRegistration)
 
-- (void)d_addObserver:(NSObject *)observer forKeyPath:(NSString *)keyPath options:(DSKeyValueObservingOptions)options context:(nullable void *)context;
-- (void)d_removeObserver:(NSObject *)observer forKeyPath:(NSString *)keyPath context:(nullable void *)context;
+- (void)d_addObserver:(NSObject *)observer forKeyPath:(NSString *)keyPath options:(DSKeyValueObservingOptions)options context:(void *)context;
+- (void)d_removeObserver:(NSObject *)observer forKeyPath:(NSString *)keyPath context:(void *)context;
 - (void)d_removeObserver:(NSObject *)observer forKeyPath:(NSString *)keyPath;
 
 - (void)_d_addObserver:(id)observer forProperty:(DSKeyValueProperty *)property options:(int)options context:(void *)context;

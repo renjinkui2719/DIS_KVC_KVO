@@ -5,8 +5,8 @@
 #import "DSKeyValueCodingCommon.h"
 #import "DSKeyValueObserverCommon.h"
 
-OSSpinLock DSKeyValueObservationInfoCreationSpinLock;
-OSSpinLock DSKeyValueObservationInfoSpinLock;
+OSSpinLock DSKeyValueObservationInfoCreationSpinLock = OS_SPINLOCK_INIT;
+OSSpinLock DSKeyValueObservationInfoSpinLock = OS_SPINLOCK_INIT;
 
 NSHashTable *DSKeyValueShareableObservationInfos;
 Class DSKeyValueShareableObservationInfoKeyIsa;
@@ -32,7 +32,7 @@ NSHashTable *DSKeyValueShareableObservances;
         else {
             for (NSUInteger i = 0; i < count; ++i) {
                 DSKeyValueObservance *observance = observances[i];
-                NSUInteger hash = _NSKVOPointersHash(4, (void *)observance.observer, (void *)observance.property,(void *)observance.context,(void *)observance.originalObservable);
+                NSUInteger hash = _DSKVOPointersHash(4, (void *)observance.observer, (void *)observance.property,(void *)observance.context,(void *)observance.originalObservable);
                 _cachedHash = (hash << (i & 0x1F)) | (hash >> (i & 0x1F));
                 if (!observance.cachedIsShareable) {
                     _cachedIsShareable = NO;
@@ -150,7 +150,7 @@ NSUInteger DSKeyValueShareableObservationInfoNSHTHash(const void * item, NSUInte
                 count = CFArrayGetCount((CFArrayRef)infoKey.baseObservationInfo.observances);
                 count &= 0x1F;
             }
-            NSUInteger hashValue =  _NSKVOPointersHash(4,infoKey.additionObserver,infoKey.additionProperty, infoKey.additionContext, infoKey.additionOriginalObservable);
+            NSUInteger hashValue =  _DSKVOPointersHash(4,infoKey.additionObserver,infoKey.additionProperty, infoKey.additionContext, infoKey.additionOriginalObservable);
             hashValue = (hashValue << count) | (hashValue >> count);
             hashValue ^= (infoKey.baseObservationInfo ? infoKey.baseObservationInfo.cachedHash : 0);
             return hashValue;
@@ -164,7 +164,7 @@ NSUInteger DSKeyValueShareableObservationInfoNSHTHash(const void * item, NSUInte
                 for (NSUInteger i = 0; i < count; ++i) {
                     if (i != infoKey.removalObservanceIndex) {
                         DSKeyValueObservance *observance = observance_objs[i];
-                        NSUInteger hash =  _NSKVOPointersHash(4,observance.observer,observance.property, observance.context, observance.originalObservable);
+                        NSUInteger hash =  _DSKVOPointersHash(4,observance.observer,observance.property, observance.context, observance.originalObservable);
                         hash = (hash << (i & 0x1f)) | (hash >> (i & 0x1f));
                         hash ^= hashValue;
                         hashValue = hash;
@@ -388,7 +388,7 @@ DSKeyValueObservationInfo *_DSKeyValueObservationInfoCreateByAdding(DSKeyValueOb
     return createdObservationInfo;
 }
 
-DSKeyValueObservationInfo *_DSKeyValueObservationInfoCreateByRemoving(DSKeyValueObservationInfo *baseObservationInfo, id observer, DSKeyValueProperty *property, void *context, BOOL flag,  id originalObservable,  BOOL *fromCache, DDSKeyValueObservance **pObservance) {
+DSKeyValueObservationInfo *_DSKeyValueObservationInfoCreateByRemoving(DSKeyValueObservationInfo *baseObservationInfo, id observer, DSKeyValueProperty *property, void *context, BOOL flag,  id originalObservable,  BOOL *fromCache, DSKeyValueObservance **pObservance) {
     NSUInteger observanceCount = CFArrayGetCount((CFArrayRef)baseObservationInfo.observances);
     DSKeyValueObservance *observancesBuff[observanceCount];
     CFArrayGetValues((CFArrayRef)baseObservationInfo.observances, CFRangeMake(0, observanceCount), (const void**)observancesBuff);

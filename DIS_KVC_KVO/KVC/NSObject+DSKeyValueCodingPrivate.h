@@ -20,6 +20,8 @@ extern CFMutableSetRef DSKeyValueCachedMutableSetGetters;
 extern CFMutableSetRef DSKeyValueCachedPrimitiveSetters;
 extern CFMutableSetRef DSKeyValueCachedPrimitiveGetters;
 
+extern OSSpinLock DSKeyValueCachedAccessorSpinLock;
+
 id _DSGetUsingKeyValueGetter(id object, DSKeyValueGetter *getter) ;
 void _DSSetUsingKeyValueSetter(id object, DSKeyValueSetter *setter, id value);
 

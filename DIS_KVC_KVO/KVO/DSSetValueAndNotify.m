@@ -9,9 +9,11 @@
 #import "DSSetValueAndNotify.h"
 #import "DSKeyValueContainerClass.h"
 #import "NSObject+DSKeyValueObservingPrivate.h"
+#import "NSObject+DSKeyValueObserverRegistration.h"
+#import "NSObject+DSKeyValueObserverNotification.h"
 #import "DSKeyValueObserverCommon.h"
 
-#define __DSSetValueAndNotify(object, selector, value) do {\
+#define __DSSetPrimitiveValueAndNotify(object, selector, value) do {\
     DSKeyValueNotifyingInfo *info = object_getIndexedIvars(object_getClass(object));\
 \
     pthread_mutex_lock(&info->mutex);\
@@ -41,75 +43,75 @@
 
 
 void _DSSetCharValueAndNotify(id object,SEL selector, char value) {
-    __DSSetValueAndNotify(object, selector, value);
+    __DSSetPrimitiveValueAndNotify(object, selector, value);
 }
 
 void _DSSetDoubleValueAndNotify(id object,SEL selector, double value) {
-    __DSSetValueAndNotify(object, selector, value);
+    __DSSetPrimitiveValueAndNotify(object, selector, value);
 }
 
 void _DSSetFloatValueAndNotify(id object,SEL selector, float value) {
-    __DSSetValueAndNotify(object, selector, value);
+    __DSSetPrimitiveValueAndNotify(object, selector, value);
 }
 
 void _DSSetIntValueAndNotify(id object,SEL selector, int value) {
-    __DSSetValueAndNotify(object, selector, value);
+    __DSSetPrimitiveValueAndNotify(object, selector, value);
 }
 
 void _DSSetLongValueAndNotify(id object,SEL selector, long value) {
-    __DSSetValueAndNotify(object, selector, value);
+    __DSSetPrimitiveValueAndNotify(object, selector, value);
 }
 
 void _DSSetLongLongValueAndNotify(id object,SEL selector, long long value) {
-    __DSSetValueAndNotify(object, selector, value);
+    __DSSetPrimitiveValueAndNotify(object, selector, value);
 }
 
 void _DSSetShortValueAndNotify(id object,SEL selector, short value) {
-    __DSSetValueAndNotify(object, selector, value);
+    __DSSetPrimitiveValueAndNotify(object, selector, value);
 }
 
 void _DSSetUnsignedShortValueAndNotify(id object,SEL selector, unsigned short value) {
-    __DSSetValueAndNotify(object, selector, value);
+    __DSSetPrimitiveValueAndNotify(object, selector, value);
 }
 
 void _DSSetPointValueAndNotify(id object,SEL selector, NSPoint value) {
-    __DSSetValueAndNotify(object, selector, value);
+    __DSSetPrimitiveValueAndNotify(object, selector, value);
 }
 
 void _DSSetRangeValueAndNotify(id object,SEL selector, NSRange value) {
-    __DSSetValueAndNotify(object, selector, value);
+    __DSSetPrimitiveValueAndNotify(object, selector, value);
 }
 
 void _DSSetRectValueAndNotify(id object,SEL selector, NSRect value) {
-    __DSSetValueAndNotify(object, selector, value);
+    __DSSetPrimitiveValueAndNotify(object, selector, value);
 }
 
 void _DSSetSizeValueAndNotify(id object,SEL selector, NSSize value) {
-    __DSSetValueAndNotify(object, selector, value);
+    __DSSetPrimitiveValueAndNotify(object, selector, value);
 }
 
 void _DSSetBoolValueAndNotify(id object,SEL selector, BOOL value) {
-    __DSSetValueAndNotify(object, selector, value);
+    __DSSetPrimitiveValueAndNotify(object, selector, value);
 }
 
 void _DSSetUnsignedCharValueAndNotify(id object,SEL selector, unsigned char value) {
-    __DSSetValueAndNotify(object, selector, value);
+    __DSSetPrimitiveValueAndNotify(object, selector, value);
 }
 
 void _DSSetUnsignedIntValueAndNotify(id object,SEL selector, unsigned int value) {
-    __DSSetValueAndNotify(object, selector, value);
+    __DSSetPrimitiveValueAndNotify(object, selector, value);
 }
 
 void _DSSetUnsignedLongValueAndNotify(id object,SEL selector, unsigned long value) {
-    __DSSetValueAndNotify(object, selector, value);
+    __DSSetPrimitiveValueAndNotify(object, selector, value);
 }
 
 void _DSSetUnsignedLongLongValueAndNotify(id object,SEL selector, unsigned long long value) {
-    __DSSetValueAndNotify(object, selector, value);
+    __DSSetPrimitiveValueAndNotify(object, selector, value);
 }
 
 void _DSSetObjectValueAndNotify(id object,SEL selector, id value) {
-    __DSSetValueAndNotify(object, selector, value);
+    __DSSetPrimitiveValueAndNotify(object, selector, value);
 }
 
 void DSKVOInsertObjectAtIndexAndNotify(id object,SEL selector, id value, NSUInteger idx) {
@@ -124,12 +126,12 @@ void DSKVOInsertObjectAtIndexAndNotify(id object,SEL selector, id value, NSUInte
     
     NSIndexSet *indexes = [[NSIndexSet alloc] initWithIndex:idx];
     
-    [object willChange:DSKeyValueChangeInsertion valuesAtIndexes:indexes forKey:key];
+    [object d_willChange:DSKeyValueChangeInsertion valuesAtIndexes:indexes forKey:key];
     
     Method insertMethod = class_getInstanceMethod(info->originalClass, selector);
     ((void (*)(id,Method,...))method_invoke)(object, insertMethod, value, idx);
     
-    [object didChange:DSKeyValueChangeInsertion valuesAtIndexes:indexes forKey:key];
+    [object d_didChange:DSKeyValueChangeInsertion valuesAtIndexes:indexes forKey:key];
     
     [indexes release];
     [key release];
@@ -145,12 +147,12 @@ void DSKVOInsertObjectsAtIndexesAndNotify(id object,SEL selector, id values, NSI
     
     pthread_mutex_unlock(&info->mutex);
     
-    [object willChange:DSKeyValueChangeInsertion valuesAtIndexes:indexes forKey:key];
+    [object d_willChange:DSKeyValueChangeInsertion valuesAtIndexes:indexes forKey:key];
     
     IMP imp = class_getMethodImplementation(info->originalClass, selector);
     ((void (*)(id,SEL,...))imp)(object, selector, values, indexes);
     
-    [object didChange:DSKeyValueChangeInsertion valuesAtIndexes:indexes forKey:key];
+    [object d_didChange:DSKeyValueChangeInsertion valuesAtIndexes:indexes forKey:key];
     
     [key release];
 }
@@ -167,12 +169,12 @@ void DSKVORemoveObjectAtIndexAndNotify(id object,SEL selector, NSUInteger idx) {
     
     NSIndexSet *indexes = [[NSIndexSet alloc] initWithIndex:idx];
     
-    [object willChange:DSKeyValueChangeRemoval valuesAtIndexes:indexes forKey:key];
+    [object d_willChange:DSKeyValueChangeRemoval valuesAtIndexes:indexes forKey:key];
     
     Method removeMethod = class_getInstanceMethod(info->originalClass, selector);
     ((void (*)(id,Method,...))method_invoke)(object, removeMethod, idx);
     
-    [object didChange:DSKeyValueChangeRemoval valuesAtIndexes:indexes forKey:key];
+    [object d_didChange:DSKeyValueChangeRemoval valuesAtIndexes:indexes forKey:key];
     
     [indexes release];
     [key release];
@@ -188,12 +190,12 @@ void DSKVORemoveObjectsAtIndexesAndNotify(id object, SEL selector, NSIndexSet *i
     
     pthread_mutex_unlock(&info->mutex);
     
-    [object willChange:DSKeyValueChangeRemoval valuesAtIndexes:indexes forKey:key];
+    [object d_willChange:DSKeyValueChangeRemoval valuesAtIndexes:indexes forKey:key];
     
     IMP imp = class_getMethodImplementation(info->originalClass, selector);
     ((void (*)(id,SEL,...))imp)(object, selector, indexes);
     
-    [object didChange:DSKeyValueChangeRemoval valuesAtIndexes:indexes forKey:key];
+    [object d_didChange:DSKeyValueChangeRemoval valuesAtIndexes:indexes forKey:key];
     
     [key release];
 }
@@ -209,12 +211,12 @@ void DSKVOReplaceObjectAtIndexAndNotify(id object,SEL selector, NSUInteger idx, 
     pthread_mutex_unlock(&info->mutex);
     
     NSIndexSet *indexes = [[NSIndexSet alloc] initWithIndex:idx];
-    [object willChange:DSKeyValueChangeReplacement valuesAtIndexes:indexes forKey:key];
+    [object d_willChange:DSKeyValueChangeReplacement valuesAtIndexes:indexes forKey:key];
     
     Method replaceMethod = class_getInstanceMethod(info->originalClass, selector);
     ((void (*)(id,Method,...))method_invoke)(object, replaceMethod, idx, value);
     
-    [object didChange:DSKeyValueChangeReplacement valuesAtIndexes:indexes forKey:key];
+    [object d_didChange:DSKeyValueChangeReplacement valuesAtIndexes:indexes forKey:key];
     
     [indexes release];
     [key release];
@@ -230,12 +232,12 @@ void DSKVOReplaceObjectsAtIndexesAndNotify(id object, SEL selector, NSIndexSet *
     
     pthread_mutex_unlock(&info->mutex);
     
-    [object willChange:DSKeyValueChangeReplacement valuesAtIndexes:indexes forKey:key];
+    [object d_willChange:DSKeyValueChangeReplacement valuesAtIndexes:indexes forKey:key];
     
     Method replaceMethod = class_getInstanceMethod(info->originalClass, selector);
     ((void (*)(id,Method,...))method_invoke)(object, replaceMethod, indexes, values);
     
-    [object didChange:DSKeyValueChangeReplacement valuesAtIndexes:indexes forKey:key];
+    [object d_didChange:DSKeyValueChangeReplacement valuesAtIndexes:indexes forKey:key];
     
     [key release];
 }
@@ -251,12 +253,12 @@ void DSKVOAddObjectAndNotify(id object, SEL selector, id value) {
     pthread_mutex_unlock(&info->mutex);
     
     NSSet *values = [[NSSet alloc] initWithObjects:&value count:1];
-    [object willChangeValueForKey:key withSetMutation:DSKeyValueUnionSetMutation usingObjects:values];
+    [object d_willChangeValueForKey:key withSetMutation:DSKeyValueUnionSetMutation usingObjects:values];
     
     Method addMethod = class_getInstanceMethod(info->originalClass, selector);
     ((void (*)(id,Method,...))method_invoke)(object, addMethod, value);
     
-    [object didChangeValueForKey:key withSetMutation:DSKeyValueUnionSetMutation usingObjects:values];
+    [object d_didChangeValueForKey:key withSetMutation:DSKeyValueUnionSetMutation usingObjects:values];
     
     [values release];
     [key release];
@@ -273,12 +275,12 @@ void DSKVORemoveObjectAndNotify(id object, SEL selector, id value) {
     pthread_mutex_unlock(&info->mutex);
     
     NSSet *values = [[NSSet alloc] initWithObjects:&value count:1];
-    [object willChangeValueForKey:key withSetMutation:DSKeyValueMinusSetMutation usingObjects:values];
+    [object d_willChangeValueForKey:key withSetMutation:DSKeyValueMinusSetMutation usingObjects:values];
     
     Method removeMethod = class_getInstanceMethod(info->originalClass, selector);
     ((void (*)(id,Method,...))method_invoke)(object, removeMethod, value);
     
-    [object didChangeValueForKey:key withSetMutation:DSKeyValueMinusSetMutation usingObjects:values];
+    [object d_didChangeValueForKey:key withSetMutation:DSKeyValueMinusSetMutation usingObjects:values];
     
     [values release];
     [key release];
@@ -295,12 +297,12 @@ void DSKVOIntersectSetAndNotify(id object, SEL selector, id values) {
     
     pthread_mutex_unlock(&info->mutex);
     
-    [object willChangeValueForKey:key withSetMutation:DSKeyValueIntersectSetMutation usingObjects:values];
+    [object d_willChangeValueForKey:key withSetMutation:DSKeyValueIntersectSetMutation usingObjects:values];
     
     Method intersectMethod = class_getInstanceMethod(info->originalClass, selector);
     ((void (*)(id,Method,...))method_invoke)(object, intersectMethod, values);
     
-    [object didChangeValueForKey:key withSetMutation:DSKeyValueIntersectSetMutation usingObjects:values];
+    [object d_didChangeValueForKey:key withSetMutation:DSKeyValueIntersectSetMutation usingObjects:values];
     
     [key release];
 }
@@ -315,12 +317,12 @@ void DSKVOMinusSetAndNotify(id object, SEL selector, id values) {
     
     pthread_mutex_unlock(&info->mutex);
     
-    [object willChangeValueForKey:key withSetMutation:DSKeyValueMinusSetMutation usingObjects:values];
+    [object d_willChangeValueForKey:key withSetMutation:DSKeyValueMinusSetMutation usingObjects:values];
     
     Method minusMethod = class_getInstanceMethod(info->originalClass, selector);
     ((void (*)(id,Method,...))method_invoke)(object, minusMethod, values);
     
-    [object didChangeValueForKey:key withSetMutation:DSKeyValueMinusSetMutation usingObjects:values];
+    [object d_didChangeValueForKey:key withSetMutation:DSKeyValueMinusSetMutation usingObjects:values];
     
     [key release];
 }
@@ -335,12 +337,12 @@ void DSKVOUnionSetAndNotify(id object, SEL selector, id values) {
     
     pthread_mutex_unlock(&info->mutex);
     
-    [object willChangeValueForKey:key withSetMutation:DSKeyValueUnionSetMutation usingObjects:values];
+    [object d_willChangeValueForKey:key withSetMutation:DSKeyValueUnionSetMutation usingObjects:values];
     
     Method unionMethod = class_getInstanceMethod(info->originalClass, selector);
     ((void (*)(id,Method,...))method_invoke)(object, unionMethod, values);
     
-    [object didChangeValueForKey:key withSetMutation:DSKeyValueUnionSetMutation usingObjects:values];
+    [object d_didChangeValueForKey:key withSetMutation:DSKeyValueUnionSetMutation usingObjects:values];
     
     [key release];
 }

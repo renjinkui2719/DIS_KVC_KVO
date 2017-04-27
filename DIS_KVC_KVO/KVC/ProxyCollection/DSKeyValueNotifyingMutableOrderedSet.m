@@ -7,6 +7,7 @@
 //
 
 #import "DSKeyValueNotifyingMutableOrderedSet.h"
+#import "NSObject+DSKeyValueObserverRegistration.h"
 #import "DSKeyValueGetter.h"
 
 @implementation DSKeyValueNotifyingMutableOrderedSet
@@ -58,7 +59,7 @@
 
 - (void)insertObject:(id)object atIndex:(NSUInteger)idx {
     NSIndexSet *indexes = [[NSIndexSet alloc] initWithIndex:idx];
-    [self.container willChange:DSKeyValueChangeInsertion valuesAtIndexes:indexes forKey:self.key];
+    [self.container d_willChange:DSKeyValueChangeInsertion valuesAtIndexes:indexes forKey:self.key];
     
     [_mutableOrderedSet insertObject:object atIndex:idx];
     

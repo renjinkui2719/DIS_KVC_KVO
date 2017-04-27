@@ -29,4 +29,3 @@ typedef struct {
 
 NSHashTable * _DSKeyValueProxyShareCreate();
 BOOL _DSKeyValueProxyDeallocate(id object);
-id _DSGetProxyValueWithGetterNoLock(id container, DSKeyValueProxyGetter *getter);

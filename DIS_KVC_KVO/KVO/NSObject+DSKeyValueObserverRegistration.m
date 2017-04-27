@@ -19,13 +19,14 @@
 
 pthread_mutex_t _DSKeyValueObserverRegistrationLock = PTHREAD_MUTEX_INITIALIZER;
 pthread_t _DSKeyValueObserverRegistrationLockOwner = NULL;
+BOOL _DSKeyValueObserverRegistrationEnableLockingAssertions;
 
 NSString *const DSKeyValueChangeOriginalObservableKey = @"originalObservable";
-NSString *const DSKeyValueChangeKindKey = @"originalObservable";
-NSString *const DSKeyValueChangeNewKey = @"originalObservable";
-NSString *const DSKeyValueChangeOldKey = @"originalObservable";
-NSString *const DSKeyValueChangeIndexesKey = @"originalObservable";
-NSString *const DSKeyValueChangeNotificationIsPriorKey = @"originalObservable";
+NSString *const DSKeyValueChangeKindKey = @"kind";
+NSString *const DSKeyValueChangeNewKey = @"new";
+NSString *const DSKeyValueChangeOldKey = @"old";
+NSString *const DSKeyValueChangeIndexesKey = @"indexes";
+NSString *const DSKeyValueChangeNotificationIsPriorKey = @"notificationIsPrior";
 
 void DSKeyValueObserverRegistrationLockUnlock() {
     _DSKeyValueObserverRegistrationLockOwner = NULL;
@@ -37,9 +38,15 @@ void DSKeyValueObserverRegistrationLockLock() {
     _DSKeyValueObserverRegistrationLockOwner = pthread_self();
 }
 
+void DSKeyValueObservingAssertRegistrationLockNotHeld() {
+    if(_DSKeyValueObserverRegistrationEnableLockingAssertions && _DSKeyValueObserverRegistrationLockOwner == pthread_self()) {
+        assert(pthread_self() != _DSKeyValueObserverRegistrationLockOwner);
+    }
+}
+
 @implementation NSObject (DSKeyValueObserverRegistration)
 
-- (void)d_addObserver:(NSObject *)observer forKeyPath:(NSString *)keyPath options:(DSKeyValueObservingOptions)options context:(nullable void *)context {
+- (void)d_addObserver:(NSObject *)observer forKeyPath:(NSString *)keyPath options:(DSKeyValueObservingOptions)options context:(void *)context {
     pthread_mutex_lock(&_DSKeyValueObserverRegistrationLock);
     _DSKeyValueObserverRegistrationLockOwner = pthread_self();
     

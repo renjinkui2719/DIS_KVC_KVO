@@ -2,6 +2,7 @@
 #import "DSKeyValueObservationInfo.h"
 #import "NSObject+DSKeyValueObservingPrivate.h"
 #import "NSObject+DSKeyValueCodingPrivate.h"
+#import "NSObject+DSKeyValueObservingCustomization.h"
 #import "DSSetValueAndNotify.h"
 #import "DSKeyValueGetter.h"
 #import "DSKeyValueSetter.h"
@@ -11,8 +12,6 @@
 #import "DSKeyValueMutatingSetMethodSet.h"
 #import "DSKeyValueObserverCommon.h"
 
-
-CFMutableDictionaryRef DSKeyValueObservationInfoPerObject;
 
 @implementation DSKeyValueContainerClass
 
@@ -69,8 +68,8 @@ DSKeyValueObservationInfo *_DSKeyValueRetainedObservationInfoForObject(id object
 void _DSKeyValueAddObservationInfoWatcher(ObservationInfoWatcher * watcher) {
     DSKeyValueObservingTSD *TSD = _CFGetTSD(DSKeyValueObservingTSDKey);
     if (!TSD) {
-        TSD = (DSKeyValueObservingTSD *)NSAllocateScannedUncollectable(sizeof(DDSKeyValueObservingTSD));
-        _CFSetTSD(DDSKeyValueObservingTSDKey, TSD, DSKeyValueObservingTSDDestroy);
+        TSD = (DSKeyValueObservingTSD *)NSAllocateScannedUncollectable(sizeof(DSKeyValueObservingTSD));
+        _CFSetTSD(DSKeyValueObservingTSDKey, TSD, DSKeyValueObservingTSDDestroy);
     }
     watcher->next = TSD->firstWatcher;
     TSD->firstWatcher = watcher;
@@ -153,7 +152,7 @@ void DSKVODeallocate(id object, SEL selector) {
         }
         else {
             NSLog(@"An instance %p of class %@ was deallocated while key value observers were still registered with it. Observation info was leaked, and may even become mistakenly attached to some other object. Set a breakpoint on NSKVODeallocateBreak to stop here in the debugger. Here's the current observation info:\n%@", object, notifyInfo->originalClass, observationInfo);
-            DNSKVODeallocateBreak(object);
+            DSKVODeallocateBreak(object);
         }
     }
 
@@ -274,7 +273,7 @@ DSKeyValueContainerClass * _DSKeyValueContainerClassForIsa(Class isa) {
 
         if (!containerClass) {
             containerClass = [[DSKeyValueContainerClass alloc] initWithOriginalClass:originClass];
-            CFDictionarySetValue(DKeyValueContainerClassPerOriginalClass, originClass, containerClass);
+            CFDictionarySetValue(DSKeyValueContainerClassPerOriginalClass, originClass, containerClass);
         }
         
         isaCacheKey = isa;

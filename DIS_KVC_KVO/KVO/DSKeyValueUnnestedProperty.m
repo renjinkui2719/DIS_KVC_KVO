@@ -9,14 +9,6 @@
 #import "NSObject+DSKeyValueCodingPrivate.h"
 #import "DSKeyValuePropertyCreate.h"
 #import "DSSetValueAndNotify.h"
-#import <pthread.h>
-#import <objc/runtime.h>
-#import <objc/objc.h>
-#import <objc/message.h>
-
-extern OSSpinLock DSKeyValueCachedAccessorSpinLock;
-extern CFMutableSetRef DSKeyValueCachedSetters;
-extern CFMutableSetRef DSKeyValueCachedMutableArrayGetters;
 
 
 @implementation DSKeyValueUnnestedProperty

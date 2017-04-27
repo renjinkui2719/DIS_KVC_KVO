@@ -43,7 +43,7 @@
             _keyPathWithoutOperatorComponents = keyPathWithoutOperatorComponents.retain;
         }
         
-        _isAllowedToResultInForwarding = [self.containerClass.originalClass _shouldAddObservationForwardersForKey:_relationshipKey];
+        _isAllowedToResultInForwarding = [self.containerClass.originalClass _d_shouldAddObservationForwardersForKey:_relationshipKey];
         if (_isAllowedToResultInForwarding) {
             if ([_keyPathFromRelatedObject hasPrefix:@"@"] && [_keyPathFromRelatedObject rangeOfString:@"."].location == NSNotFound) {
                 _isAllowedToResultInForwarding = NO;

@@ -7,6 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <objc/runtime.h>
 
 NSNumber * _DSGetBoolValueWithMethod(id object, SEL selctor, Method method);
 NSNumber * _DSGetCharValueWithMethod(id object, SEL selctor, Method method);

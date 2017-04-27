@@ -11,7 +11,7 @@
 #import "DSKeyValueProxyGetter.h"
 
 
-extern OSSpinLock DSKeyValueProxySpinLock;
+OSSpinLock DSKeyValueProxySpinLock = OS_SPINLOCK_INIT;
 
 NSUInteger DSKeyValueProxyHash(const void *item, NSUInteger (* _Nullable size)(const void *item)) {
     DSKeyValueProxyLocator locator =  [(id)item _proxyLocator];
@@ -49,12 +49,14 @@ BOOL _DSKeyValueProxyDeallocate(id object) {
         OSSpinLockLock(&DSKeyValueProxySpinLock);
         
         DSKeyValueProxyNonGCPoolPointer *pointer = [[object class] _proxyNonGCPoolPointer];
+#if 0
         if(pointer->p1 <= 3) {
             *(pointer + pointer->p1*4 + 4) = object;
             pointer->p1 ++;
             OSSpinLockUnlock(&DSKeyValueProxySpinLock);
             return NO;
         }
+#endif
         OSSpinLockUnlock(&DSKeyValueProxySpinLock);
         return YES;
     }
@@ -62,23 +64,4 @@ BOOL _DSKeyValueProxyDeallocate(id object) {
     return NO;
 }
 
-
-id _DSGetProxyValueWithGetterNoLock(id container, DSKeyValueProxyGetter *getter) {
-    NSHashTable *proxyShare = [[getter proxyClass] _proxyShare];
-    static DSKeyValueProxyShareKey *proxyShareKey = nil;
-    if(!proxyShareKey) {
-        proxyShareKey = [[DSKeyValueProxyShareKey alloc] init];
-    }
-    proxyShareKey.container = container;
-    proxyShareKey.key = getter.key;
-    id member = [proxyShare member:proxyShareKey];
-    if(member) {
-        [member retain];
-    }
-    else {
-        member = [[[getter proxyClass] alloc] _proxyInitWithContainer:container getter:getter];
-        [proxyShare addObject:member];
-    }
-    return [member autorelease];
-}
 
