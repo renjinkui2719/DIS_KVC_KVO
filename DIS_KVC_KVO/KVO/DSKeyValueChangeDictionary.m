@@ -44,43 +44,43 @@ NSNumber* DSKeyValueChangeDictionaryNumberWithKind_numbersByKind[] = { (NSNumber
 }while(0)
 
 - (id)objectForKey:(NSString *)aKey {
-    if(aKey == NSKeyValueChangeKindKey) {
+    if(aKey == DSKeyValueChangeKindKey) {
         DSKeyValueChangeKindCacheCheck();
         return DSKeyValueChangeDictionaryNumberWithKind_numbersByKind[_details.kind];
     }
-    else if(aKey == NSKeyValueChangeNewKey) {
+    else if(aKey == DSKeyValueChangeNewKey) {
         return _details.newValue;
     }
-    else if(aKey == NSKeyValueChangeOldKey) {
+    else if(aKey == DSKeyValueChangeOldKey) {
         return _details.oldValue;
     }
-    else if(aKey == NSKeyValueChangeIndexesKey) {
+    else if(aKey == DSKeyValueChangeIndexesKey) {
         return _details.indexes;
     }
-    else if(aKey == NSKeyValueChangeOriginalObservableKey) {
+    else if(aKey == DSKeyValueChangeOriginalObservableKey) {
         return _originalObservable;
     }
-    else if(aKey == NSKeyValueChangeNotificationIsPriorKey && _isPriorNotification) {
+    else if(aKey == DSKeyValueChangeNotificationIsPriorKey && _isPriorNotification) {
         return (id)kCFBooleanTrue;
     }
     else {
-        if([aKey isEqualToString:NSKeyValueChangeKindKey]) {
+        if([aKey isEqualToString:DSKeyValueChangeKindKey]) {
             DSKeyValueChangeKindCacheCheck();
             return DSKeyValueChangeDictionaryNumberWithKind_numbersByKind[_details.kind];
         }
-        else if([aKey isEqualToString:NSKeyValueChangeNewKey]) {
+        else if([aKey isEqualToString:DSKeyValueChangeNewKey]) {
             return _details.newValue;
         }
-        else if([aKey isEqualToString:NSKeyValueChangeOldKey]) {
+        else if([aKey isEqualToString:DSKeyValueChangeOldKey]) {
             return _details.oldValue;
         }
-        else if([aKey isEqualToString:NSKeyValueChangeIndexesKey]) {
+        else if([aKey isEqualToString:DSKeyValueChangeIndexesKey]) {
             return _details.indexes;
         }
-        else if([aKey isEqualToString:NSKeyValueChangeOriginalObservableKey]) {
+        else if([aKey isEqualToString:DSKeyValueChangeOriginalObservableKey]) {
             return _originalObservable;
         }
-        else if([aKey isEqualToString:NSKeyValueChangeNotificationIsPriorKey]) {
+        else if([aKey isEqualToString:DSKeyValueChangeNotificationIsPriorKey]) {
             return _isPriorNotification ? (id)kCFBooleanTrue : nil;
         }
         else  {
@@ -127,21 +127,21 @@ NSNumber* DSKeyValueChangeDictionaryNumberWithKind_numbersByKind[] = { (NSNumber
     NSUInteger count = 0;
     NSString *keys[6];
     
-    keys[count++] =  NSKeyValueChangeKindKey;
+    keys[count++] =  DSKeyValueChangeKindKey;
     if(_details.oldValue) {
-        keys[count++] =  NSKeyValueChangeOldKey;
+        keys[count++] =  DSKeyValueChangeOldKey;
     }
     if(_details.newValue) {
-        keys[count++] =  NSKeyValueChangeNewKey;
+        keys[count++] =  DSKeyValueChangeNewKey;
     }
     if(_details.indexes) {
-        keys[count++] =  NSKeyValueChangeIndexesKey;
+        keys[count++] =  DSKeyValueChangeIndexesKey;
     }
     if(_originalObservable) {
-        keys[count++] =  NSKeyValueChangeOriginalObservableKey;
+        keys[count++] =  DSKeyValueChangeOriginalObservableKey;
     }
     if(_isPriorNotification) {
-        keys[count++] =  NSKeyValueChangeNotificationIsPriorKey;
+        keys[count++] =  DSKeyValueChangeNotificationIsPriorKey;
     }
     
     NSEnumerator *enumerator = nil;

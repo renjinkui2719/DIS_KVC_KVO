@@ -62,7 +62,7 @@
             context = NULL;
         }
         else {
-            options = NSKeyValueObservingOptionPrior;
+            options = DSKeyValueObservingOptionPrior;
             context = self;
         }
         
@@ -89,7 +89,7 @@
     return [_relationshipProperty _isaForAutonotifying];
 }
 
-- (void)object:(id)object didRemoveObservance:(NSKeyValueObservance *)observance recurse:(BOOL)recurse {
+- (void)object:(id)object didRemoveObservance:(DSKeyValueObservance *)observance recurse:(BOOL)recurse {
     if(_isAllowedToResultInForwarding) {
         DSKeyValueObserverRegistrationLockUnlock();
         
@@ -169,7 +169,7 @@
 
         ImplicitObservanceAdditionInfo *additionInfo = DSKeyValueGetImplicitObservanceAdditionInfo();
         id prevObject = additionInfo->object;
-        NSKeyValueObservance *prevObservance = additionInfo->observance;
+        DSKeyValueObservance *prevObservance = additionInfo->observance;
         additionInfo->object = object;
         additionInfo->observance = observance;
 

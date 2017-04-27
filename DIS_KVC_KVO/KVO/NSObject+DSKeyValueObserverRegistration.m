@@ -1,5 +1,5 @@
 //
-//  DSObject+NSKeyValueObserverRegistration.m
+//  DSObject+DSKeyValueObserverRegistration.m
 //  DIS_KVC_KVO
 //
 //  Created by renjinkui on 2017/1/11.
@@ -39,7 +39,7 @@ void DSKeyValueObserverRegistrationLockLock() {
 
 @implementation NSObject (DSKeyValueObserverRegistration)
 
-- (void)d_addObserver:(NSObject *)observer forKeyPath:(NSString *)keyPath options:(NSKeyValueObservingOptions)options context:(nullable void *)context {
+- (void)d_addObserver:(NSObject *)observer forKeyPath:(NSString *)keyPath options:(DSKeyValueObservingOptions)options context:(nullable void *)context {
     pthread_mutex_lock(&_DSKeyValueObserverRegistrationLock);
     _DSKeyValueObserverRegistrationLockOwner = pthread_self();
     
@@ -67,7 +67,7 @@ void DSKeyValueObserverRegistrationLockLock() {
 }
 
 - (void)d_removeObserver:(NSObject *)observer forKeyPath:(NSString *)keyPath {
-    pthread_mutex_lock(&_NSKeyValueObserverRegistrationLock);
+    pthread_mutex_lock(&_DSKeyValueObserverRegistrationLock);
     _DSKeyValueObserverRegistrationLockOwner = pthread_self();
     
     DSKeyValueProperty * property = DSKeyValuePropertyForIsaAndKeyPath(self.class,keyPath);
@@ -129,7 +129,7 @@ void DSKeyValueObserverRegistrationLockLock() {
         
         DSKeyValueChangeDictionary *changeDictionary = nil;
         DSKeyValueChangeDetails changeDetails = {0};
-        changeDetails.kind = NSKeyValueChangeSetting;
+        changeDetails.kind = DSKeyValueChangeSetting;
         changeDetails.oldValue = nil;
         changeDetails.newValue = newValue;
         changeDetails.indexes = nil;
@@ -139,7 +139,7 @@ void DSKeyValueObserverRegistrationLockLock() {
         
         [changeDictionary release];
         
-        pthread_mutex_lock(&_NSKeyValueObserverRegistrationLock);
+        pthread_mutex_lock(&_DSKeyValueObserverRegistrationLock);
         _DSKeyValueObserverRegistrationLockOwner = pthread_self();
     }
     

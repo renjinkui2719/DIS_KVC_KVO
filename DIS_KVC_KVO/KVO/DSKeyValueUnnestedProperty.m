@@ -246,7 +246,7 @@ extern CFMutableSetRef DSKeyValueCachedMutableArrayGetters;
 
 - (void)object:(id)object didAddObservance:(id)observance recurse:(BOOL)recurse {
     if(recurse && self.affectingProperties) {
-        for(NSKeyValueUnnestedProperty *property in self.affectingProperties) {
+        for(DSKeyValueUnnestedProperty *property in self.affectingProperties) {
             [property object:object didAddObservance:observance recurse:NO];
         }
     }
@@ -254,7 +254,7 @@ extern CFMutableSetRef DSKeyValueCachedMutableArrayGetters;
 
 - (void)object:(id)object didRemoveObservance:(id)observance recurse:(BOOL)recurse {
     if(recurse && self.affectingProperties) {
-        for(NSKeyValueUnnestedProperty *property in self.affectingProperties) {
+        for(DSKeyValueUnnestedProperty *property in self.affectingProperties) {
             [property object:object didRemoveObservance:observance recurse:NO];
         }
     }

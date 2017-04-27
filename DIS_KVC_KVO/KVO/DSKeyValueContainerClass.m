@@ -69,8 +69,8 @@ DSKeyValueObservationInfo *_DSKeyValueRetainedObservationInfoForObject(id object
 void _DSKeyValueAddObservationInfoWatcher(ObservationInfoWatcher * watcher) {
     DSKeyValueObservingTSD *TSD = _CFGetTSD(DSKeyValueObservingTSDKey);
     if (!TSD) {
-        TSD = (DSKeyValueObservingTSD *)NSAllocateScannedUncollectable(sizeof(DNSKeyValueObservingTSD));
-        _CFSetTSD(DNSKeyValueObservingTSDKey, TSD, DSKeyValueObservingTSDDestroy);
+        TSD = (DSKeyValueObservingTSD *)NSAllocateScannedUncollectable(sizeof(DDSKeyValueObservingTSD));
+        _CFSetTSD(DDSKeyValueObservingTSDKey, TSD, DSKeyValueObservingTSDDestroy);
     }
     watcher->next = TSD->firstWatcher;
     TSD->firstWatcher = watcher;
@@ -84,7 +84,7 @@ void _DSKeyValueRemoveObservationInfoWatcher(ObservationInfoWatcher * watcher) {
     }
     
     if(TSD->firstWatcher != watcher) {
-        NSLog(@"_NSKeyValueRemoveObservationInfoWatcher() was called in a surprising way.");
+        NSLog(@"_DSKeyValueRemoveObservationInfoWatcher() was called in a surprising way.");
     }
     
     if(TSD->firstWatcher) {
@@ -189,13 +189,13 @@ DSKeyValueNotifyingInfo *_DSKVONotifyingCreateInfoWithOriginalClass(Class origin
     strlcpy(newClassName, notifyingClassNamePrefix, size);
     strlcat(newClassName, originalClassName, size);
     
-    Class containerClass = objc_allocateClassPair(originalClass, newClassName, sizeof(NSKeyValueNotifyingInfo));
+    Class containerClass = objc_allocateClassPair(originalClass, newClassName, sizeof(DSKeyValueNotifyingInfo));
     objc_registerClassPair(containerClass);
     
     free(newClassName);
     
     unsigned char *ivars = object_getIndexedIvars(containerClass);
-    NSKeyValueNotifyingInfo *notifyingInfo = (NSKeyValueNotifyingInfo *)ivars;
+    DSKeyValueNotifyingInfo *notifyingInfo = (DSKeyValueNotifyingInfo *)ivars;
     notifyingInfo->originalClass = originalClass;
     notifyingInfo->containerClass = containerClass;
     

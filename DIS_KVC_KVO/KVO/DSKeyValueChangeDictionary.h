@@ -11,7 +11,7 @@
 @class DSKeyValueObservationInfo;
 
 typedef struct {
-    NSKeyValueChange kind;//0
+    DSKeyValueChange kind;//0
     id oldValue;//4
     id newValue;//8
     NSIndexSet *indexes;//c

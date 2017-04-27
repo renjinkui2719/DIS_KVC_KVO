@@ -8,8 +8,6 @@
 
 #import "NSObject+DSKeyValueObservingCustomization.h"
 #import "DSKeyValueObserverCommon.h"
-#import <objc/runtime.h>
-#import <objc/message.h>
 
 CFMutableDictionaryRef DSKeyValueObservationInfoPerObject = NULL;
 CFMutableDictionaryRef DSKeyValueOldStyleDependenciesByClass = NULL;

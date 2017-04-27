@@ -25,7 +25,7 @@
 		if (context) {
 			BOOL isASet = NO;
 			id dependentValueKeyOrKeys = [(DSKeyValueProperty *)context dependentValueKeyOrKeysIsASet: &isASet];
-            BOOL isPrior = [change[NSKeyValueChangeNotificationIsPriorKey] boolValue];
+            BOOL isPrior = [change[DSKeyValueChangeNotificationIsPriorKey] boolValue];
 			if(isPrior) {
 				DSKeyValueWillChangeForObservance(originalObservable, dependentValueKeyOrKeys, isASet, self);
 			}
@@ -41,10 +41,10 @@
 			else {
                 NSMutableDictionary *change_copy = [change mutableCopy];
                 if (_originalObservable) {
-                    change_copy[NSKeyValueChangeOriginalObservableKey] = _originalObservable;
+                    change_copy[DSKeyValueChangeOriginalObservableKey] = _originalObservable;
                 }
                 else {
-                    [change_copy removeObjectForKey:NSKeyValueChangeOriginalObservableKey];
+                    [change_copy removeObjectForKey:DSKeyValueChangeOriginalObservableKey];
                 }
                 DSKVONotify(_observer, [_property keyPath], originalObservable, change_copy, _context);
 			}
@@ -88,9 +88,9 @@
 }
 
 - (NSString *)description {
-	NSString *option_if_new = (_options & NSKeyValueObservingOptionNew ? @"YES": @"NO");
-	NSString *option_if_old = (_options & NSKeyValueObservingOptionOld ? @"YES": @"NO");
-	NSString *option_if_prior = (_options & NSKeyValueObservingOptionPrior ? @"YES" : @"NO");
+	NSString *option_if_new = (_options & DSKeyValueObservingOptionNew ? @"YES": @"NO");
+	NSString *option_if_old = (_options & DSKeyValueObservingOptionOld ? @"YES": @"NO");
+	NSString *option_if_prior = (_options & DSKeyValueObservingOptionPrior ? @"YES" : @"NO");
 	return [NSString stringWithFormat:@"<%@ %p: Observer: %p, Key path: %@, Options: <New: %@, Old: %@, Prior: %@> Context: %p, Property: %p>", 
 		self.class, self, _observer, _property.keyPath, option_if_new, option_if_prior, _context, _property];
 }

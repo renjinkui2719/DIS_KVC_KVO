@@ -36,7 +36,7 @@
 @property (nonatomic, assign) NSUInteger cachedHash;
 @end
 
-DSKeyValueObservationInfo *_DSKeyValueObservationInfoCreateByAdding(DSKeyValueObservationInfo *baseObservationInfo, id observer, DSKeyValueProperty *property, int options, void *context, id originalObservable,  BOOL *flag, NSKeyValueObservance **pObservance);
+DSKeyValueObservationInfo *_DSKeyValueObservationInfoCreateByAdding(DSKeyValueObservationInfo *baseObservationInfo, id observer, DSKeyValueProperty *property, int options, void *context, id originalObservable,  BOOL *flag, DSKeyValueObservance **pObservance);
 DSKeyValueObservationInfo *_DSKeyValueObservationInfoCreateByRemoving(DSKeyValueObservationInfo *baseObservationInfo, id observer, DSKeyValueProperty *property, void *context, BOOL flag,  id originalObservable,  BOOL *fromCache, DSKeyValueObservance **pObservance);
 void _DSKeyValueReplaceObservationInfoForObject(id object, DSKeyValueContainerClass * containerClass, DSKeyValueObservationInfo *oldObservationInfo, DSKeyValueObservationInfo *newObservationInfo);
 NSUInteger _DSKeyValueObservationInfoGetObservanceCount(DSKeyValueObservationInfo *info) ;

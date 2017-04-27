@@ -23,7 +23,7 @@ extern void *NSReallocateScannedUncollectable(void *, size_t);
 extern BOOL _CFAppVersionCheckLessThan(const char *, uint64_t, uint64_t, uint64_t);
 extern NSUInteger dyld_get_program_sdk_version();
 
-extern NSString * const NSKeyValueChangeOriginalObservableKey;
+extern NSString * const DSKeyValueChangeOriginalObservableKey;
 
 extern pthread_mutex_t _DSKeyValueObserverRegistrationLock;
 extern pthread_t _DSKeyValueObserverRegistrationLockOwner;
