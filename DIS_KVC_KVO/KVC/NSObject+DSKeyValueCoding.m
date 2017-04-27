@@ -82,7 +82,7 @@
             }
             else {
                 //loc_47056
-                return [self d_valueForKeyPath:keyPath];
+                return [self d_valueForKey:keyPath];
             }
         }
     }
@@ -101,7 +101,7 @@
     }
     else {
         //loc_47056
-        return [self d_valueForKeyPath:keyPath];
+        return [self d_valueForKey:keyPath];
     }
 }
 
@@ -122,11 +122,11 @@
         DSKeyValueSetter *finder = [DSKeyValueSetter new];
         finder.containerClassID = self.class;
         finder.key = key;
-        finder.hashValue = CFHash((__bridge CFTypeRef)key) ^ (NSUInteger)(self.class);
-        DSKeyValueSetter *setter =  CFSetGetValue(DSKeyValueCachedSetters, (__bridge void*)finder);
+        finder.hashValue = CFHash((CFTypeRef)key) ^ (NSUInteger)(self.class);
+        DSKeyValueSetter *setter =  CFSetGetValue(DSKeyValueCachedSetters, (void *)finder);
         if (!setter) {
             setter = [self.class _createValueSetterWithContainerClassID:self.class key:key];
-            CFSetAddValue(DSKeyValueCachedSetters, (__bridge void*)setter);
+            CFSetAddValue(DSKeyValueCachedSetters, (void*)setter);
         }
 
         OSSpinLockUnlock(&DSKeyValueCachedAccessorSpinLock);
@@ -150,13 +150,13 @@
                 NSString *subKey =  [[keyPath substringWithRange:NSMakeRange(0, firstDotPointer - cStr)] retain];
                 NSString *subKeyPathLeft =  [[keyPath substringWithRange:NSMakeRange(firstDotPointer - cStr + 1, keyPath.length -  (firstDotPointer - cStr + 1))] retain];
                 
-                [[self d_valueForKey:subKey] setValue:value forKeyPath:subKeyPathLeft];
+                [[self d_valueForKey:subKey] d_setValue:value forKeyPath:subKeyPathLeft];
                 
                 [subKey release];
                 [subKeyPathLeft release];
             }
             else {
-                [self setValue:value forKey:keyPath];
+                [self d_setValue:value forKey:keyPath];
             }
         }
     }
@@ -165,14 +165,14 @@
         NSString *subKey =  [[keyPath substringWithRange:NSMakeRange(0, range.location)] retain];
         NSString *subKeyPathLeft =  [[keyPath substringWithRange:NSMakeRange(range.location + 1, keyPath.length -  (range.location + 1))] retain];
         
-        [[self d_valueForKey:subKey] setValue:value forKeyPath:subKeyPathLeft];
+        [[self d_valueForKey:subKey] d_setValue:value forKeyPath:subKeyPathLeft];
         
         [subKey release];
         [subKeyPathLeft release];
         
     }
     else {
-         [self setValue:value forKey:keyPath];
+         [self d_setValue:value forKey:keyPath];
     }
 }
 

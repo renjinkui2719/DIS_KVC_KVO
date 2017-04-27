@@ -89,28 +89,25 @@
             }
                 break;
             case '{': {
-                if (strcmp(argType, "{CGPoint=ff}") == 0) {
+                if (strcmp(argType, @encode(CGPoint)) == 0) {
                     imp = (IMP)_DSSetPointValueForKeyWithMethod;
                 }
-                else if (strcmp(argType, "{_NSPoint=ff}") == 0) {
+                else if (strcmp(argType, @encode(NSPoint)) == 0) {
                     imp = (IMP)_DSSetPointValueForKeyWithMethod;
                 }
-                else if (strcmp(argType, "{_NSRange=II}") == 0) {
+                else if (strcmp(argType, @encode(NSRange)) == 0) {
                     imp = (IMP)_DSSetRangeValueForKeyWithMethod;
                 }
-                else if (strcmp(argType, "{CGRect={CGPoint=ff}{CGSize=ff}}") == 0) {
+                else if (strcmp(argType, @encode(CGRect)) == 0) {
                     imp = (IMP)_DSSetRectValueForKeyWithMethod;
                 }
-                else if (strcmp(argType, "{_NSRect={_NSPoint=ff}{_NSSize=ff}}") == 0) {
+                else if (strcmp(argType, @encode(NSRect)) == 0) {
                     imp = (IMP)_DSSetRectValueForKeyWithMethod;
                 }
-                else if (strcmp(argType, "{CGSize=ff}") == 0) {
+                else if (strcmp(argType, @encode(CGSize)) == 0) {
                     imp = (IMP)_DSSetSizeValueForKeyWithMethod;
                 }
-                else if (strcmp(argType, "{_NSSize=ff}") == 0) {
-                    imp = (IMP)_DSSetSizeValueForKeyWithMethod;
-                }
-                else if (strcmp(argType, "{CGSize=ff}") == 0) {
+                else if (strcmp(argType, @encode(NSSize)) == 0) {
                     imp = (IMP)_DSSetSizeValueForKeyWithMethod;
                 }
                 else {

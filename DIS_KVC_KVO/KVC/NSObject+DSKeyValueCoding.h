@@ -8,8 +8,6 @@
 
 #import <Foundation/Foundation.h>
 
-extern CFMutableSetRef DSKeyValueCachedMutableArrayGetters;
-
 @class DSKeyValueGetter;
 @interface NSObject (DSKeyValueCoding)
 

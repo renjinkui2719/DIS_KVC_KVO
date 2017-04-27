@@ -7,14 +7,14 @@
 //
 
 #import "DSKeyValueUndefinedGetter.h"
-#import <objc/runtime.h>
+#import "NSObject+DSKeyValueCoding.h"
 
 @implementation DSKeyValueUndefinedGetter
 
 - (id)initWithContainerClassID:(id)containerClassID key:(NSString *)key containerIsa:(Class)containerIsa {
     void *arguments[3] = {0};
     arguments[0] = key;
-    return [super initWithContainerClassID:containerClassID key:key implementation:method_getImplementation(class_getInstanceMethod(containerIsa,@selector(valueForUndefinedKey:))) selector:@selector(valueForUndefinedKey:) extraArguments:arguments count:1];
+    return [super initWithContainerClassID:containerClassID key:key implementation:method_getImplementation(class_getInstanceMethod(containerIsa,@selector(d_valueForUndefinedKey:))) selector:@selector(valueForUndefinedKey:) extraArguments:arguments count:1];
 }
 
 @end

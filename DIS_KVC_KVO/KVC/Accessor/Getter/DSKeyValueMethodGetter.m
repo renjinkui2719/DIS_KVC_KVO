@@ -11,16 +11,16 @@
 
 @implementation DSKeyValueMethodGetter
 - (id)initWithContainerClassID:(id)containerClassID key:(NSString *)key method:(Method)method {
-    NSUInteger argumentsCount = method_getNumberOfArguments(method);
-    if(argumentsCount == 2) {
+    NSUInteger methodArgumentsCount = method_getNumberOfArguments(method);
+    NSUInteger extraAtgumentCount = 1;
+    if(methodArgumentsCount == 2) {
         char *returnType = method_copyReturnType(method);
         IMP imp = NULL;
-        NSUInteger augumentCount = 1;
         switch (returnType[0]) {
             case '#':
             case '@': {
                 imp = method_getImplementation(method);
-                augumentCount = 0;
+                extraAtgumentCount = 0;
             } break;
             case 'B': {
                 imp = (IMP)_DSGetBoolValueWithMethod;
@@ -62,24 +62,24 @@
                 imp = (IMP)_DSGetShortValueWithMethod;
             } break;
             case '{': {
-                if (strcmp(returnType, "{CGPoint=ff}") == 0){
+                if (strcmp(returnType, @encode(CGPoint)) == 0){
                     imp = (IMP)_DSGetPointValueWithMethod;
                 }
-                else if (strcmp(returnType, "{_NSPoint=ff}") == 0){
+                else if (strcmp(returnType, @encode(NSPoint)) == 0){
                     imp = (IMP)_DSGetPointValueWithMethod;
                 }
-                else if (strcmp(returnType, "{_NSRange=II}") == 0){
+                else if (strcmp(returnType, @encode(NSRange)) == 0){
                     imp = (IMP)_DSGetRangeValueWithMethod;
                 }
-                else if (strcmp(returnType, "{CGRect={CGPoint=ff}{CGSize=ff}}") == 0){
+                else if (strcmp(returnType, @encode(CGRect)) == 0){
                     imp = (IMP)_DSGetRectValueWithMethod;
                 }
-                else if (strcmp(returnType, "{_NSRect={_NSPoint=ff}{_NSSize=ff}}") == 0){
+                else if (strcmp(returnType, @encode(NSRect)) == 0){
                     imp = (IMP)_DSGetRectValueWithMethod;
-                }else if (strcmp(returnType, "{CGSize=ff}") == 0){
+                }else if (strcmp(returnType, @encode(CGSize)) == 0){
                     imp = (IMP)_DSGetSizeValueWithMethod;
                 }
-                else if (strcmp(returnType, "{_NSSize=ff}") == 0){
+                else if (strcmp(returnType, @encode(NSSize)) == 0){
                     imp = (IMP)_DSGetSizeValueWithMethod;
                 }
                 else {
@@ -91,10 +91,10 @@
         free(returnType);
         if(imp) {
             void *arguments[3] = {0};
-            if(argumentsCount > 0) {
+            if(extraAtgumentCount > 0) {
                 arguments[0] = method;
             }
-            return [super initWithContainerClassID:containerClassID key:key implementation:imp selector:method_getName(method) extraArguments:arguments count:argumentsCount];
+            return [super initWithContainerClassID:containerClassID key:key implementation:imp selector:method_getName(method) extraArguments:arguments count:extraAtgumentCount];
         }
         else {
             [self release];
