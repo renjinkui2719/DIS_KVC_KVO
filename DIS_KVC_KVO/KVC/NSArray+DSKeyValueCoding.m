@@ -9,14 +9,17 @@
 #import "NSArray+DSKeyValueCoding.h"
 #import "NSArray+DSKeyValueCodingPrivate.h"
 #import "NSObject+DSKeyValueCodingPrivate.h"
+#import "NSObject+DSKeyValueCoding.h"
 #import "DSKeyValueCodingCommon.h"
 
 @implementation NSArray (DSKeyValueCoding)
 
 - (id)d_valueForKey:(NSString *)key {
-    NSString *subKey = nil;
-    if (key.length && [key characterAtIndex:0] == '@' && (subKey = [key substringWithRange:NSMakeRange(1, key.length - 1)])) {
-        id value =  [super d_valueForKey:subKey];
+    NSString *operationKey = nil;
+    //比如以@count, @description, @lastObject...调用此方法
+    if (key.length && [key characterAtIndex:0] == '@' && (operationKey = [key substringWithRange:NSMakeRange(1, key.length - 1)])) {
+        //去掉@，直接调用对应key
+        id value =  [super d_valueForKey:operationKey];
         return value;
     }
     else {
@@ -37,55 +40,56 @@
 }
 
 - (id)d_valueForKeyPath:(NSString *)keyPath {
+    //以集合运算符开头
     if(keyPath.length && [keyPath characterAtIndex:0] == '@') {
         NSRange dotRange = [keyPath rangeOfString:@"." options:NSLiteralSearch range:NSMakeRange(0, keyPath.length)];
         if(dotRange.length) {
-            NSString *subKeyBeforDot = [[keyPath substringWithRange:NSMakeRange(1, dotRange.location - 1)] retain];
-            NSString *subKeyPathAfterDot = [[keyPath substringWithRange:NSMakeRange(dotRange.location + 1, keyPath.length - (dotRange.location + 1))] retain];
-            if(subKeyPathAfterDot) {
-                NSUInteger subKeyBeforDotCStrLength = [subKeyBeforDot lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
-                char subKeyBeforDotCStr[subKeyBeforDotCStrLength + 1];
+            //运算符名
+            NSString *operator = [[keyPath substringWithRange:NSMakeRange(1, dotRange.location - 1)] retain];
+            //计算每个对象的什么属性
+            NSString *keyPathForOperator = [[keyPath substringWithRange:NSMakeRange(dotRange.location + 1, keyPath.length - (dotRange.location + 1))] retain];
+            if(keyPathForOperator) {
+                NSUInteger operatorCStrLength = [operator lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
+                char operatorCStr[operatorCStrLength + 1];
                 
-                [subKeyBeforDot getCString:subKeyBeforDotCStr maxLength:subKeyBeforDotCStrLength + 1 encoding:NSUTF8StringEncoding];
+                [operator getCString:operatorCStr maxLength:operatorCStrLength + 1 encoding:NSUTF8StringEncoding];
                 
-                Method valueForKeyPathMethod = DSKeyValueMethodForPattern(self.class, "d_%sForKeyPath:", subKeyBeforDotCStr);
-                if(!valueForKeyPathMethod) {
-                    valueForKeyPathMethod = DSKeyValueMethodForPattern(self.class, "_d_%sForKeyPath:", subKeyBeforDotCStr);
+                Method operatorMethod = DSKeyValueMethodForPattern(self.class, "d_%sForKeyPath:", operatorCStr);
+                if(!operatorMethod) {
+                    operatorMethod = DSKeyValueMethodForPattern(self.class, "_d_%sForKeyPath:", operatorCStr);
                 }
-                if (valueForKeyPathMethod) {
-                    //loc_471D6
-                    id computedValue = ((id (*)(id,Method,NSString *))method_invoke)(self,valueForKeyPathMethod,subKeyPathAfterDot);
-                    [subKeyPathAfterDot release];
-                    [subKeyBeforDot release];
-                    return computedValue;
+                if (operatorMethod) {
+                    //调用运算符对应的方法
+                    id value = ((id (*)(id,Method,NSString *))method_invoke)(self,operatorMethod,keyPathForOperator);
+                    [operator release];
+                    [keyPathForOperator release];
+                    return value;
                 }
                 else {
-                    //loc_4729D
-                    [subKeyPathAfterDot release];
-                    [subKeyBeforDot autorelease];
+                    //不支持的运算符
+                    [operator release];
+                    [keyPathForOperator autorelease];
                     
-                    [NSException raise:NSInvalidArgumentException format:@"[<%@ %p> valueForKeyPath:]: this class does not implement the %@ operation.", self.class,self,subKeyBeforDot];
+                    [NSException raise:NSInvalidArgumentException format:@"[<%@ %p> valueForKeyPath:]: this class does not implement the %@ operation.", self.class,self,operator];
                     
                     return nil;
                 }
             }
             else {
-                //loc_4724A
-                id value = [super d_valueForKeyPath:subKeyBeforDot];
-                [subKeyBeforDot release];
+                id value = [super d_valueForKey:operator];
+                [operator release];
                 return value;
             }
         }
         else {
-            //loc_4722E
-            NSString *subKey = [[keyPath substringWithRange:NSMakeRange(1, keyPath.length - 1)] retain];
-            id value = [super d_valueForKeyPath:subKey];
-            [subKey release];
+            NSString *operator = [[keyPath substringWithRange:NSMakeRange(1, keyPath.length - 1)] retain];
+            id value = [super d_valueForKey:operator];
+            [operator release];
             return value;
         }
     }
     else {
-        //loc_47205
+        //按照NSObject对d_valueForKeyPath的实现方式取值
         return [super d_valueForKeyPath: keyPath];
     }
 }
@@ -96,6 +100,9 @@
     }
 }
 
+
+//对 Array中每个对象的keyPath对应值 求和
+//@sum.keyPath
 - (NSNumber *)_d_sumForKeyPath:(NSString *)keyPath {
     NSDecimal resultDecimal = {0};
     NSDecimalNumber *zero = [NSDecimalNumber zero];
@@ -105,9 +112,11 @@
     
     NSDecimal eachDecimal = {0};
     for (NSUInteger i=0; i<self.count; ++i) {
+        //获取每个对象的keyPath对应值
         id eachValue = [self _d_valueForKeyPath:keyPath ofObjectAtIndex:i];
         if (eachValue) {
-            ((void (*)(NSDecimal *, id, SEL))objc_msgSend_stret)(&eachDecimal, zero, @selector(decimalValue));
+            ((void (*)(NSDecimal *, id, SEL))objc_msgSend_stret)(&eachDecimal, eachValue, @selector(decimalValue));
+            //累加
             NSDecimalAdd(&resultDecimal, &resultDecimal, &eachDecimal, NSRoundBankers);
         }
     }
@@ -115,17 +124,24 @@
     return [NSDecimalNumber decimalNumberWithDecimal:resultDecimal];
 }
 
+//对 Array中每个对象的keyPath对应值 求平均值
+//@avg.keyPath
 - (NSNumber *)_d_avgForKeyPath:(NSString *)keyPath {
     if (self.count) {
+        //总和 / 对象数
         return [(NSDecimalNumber*)[self _d_sumForKeyPath:keyPath]  decimalNumberByDividingBy:(NSDecimalNumber*)[NSDecimalNumber numberWithUnsignedInteger:self.count]];
     }
     return 0;
 }
 
+//获取对象数目
+//@count
 - (NSNumber *)_d_countForKeyPath:(NSString *)keyPath {
     return [NSNumber numberWithInteger:self.count];
 }
 
+//对 Array中每个对象的keyPath对应值 求最大值
+//@max.keyPath
 - (id)_d_maxForKeyPath:(NSString *)keyPath {
     id maxValue = nil;
     for (NSUInteger i=0; i<self.count; ++i) {
@@ -142,6 +158,8 @@
     return maxValue;
 }
 
+//对 Array中每个对象的keyPath对应值 求最小值
+//@min.keyPath
 - (id)_d_minForKeyPath:(NSString *)keyPath {
     id minValue = nil;
     for (NSUInteger i=0; i<self.count; ++i) {
@@ -153,12 +171,13 @@
             else if ([minValue compare:eachValue] == NSOrderedDescending){
                 minValue = eachValue;
             }
-
         }
     }
     return minValue;
 }
 
+//返回 Array中每个对象的keyPath对应值 组成的数组
+//@unionOfObjects.keyPath
 - (NSArray *)_d_unionOfObjectsForKeyPath:(NSString *)keyPath {
     NSMutableArray *unionArray = [NSMutableArray arrayWithCapacity:self.count];
     for (NSUInteger i=0; i<self.count; ++i) {
@@ -170,6 +189,8 @@
     return unionArray;
 }
 
+//返回 Array中每个对象的keyPath对应数组的每个成员 组成的数组. 这里每个keyPath对应值是也是数组，获取的是每个数组展开后组成的总数组
+//@unionOfArrays.keyPath
 - (NSArray *)_d_unionOfArraysForKeyPath:(NSString *)keyPath {
     NSMutableArray *unionArray = [NSMutableArray arrayWithCapacity:self.count];
     for (NSUInteger i=0; i<self.count; ++i) {
@@ -181,6 +202,8 @@
     return unionArray;
 }
 
+//返回 Array中每个对象的keyPath对应集合的每个成员 组成的数组. 这里每个keyPath对应值是是集合，获取的是每个集合展开后组成的总数组
+//@unionOfSets.keyPath
 - (NSArray *)_d_unionOfSetsForKeyPath:(NSString *)keyPath {
     NSMutableArray *unionArray = [NSMutableArray arrayWithCapacity:self.count];
     for (NSUInteger i=0; i<self.count; ++i) {
@@ -192,16 +215,22 @@
     return unionArray;
 }
 
+//返回 Array中每个对象的keyPath对应值 组成的去重复数组
+//@distinctUnionOfObjects.keyPath
 - (NSArray *)_d_distinctUnionOfObjectsForKeyPath:(NSString *)keyPath {
     NSArray *unionArray = [self _d_unionOfObjectsForKeyPath:keyPath];
     return [NSSet setWithArray:unionArray].allObjects;
 }
 
+//返回 Array中每个对象的keyPath对应数组的每个成员 组成的去重复数组.
+//@distinctUnionOfArrays.keyPath
 - (NSArray *)_d_distinctUnionOfArraysForKeyPath:(NSString *)keyPath {
     NSArray *unionArray = [self _d_unionOfArraysForKeyPath:keyPath];
     return [NSSet setWithArray:unionArray].allObjects;
 }
 
+//返回 Array中每个对象的keyPath对应集合的每个成员 组成的去重复数组.
+//@distinctUnionOfSets.keyPath
 - (NSArray *)_d_distinctUnionOfSetsForKeyPath:(NSString *)keyPath {
     NSMutableSet *unionSet = [NSMutableSet setWithCapacity:self.count];
     for (NSUInteger i=0; i<self.count; ++i) {

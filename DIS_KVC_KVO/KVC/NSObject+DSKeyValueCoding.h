@@ -8,7 +8,6 @@
 
 #import <Foundation/Foundation.h>
 
-@class DSKeyValueGetter;
 @interface NSObject (DSKeyValueCoding)
 
 - (id)d_valueForKey:(NSString *)key;

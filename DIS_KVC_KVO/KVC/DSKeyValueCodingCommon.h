@@ -61,3 +61,6 @@ extern id   objc_storeWeak(id *location, id newObj);
 CF_EXPORT CFStringEncoding __CFDefaultEightBitStringEncoding;
 CF_EXPORT CFStringEncoding __CFStringComputeEightBitStringEncoding(void);
 
+extern NSString *const NSUnknownKeyException;
+extern NSString *const NSTargetObjectUserInfoKey;
+extern NSString *const NSUnknownUserInfoKey;

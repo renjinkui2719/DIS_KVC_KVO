@@ -130,6 +130,7 @@
         }
 
         OSSpinLockUnlock(&DSKeyValueCachedAccessorSpinLock);
+
         _DSSetUsingKeyValueSetter(self,setter, value);
     }
     else {
@@ -143,33 +144,32 @@
         if(encoding == kCFStringEncodingInvalidId) {
             encoding = __CFStringComputeEightBitStringEncoding();
         }
-        const char *cStr = CFStringGetCStringPtr((CFStringRef)keyPath, encoding);
-        if(cStr) {
-            const char *firstDotPointer = memchr(cStr, '.', keyPath.length);
+        const char *keyPathCStr = CFStringGetCStringPtr((CFStringRef)keyPath, encoding);
+        if(keyPathCStr) {
+            const char *firstDotPointer = memchr(keyPathCStr, '.', keyPath.length);
             if(firstDotPointer) {
-                NSString *subKey =  [[keyPath substringWithRange:NSMakeRange(0, firstDotPointer - cStr)] retain];
-                NSString *subKeyPathLeft =  [[keyPath substringWithRange:NSMakeRange(firstDotPointer - cStr + 1, keyPath.length -  (firstDotPointer - cStr + 1))] retain];
+                NSString *subKey =  [[keyPath substringWithRange:NSMakeRange(0, firstDotPointer - keyPathCStr)] retain];
+                NSString *subKeyPathAfterDot =  [[keyPath substringWithRange:NSMakeRange(firstDotPointer - keyPathCStr + 1, keyPath.length -  (firstDotPointer - keyPathCStr + 1))] retain];
                 
-                [[self d_valueForKey:subKey] d_setValue:value forKeyPath:subKeyPathLeft];
+                [[self d_valueForKey:subKey] d_setValue:value forKeyPath:subKeyPathAfterDot];
                 
                 [subKey release];
-                [subKeyPathLeft release];
+                [subKeyPathAfterDot release];
             }
             else {
                 [self d_setValue:value forKey:keyPath];
             }
         }
     }
-    NSRange range = [keyPath rangeOfString:@"." options:NSLiteralSearch range:NSMakeRange(0, keyPath.length)];
-    if(range.length) {
-        NSString *subKey =  [[keyPath substringWithRange:NSMakeRange(0, range.location)] retain];
-        NSString *subKeyPathLeft =  [[keyPath substringWithRange:NSMakeRange(range.location + 1, keyPath.length -  (range.location + 1))] retain];
+    NSRange dotRange = [keyPath rangeOfString:@"." options:NSLiteralSearch range:NSMakeRange(0, keyPath.length)];
+    if(dotRange.length) {
+        NSString *subKey =  [[keyPath substringWithRange:NSMakeRange(0, dotRange.location)] retain];
+        NSString *subKeyPathAfterDot =  [[keyPath substringWithRange:NSMakeRange(dotRange.location + 1, keyPath.length -  (dotRange.location + 1))] retain];
         
-        [[self d_valueForKey:subKey] d_setValue:value forKeyPath:subKeyPathLeft];
+        [[self d_valueForKey:subKey] d_setValue:value forKeyPath:subKeyPathAfterDot];
         
         [subKey release];
-        [subKeyPathLeft release];
-        
+        [subKeyPathAfterDot release];
     }
     else {
          [self d_setValue:value forKey:keyPath];
@@ -192,16 +192,16 @@
 
 - (void)d_setValue:(id)value forUndefinedKey:(NSString *)key {
     NSString *reason = [NSString stringWithFormat:@"[<%@ %p> setValue:forUndefinedKey:]: this class is not key value coding-compliant for the key %@.", object_getClass(self), self,key];
-    NSDictionary *userInfo = [[NSDictionary alloc] initWithObjectsAndKeys:self,@"NSTargetObjectUserInfoKey", key ? : [NSNull null], @"NSUnknownUserInfoKey", nil];
-    NSException *exception = [NSException exceptionWithName:@"NSUnknownKeyException" reason:reason userInfo:userInfo];
+    NSDictionary *userInfo = [[NSDictionary alloc] initWithObjectsAndKeys:self,NSTargetObjectUserInfoKey, key ? : [NSNull null], NSUnknownUserInfoKey, nil];
+    NSException *exception = [NSException exceptionWithName:NSUnknownKeyException reason:reason userInfo:userInfo];
     [userInfo release];
     [exception raise];
 }
 
 - (id)d_valueForUndefinedKey:(NSString *)key {
     NSString *reason = [NSString stringWithFormat:@"[<%@ %p> valueForUndefinedKey:]: this class is not key value coding-compliant for the key %@.", object_getClass(self), self,key];
-    NSDictionary *userInfo = [[NSDictionary alloc] initWithObjectsAndKeys:self,@"NSTargetObjectUserInfoKey", key ? : [NSNull null], @"NSUnknownUserInfoKey", nil];
-    NSException *exception = [NSException exceptionWithName:@"NSUnknownKeyException" reason:reason userInfo:userInfo];
+    NSDictionary *userInfo = [[NSDictionary alloc] initWithObjectsAndKeys:self,NSTargetObjectUserInfoKey, key ? : [NSNull null], NSUnknownUserInfoKey, nil];
+    NSException *exception = [NSException exceptionWithName:NSUnknownKeyException reason:reason userInfo:userInfo];
     [userInfo release];
     [exception raise];
     

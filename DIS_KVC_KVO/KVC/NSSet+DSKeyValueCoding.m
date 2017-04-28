@@ -8,8 +8,8 @@
 
 #import "NSSet+DSKeyValueCoding.h"
 #import "DSKeyValueCodingCommon.h"
+#import "NSObject+DSKeyValueCoding.h"
 #import "NSObject+DSKeyValueCodingPrivate.h"
-
 
 @implementation NSSet (DSKeyValueCoding)
 

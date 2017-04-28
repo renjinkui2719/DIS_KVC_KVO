@@ -7,6 +7,7 @@
 //
 
 #import "NSArray+DSKeyValueCodingPrivate.h"
+#import "NSObject+DSKeyValueCoding.h"
 
 @implementation NSArray (DSKeyValueCodingPrivate)
 
