@@ -186,7 +186,7 @@ int main(int argc, const char * argv[]) {
     persons[0].cards[1].ID = @"00001";
     persons[0].cards[2].ID = @"00001";
     
-    id v = [persons d_valueForKeyPath:@"@lastObjectr"];
+    id v = [persons d_valueForKeyPath:@"@lastObject"];
 
     //NSArray *array = @[@1,@2,@3,@4,@5,@6,@1,@3,@5];
     //id v = [array d_valueForKeyPath:@"@distinctUnionOfObjects.intValue"];

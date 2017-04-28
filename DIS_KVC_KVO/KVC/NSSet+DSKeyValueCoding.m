@@ -14,9 +14,9 @@
 @implementation NSSet (DSKeyValueCoding)
 
 - (id)d_valueForKey:(NSString *)key {
-    NSString *subKey = nil;
-    if (key.length && [key characterAtIndex:0] == '@' && (subKey = [key substringWithRange:NSMakeRange(1, key.length - 1)])) {
-        id value =  [super d_valueForKey:subKey];
+    NSString *operationKey = nil;
+    if (key.length && [key characterAtIndex:0] == '@' && (operationKey = [key substringWithRange:NSMakeRange(1, key.length - 1)])) {
+        id value =  [super d_valueForKey:operationKey];
         return value;
     }
     else {
@@ -40,36 +40,35 @@
     if(keyPath.length && [keyPath characterAtIndex:0] == '@') {
         NSRange dotRange = [keyPath rangeOfString:@"." options:NSLiteralSearch range:NSMakeRange(0, keyPath.length)];
         if(dotRange.length) {
-            NSString *subKeyBeforDot = [keyPath substringWithRange:NSMakeRange(1, dotRange.location - 1)];
-            NSString *subKeyPathAfterDot = [keyPath substringWithRange:NSMakeRange(dotRange.location + 1, keyPath.length - (dotRange.location + 1))];
-            if(subKeyPathAfterDot) {
-                NSUInteger subKeyBeforDotCStrLength = [subKeyBeforDot lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
-                char subKeyBeforDotCStr[subKeyBeforDotCStrLength + 1];
+            NSString *operator = [keyPath substringWithRange:NSMakeRange(1, dotRange.location - 1)];
+            NSString *keyPathForOperator = [keyPath substringWithRange:NSMakeRange(dotRange.location + 1, keyPath.length - (dotRange.location + 1))];
+            if(keyPathForOperator) {
+                NSUInteger operatorCStrLength = [operator lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
+                char operatorCStr[operatorCStrLength + 1];
                 
-                [subKeyBeforDot getCString:subKeyBeforDotCStr maxLength:subKeyBeforDotCStrLength + 1 encoding:NSUTF8StringEncoding];
+                [operator getCString:operatorCStr maxLength:operatorCStrLength + 1 encoding:NSUTF8StringEncoding];
                 
-                Method valueForKeyPathMethod = DSKeyValueMethodForPattern(self.class, "d_%sForKeyPath:", subKeyBeforDotCStr);
-                if(!valueForKeyPathMethod) {
-                    valueForKeyPathMethod = DSKeyValueMethodForPattern(self.class, "_d_%sForKeyPath:", subKeyBeforDotCStr);
+                Method operatorMethod = DSKeyValueMethodForPattern(self.class, "d_%sForKeyPath:", operatorCStr);
+                if(!operatorMethod) {
+                    operatorMethod = DSKeyValueMethodForPattern(self.class, "_d_%sForKeyPath:", operatorCStr);
                 }
-                if (valueForKeyPathMethod) {
-                    id computedValue = ((id (*)(id,Method,NSString *))method_invoke)(self,valueForKeyPathMethod,subKeyPathAfterDot);
-                    return computedValue;
+                if (operatorMethod) {
+                    id value = ((id (*)(id,Method,NSString *))method_invoke)(self,operatorMethod,keyPathForOperator);
+                    return value;
                 }
                 else {
-                    [NSException raise:NSInvalidArgumentException format:@"[<%@ %p> valueForKeyPath:]: this class does not implement the %@ operation.", self.class,self,subKeyBeforDot];
-                    
+                    [NSException raise:NSInvalidArgumentException format:@"[<%@ %p> valueForKeyPath:]: this class does not implement the %@ operation.", self.class,self,operator];
                     return nil;
                 }
             }
             else {
-                id value = [super d_valueForKeyPath:subKeyBeforDot];
+                id value = [super d_valueForKey:operator];
                 return value;
             }
         }
         else {
-            NSString *subKey = [keyPath substringWithRange:NSMakeRange(1, keyPath.length - 1)];
-            id value = [super d_valueForKeyPath:subKey];
+            NSString *key = [keyPath substringWithRange:NSMakeRange(1, keyPath.length - 1)];
+            id value = [super d_valueForKey:key];
             return value;
         }
     }
@@ -95,7 +94,7 @@
     for (id object in self) {
         id eachValue = [object d_valueForKeyPath:keyPath];
         if (eachValue) {
-            ((void (*)(NSDecimal *, id, SEL))objc_msgSend_stret)(&eachDecimal, zero, @selector(decimalValue));
+            ((void (*)(NSDecimal *, id, SEL))objc_msgSend_stret)(&eachDecimal, eachValue, @selector(decimalValue));
             NSDecimalAdd(&resultDecimal, &resultDecimal, &eachDecimal, NSRoundBankers);
         }
     }

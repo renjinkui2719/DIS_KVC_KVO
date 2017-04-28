@@ -45,9 +45,9 @@
         NSRange dotRange = [keyPath rangeOfString:@"." options:NSLiteralSearch range:NSMakeRange(0, keyPath.length)];
         if(dotRange.length) {
             //运算符名
-            NSString *operator = [[keyPath substringWithRange:NSMakeRange(1, dotRange.location - 1)] retain];
+            NSString *operator = [keyPath substringWithRange:NSMakeRange(1, dotRange.location - 1)];
             //计算每个对象的什么属性
-            NSString *keyPathForOperator = [[keyPath substringWithRange:NSMakeRange(dotRange.location + 1, keyPath.length - (dotRange.location + 1))] retain];
+            NSString *keyPathForOperator = [keyPath substringWithRange:NSMakeRange(dotRange.location + 1, keyPath.length - (dotRange.location + 1))];
             if(keyPathForOperator) {
                 NSUInteger operatorCStrLength = [operator lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
                 char operatorCStr[operatorCStrLength + 1];
@@ -61,30 +61,22 @@
                 if (operatorMethod) {
                     //调用运算符对应的方法
                     id value = ((id (*)(id,Method,NSString *))method_invoke)(self,operatorMethod,keyPathForOperator);
-                    [operator release];
-                    [keyPathForOperator release];
                     return value;
                 }
                 else {
                     //不支持的运算符
-                    [operator release];
-                    [keyPathForOperator autorelease];
-                    
                     [NSException raise:NSInvalidArgumentException format:@"[<%@ %p> valueForKeyPath:]: this class does not implement the %@ operation.", self.class,self,operator];
-                    
                     return nil;
                 }
             }
             else {
                 id value = [super d_valueForKey:operator];
-                [operator release];
                 return value;
             }
         }
         else {
-            NSString *operator = [[keyPath substringWithRange:NSMakeRange(1, keyPath.length - 1)] retain];
-            id value = [super d_valueForKey:operator];
-            [operator release];
+            NSString *key = [[keyPath substringWithRange:NSMakeRange(1, keyPath.length - 1)] retain];
+            id value = [super d_valueForKey:key];
             return value;
         }
     }
