@@ -23,20 +23,21 @@ extern NSString * _NSMethodExceptionProem(id,SEL);
     return self;
 }
 
+
 - (id)_nonNilArrayValueWithSelector:(SEL)selector {
-    id value = _DSGetUsingKeyValueGetter(self.container, self.valueGetter);
-    if (!value) {
+    id arrayValue = _DSGetUsingKeyValueGetter(self.container, self.valueGetter);
+    if (!arrayValue) {
         [self _raiseNilValueExceptionWithSelector: selector];
     }
-    return value;
+    return arrayValue;
 }
 
 - (id)_createNonNilMutableArrayValueWithSelector:(SEL)selector {
-    id value = _DSGetUsingKeyValueGetter(self.container, self.valueGetter);
-    if (!value) {
+    id arrayValue = _DSGetUsingKeyValueGetter(self.container, self.valueGetter);
+    if (!arrayValue) {
         [self _raiseNilValueExceptionWithSelector: selector];
     }
-    return [value mutableCopy];
+    return [arrayValue mutableCopy];
 }
 
 - (void)_raiseNilValueExceptionWithSelector:(SEL)selector {
@@ -57,11 +58,11 @@ extern NSString * _NSMethodExceptionProem(id,SEL);
 }
 
 - (NSUInteger)count {
-    id value = _DSGetUsingKeyValueGetter(self.container, self.valueGetter);
-    if (!value && !_treatNilValuesLikeEmptyArrays) {
+    id arrayValue = _DSGetUsingKeyValueGetter(self.container, self.valueGetter);
+    if (!arrayValue && !_treatNilValuesLikeEmptyArrays) {
         [self _raiseNilValueExceptionWithSelector:_cmd];
     }
-    return [value count];
+    return [arrayValue count];
 }
 
 - (id)objectAtIndex:(NSUInteger)index {
@@ -77,9 +78,9 @@ extern NSString * _NSMethodExceptionProem(id,SEL);
 }
 
 - (void)addObject:(id)anObject {
-    id value = _DSGetUsingKeyValueGetter(self.container, self.valueGetter);
-    if (value) {
-        id mutableCopy = [value mutableCopy];
+    id arrayValue = _DSGetUsingKeyValueGetter(self.container, self.valueGetter);
+    if (arrayValue) {
+        id mutableCopy = [arrayValue mutableCopy];
         [mutableCopy addObject:anObject];
         _DSSetUsingKeyValueSetter(self.container, _valueSetter, mutableCopy);
         [mutableCopy release];
@@ -96,9 +97,9 @@ extern NSString * _NSMethodExceptionProem(id,SEL);
 }
 
 - (void)insertObject:(id)anObject atIndex:(NSUInteger)index {
-    id value = _DSGetUsingKeyValueGetter(self.container, self.valueGetter);
-    if (value) {
-        id mutableCopy = [value mutableCopy];
+    id arrayValue = _DSGetUsingKeyValueGetter(self.container, self.valueGetter);
+    if (arrayValue) {
+        id mutableCopy = [arrayValue mutableCopy];
         [mutableCopy insertObject:anObject atIndex:index];
         _DSSetUsingKeyValueSetter(self.container, _valueSetter, mutableCopy);
         [mutableCopy release];
@@ -115,9 +116,9 @@ extern NSString * _NSMethodExceptionProem(id,SEL);
 }
 
 - (void)insertObjects:(NSArray *)objects atIndexes:(NSIndexSet *)indexes {
-    id value = _DSGetUsingKeyValueGetter(self.container, self.valueGetter);
-    if (value) {
-        id mutableCopy = [value mutableCopy];
+    id arrayValue = _DSGetUsingKeyValueGetter(self.container, self.valueGetter);
+    if (arrayValue) {
+        id mutableCopy = [arrayValue mutableCopy];
         [mutableCopy insertObjects:objects atIndexes:indexes];
         _DSSetUsingKeyValueSetter(self.container, _valueSetter, mutableCopy);
         [mutableCopy release];

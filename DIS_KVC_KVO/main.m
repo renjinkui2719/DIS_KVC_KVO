@@ -120,10 +120,13 @@ void TestKVC();
 
 int main(int argc, const char * argv[]) {
     
+    A *a = [A random];
+    NSMutableArray *mutArray = [a d_mutableArrayValueForKey:@"NSArray_field"];
+    [mutArray addObject:[A random]];
     
     NSLog(@"");
     
-    TestKVC();
+    //TestKVC();
 }
 
 

@@ -236,7 +236,7 @@
         inKeyCStr[0] = toupper(inKeyCStr[0]);
     }
     
-    Method validateMethod = DSKeyValueMethodForPattern(object_getClass(self), "validate%s:error:", inKeyCStr);
+    Method validateMethod = DSKeyValueMethodForPattern(object_getClass(self), "d_validate%s:error:", inKeyCStr);
     if (validateMethod) {
         return ((BOOL (*)(id,Method,id *,NSError **))method_invoke)(self,validateMethod,ioValue, outError);
     }
@@ -256,7 +256,7 @@
                 NSString *subKey =  [[inKeyPath substringWithRange:NSMakeRange(0, firstDotPointer - cStr)] retain];
                 NSString *subKeyPathLeft =  [[inKeyPath substringWithRange:NSMakeRange(firstDotPointer - cStr + 1, inKeyPath.length -  (firstDotPointer - cStr + 1))] retain];
                 
-                BOOL valid = [[self d_valueForKey:subKey] validateValue:ioValue forKeyPath:subKeyPathLeft error:outError];
+                BOOL valid = [[self d_valueForKey:subKey] d_validateValue:ioValue forKeyPath:subKeyPathLeft error:outError];
                 
                 [subKey release];
                 [subKeyPathLeft release];
@@ -264,7 +264,7 @@
                 return  valid;
             }
             else {
-                return [self validateValue:ioValue forKey:inKeyPath error:outError];
+                return [self d_validateValue:ioValue forKey:inKeyPath error:outError];
             }
         }
     }
@@ -274,7 +274,7 @@
         NSString *subKey =  [[inKeyPath substringWithRange:NSMakeRange(0, range.location)] retain];
         NSString *subKeyPathLeft =  [[inKeyPath substringWithRange:NSMakeRange(range.location + 1, inKeyPath.length -  (range.location + 1))] retain];
         
-        BOOL valid = [[self d_valueForKey:subKey] validateValue:ioValue forKeyPath:subKeyPathLeft error:outError];
+        BOOL valid = [[self d_valueForKey:subKey] d_validateValue:ioValue forKeyPath:subKeyPathLeft error:outError];
         
         [subKey release];
         [subKeyPathLeft release];
@@ -282,7 +282,7 @@
         return  valid;
     }
     else {
-        return [self validateValue:ioValue forKey:inKeyPath error:outError];
+        return [self d_validateValue:ioValue forKey:inKeyPath error:outError];
     }
 }
 
@@ -396,13 +396,13 @@
     }];
 }
 
-- (NSMutableOrderedSet *)d_mutableSetValueForKey:(NSString *)key {
+- (NSMutableSet *)d_mutableSetValueForKey:(NSString *)key {
     return [self _d_mutableColelctionValueForKey:key cache:&DSKeyValueCachedMutableSetGetters getterCrateBlock:^DSKeyValueGetter *(Class containerClassID, NSString *key) {
         return [self.class _createMutableSetValueGetterWithContainerClassID:containerClassID key:key];
     }];
 }
 
-- (NSMutableOrderedSet *)d_mutableSetValueForKeyPath:(NSString *)keyPath {
+- (NSMutableSet *)d_mutableSetValueForKeyPath:(NSString *)keyPath {
     return [self _d_mutableColelctionValueForKeyPath:keyPath valueForKeyGetBlock:^id(id object, NSString *key) {
         return [object mutableSetValueForKey: key];
     }];

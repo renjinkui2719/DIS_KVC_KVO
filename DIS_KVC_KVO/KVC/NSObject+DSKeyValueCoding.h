@@ -28,7 +28,7 @@
 - (NSMutableArray *)d_mutableArrayValueForKeyPath:(NSString *)keyPath;
 - (NSMutableOrderedSet *)d_mutableOrderedSetValueForKey:(NSString *)key;
 - (NSMutableOrderedSet *)d_mutableOrderedSetValueForKeyPath:(NSString *)keyPath;
-- (NSMutableOrderedSet *)d_mutableSetValueForKey:(NSString *)key;
-- (NSMutableOrderedSet *)d_mutableSetValueForKeyPath:(NSString *)keyPath;
+- (NSMutableSet *)d_mutableSetValueForKey:(NSString *)key;
+- (NSMutableSet *)d_mutableSetValueForKeyPath:(NSString *)keyPath;
 
 @end
