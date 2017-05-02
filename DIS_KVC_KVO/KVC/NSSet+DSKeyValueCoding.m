@@ -28,11 +28,11 @@
             *(p++) = (eachValue ? : [NSNull null]);
         }
         
-        NSArray *arrayValue = [[[NSArray alloc] initWithObjects:objectsBuff count:self.count] autorelease];
+        NSSet *value = [[[NSSet alloc] initWithObjects:objectsBuff count:self.count] autorelease];
         
         NSFreeObjectArray(objectsBuff);
         
-        return arrayValue;
+        return value;
     }
 }
 

@@ -181,6 +181,14 @@
     return unionArray;
 }
 
+//返回 Array中每个对象的keyPath对应值 组成的去重复数组
+//@distinctUnionOfObjects.keyPath
+- (NSArray *)_d_distinctUnionOfObjectsForKeyPath:(NSString *)keyPath {
+    NSArray *unionArray = [self _d_unionOfObjectsForKeyPath:keyPath];
+    return [NSSet setWithArray:unionArray].allObjects;
+}
+
+
 //返回 Array中每个对象的keyPath对应数组的每个成员 组成的数组. 这里每个keyPath对应值是也是数组，获取的是每个数组展开后组成的总数组
 //@unionOfArrays.keyPath
 - (NSArray *)_d_unionOfArraysForKeyPath:(NSString *)keyPath {
@@ -193,6 +201,13 @@
     }
     return unionArray;
 }
+//返回 Array中每个对象的keyPath对应数组的每个成员 组成的去重复数组.
+//@distinctUnionOfArrays.keyPath
+- (NSArray *)_d_distinctUnionOfArraysForKeyPath:(NSString *)keyPath {
+    NSArray *unionArray = [self _d_unionOfArraysForKeyPath:keyPath];
+    return [NSSet setWithArray:unionArray].allObjects;
+}
+
 
 //返回 Array中每个对象的keyPath对应集合的每个成员 组成的数组. 这里每个keyPath对应值是是集合，获取的是每个集合展开后组成的总数组
 //@unionOfSets.keyPath
@@ -205,20 +220,6 @@
         }
     }
     return unionArray;
-}
-
-//返回 Array中每个对象的keyPath对应值 组成的去重复数组
-//@distinctUnionOfObjects.keyPath
-- (NSArray *)_d_distinctUnionOfObjectsForKeyPath:(NSString *)keyPath {
-    NSArray *unionArray = [self _d_unionOfObjectsForKeyPath:keyPath];
-    return [NSSet setWithArray:unionArray].allObjects;
-}
-
-//返回 Array中每个对象的keyPath对应数组的每个成员 组成的去重复数组.
-//@distinctUnionOfArrays.keyPath
-- (NSArray *)_d_distinctUnionOfArraysForKeyPath:(NSString *)keyPath {
-    NSArray *unionArray = [self _d_unionOfArraysForKeyPath:keyPath];
-    return [NSSet setWithArray:unionArray].allObjects;
 }
 
 //返回 Array中每个对象的keyPath对应集合的每个成员 组成的去重复数组.

@@ -8,15 +8,16 @@
 
 #import "NSOrderedSet+DSKeyValueCoding.h"
 #import "NSOrderedSet+DSKeyValueCodingPrivate.h"
+#import "NSObject+DSKeyValueCoding.h"
 #import "NSObject+DSKeyValueCodingPrivate.h"
 #import "DSKeyValueCodingCommon.h"
 
 @implementation NSOrderedSet (DSKeyValueCoding)
 
 - (id)d_valueForKey:(NSString *)key {
-    NSString *subKey = nil;
-    if (key.length && [key characterAtIndex:0] == '@' && (subKey = [[key substringWithRange:NSMakeRange(1, key.length - 1)] retain])) {
-        id value =  [super valueForKey:subKey];
+    NSString *operationKey = nil;
+    if (key.length && [key characterAtIndex:0] == '@' && (operationKey = [[key substringWithRange:NSMakeRange(1, key.length - 1)] retain])) {
+        id value =  [super d_valueForKey:operationKey];
         return value;
     }
     else {
@@ -24,17 +25,17 @@
         NSUInteger cnt = 0;
         
         for (id object in self) {
-            id eachValue = [object valueForKey:key];
+            id eachValue = [object d_valueForKey:key];
             if (eachValue) {
                 objectsBuff[cnt++] = eachValue;
             }
         }
         
-        NSOrderedSet *valueSet = [[[NSOrderedSet alloc] initWithObjects:objectsBuff count:cnt] autorelease];
+        NSOrderedSet *value = [[[NSOrderedSet alloc] initWithObjects:objectsBuff count:cnt] autorelease];
         
         NSFreeObjectArray(objectsBuff);
         
-        return valueSet;
+        return value;
     }
 }
 
@@ -42,48 +43,48 @@
     if(keyPath.length && [keyPath characterAtIndex:0] == '@') {
         NSRange dotRange = [keyPath rangeOfString:@"." options:NSLiteralSearch range:NSMakeRange(0, keyPath.length)];
         if(dotRange.length) {
-            NSString *subKeyBeforDot = [keyPath substringWithRange:NSMakeRange(1, dotRange.location - 1)];
-            NSString *subKeyPathAfterDot = [keyPath substringWithRange:NSMakeRange(dotRange.location + 1, keyPath.length - (dotRange.location + 1))];
+            NSString *operator = [keyPath substringWithRange:NSMakeRange(1, dotRange.location - 1)];
+            NSString *keyPathForOperator = [keyPath substringWithRange:NSMakeRange(dotRange.location + 1, keyPath.length - (dotRange.location + 1))];
             
-            if(subKeyPathAfterDot) {
-                NSUInteger subKeyBeforDotCStrLength = [subKeyBeforDot lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
-                char subKeyBeforDotCStr[subKeyBeforDotCStrLength + 1];
+            if(keyPathForOperator) {
+                NSUInteger operatorCStrLength = [operator lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
+                char operatorCStr[operatorCStrLength + 1];
                 
-                [subKeyBeforDot getCString:subKeyBeforDotCStr maxLength:subKeyBeforDotCStrLength + 1 encoding:NSUTF8StringEncoding];
+                [operator getCString:operatorCStr maxLength:operatorCStrLength + 1 encoding:NSUTF8StringEncoding];
                 
-                Method valueForKeyPathMethod = DSKeyValueMethodForPattern(self.class, "%sForKeyPath:", subKeyBeforDotCStr);
-                if(!valueForKeyPathMethod) {
-                    valueForKeyPathMethod = DSKeyValueMethodForPattern(self.class, "_%sForKeyPath:", subKeyBeforDotCStr);
+                Method operatorMethod = DSKeyValueMethodForPattern(self.class, "d_%sForKeyPath:", operatorCStr);
+                if(!operatorMethod) {
+                    operatorMethod = DSKeyValueMethodForPattern(self.class, "_d_%sForKeyPath:", operatorCStr);
                 }
-                if (valueForKeyPathMethod) {
-                    id computedValue = ((id (*)(id,Method,NSString *))method_invoke)(self,valueForKeyPathMethod,subKeyPathAfterDot);
-                    return computedValue;
+                if (operatorMethod) {
+                    id value = ((id (*)(id,Method,NSString *))method_invoke)(self,operatorMethod,keyPathForOperator);
+                    return value;
                 }
                 else {
-                    [NSException raise:NSInvalidArgumentException format:@"[<%@ %p> valueForKeyPath:]: this class does not implement the %@ operation.", self.class,self,subKeyBeforDot];
+                    [NSException raise:NSInvalidArgumentException format:@"[<%@ %p> valueForKeyPath:]: this class does not implement the %@ operation.", self.class,self,operator];
                     
                     return nil;
                 }
             }
             else {
-                id value = [super valueForKey:subKeyBeforDot];
+                id value = [super d_valueForKey:operator];
                 return value;
             }
         }
         else {
-            NSString *subKey = [keyPath substringWithRange:NSMakeRange(1, keyPath.length - 1)];
-            id value = [super valueForKey:subKey];
+            NSString *key = [keyPath substringWithRange:NSMakeRange(1, keyPath.length - 1)];
+            id value = [super d_valueForKey:key];
             return value;
         }
     }
     else {
-        return [super valueForKeyPath: keyPath];
+        return [super d_valueForKeyPath: keyPath];
     }
 }
 
 - (void)d_setValue:(id)value forKey:(NSString *)key {
     for (id object in self) {
-        [object setValue:value forKey:key];
+        [object d_setValue:value forKey:key];
     }
 }
 
@@ -96,9 +97,9 @@
     
     NSDecimal eachDecimal = {0};
     for (id object in self) {
-        id eachValue = [object valueForKeyPath:keyPath];
+        id eachValue = [object d_valueForKeyPath:keyPath];
         if (eachValue) {
-            ((void (*)(NSDecimal *, id, SEL))objc_msgSend_stret)(&eachDecimal, zero, @selector(decimalValue));
+            ((void (*)(NSDecimal *, id, SEL))objc_msgSend_stret)(&eachDecimal, eachValue, @selector(decimalValue));
             NSDecimalAdd(&resultDecimal, &resultDecimal, &eachDecimal, NSRoundBankers);
         }
     }
@@ -120,7 +121,7 @@
 - (id)_d_maxForKeyPath:(NSString *)keyPath {
     id maxValue = nil;
     for (id object in self) {
-        id eachValue = [object valueForKeyPath:keyPath];
+        id eachValue = [object d_valueForKeyPath:keyPath];
         if (eachValue) {
             if (!maxValue) {
                 maxValue = eachValue;
@@ -136,7 +137,7 @@
 - (id)_d_minForKeyPath:(NSString *)keyPath {
     id minValue = nil;
     for (id object in self) {
-        id eachValue = [object valueForKeyPath:keyPath];
+        id eachValue = [object d_valueForKeyPath:keyPath];
         if (eachValue) {
             if (!minValue) {
                 minValue = eachValue;

@@ -7,13 +7,14 @@
 //
 
 #import "NSUserDefaults+DSKeyValueCoding.h"
+#import "NSObject+DSKeyValueCoding.h"
 
 @implementation NSUserDefaults (DSKeyValueCoding)
 
 - (id)d_valueForKey:(NSString *)key {
     NSString *subKey = nil;
     if(key.length && [key characterAtIndex:0] == '@' && (subKey = [key substringWithRange:NSMakeRange(1, key.length - 1)])) {
-        return [super valueForKey:subKey];
+        return [super d_valueForKey:subKey];
     }
     else {
         return [self objectForKey:key];
