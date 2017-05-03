@@ -63,24 +63,24 @@
             if (idx == NULL) {
                 imp = (IMP)_DSGetValueInIvar;
             }
-            else if (strncmp(ivarEncoding, "{CGPoint=ff}", idx - ivarEncoding) == 0){
+            else if (strncmp(ivarEncoding, @encode(CGPoint), idx - ivarEncoding) == 0){
                 imp = (IMP)_DSGetPointValueInIvar;
             }
-            else if (strncmp(ivarEncoding, "{_NSPoint=ff}", idx - ivarEncoding) == 0){
+            else if (strncmp(ivarEncoding, @encode(NSPoint), idx - ivarEncoding) == 0){
                 imp = (IMP)_DSGetPointValueInIvar;
             }
-            else if (strncmp(ivarEncoding, "{_NSRange=II}", idx - ivarEncoding) == 0){
+            else if (strncmp(ivarEncoding, @encode(NSRange), idx - ivarEncoding) == 0){
                 imp = (IMP)_DSGetRangeValueInIvar;
             }
-            else if (strncmp(ivarEncoding, "{CGRect={CGPoint=ff}{CGSize=ff}}", idx - ivarEncoding) == 0){
+            else if (strncmp(ivarEncoding, @encode(CGRect), idx - ivarEncoding) == 0){
                 imp = (IMP)_DSGetRectValueInIvar;
             }
-            else if (strncmp(ivarEncoding, "{_NSRect={_NSPoint=ff}{_NSSize=ff}}", idx - ivarEncoding) == 0){
+            else if (strncmp(ivarEncoding, @encode(NSRect), idx - ivarEncoding) == 0){
                 imp = (IMP)_DSGetRectValueInIvar;
-            }else if (strncmp(ivarEncoding, "{CGSize=ff}", idx - ivarEncoding) == 0){
+            }else if (strncmp(ivarEncoding, @encode(CGSize), idx - ivarEncoding) == 0){
                 imp = (IMP)_DSGetSizeValueInIvar;
             }
-            else if (strncmp(ivarEncoding, "{_NSSize=ff}", idx - ivarEncoding) == 0){
+            else if (strncmp(ivarEncoding, @encode(NSSize), idx - ivarEncoding) == 0){
                 imp = (IMP)_DSGetSizeValueInIvar;
             }
             else {

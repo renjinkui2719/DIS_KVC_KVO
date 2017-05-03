@@ -453,22 +453,22 @@
 		9177881E1E6F9FFD00715DA8 /* MethodSet */ = {
 			isa = PBXGroup;
 			children = (
-				9177881F1E6F9FFD00715DA8 /* DSKeyValueMutatingArrayMethodSet.h */,
-				917788201E6F9FFD00715DA8 /* DSKeyValueMutatingArrayMethodSet.m */,
 				917788211E6F9FFD00715DA8 /* DSKeyValueMutatingCollectionMethodSet.h */,
 				917788221E6F9FFD00715DA8 /* DSKeyValueMutatingCollectionMethodSet.m */,
-				917788231E6F9FFD00715DA8 /* DSKeyValueMutatingOrderedSetMethodSet.h */,
-				917788241E6F9FFD00715DA8 /* DSKeyValueMutatingOrderedSetMethodSet.m */,
+				9177881F1E6F9FFD00715DA8 /* DSKeyValueMutatingArrayMethodSet.h */,
+				917788201E6F9FFD00715DA8 /* DSKeyValueMutatingArrayMethodSet.m */,
 				917788251E6F9FFD00715DA8 /* DSKeyValueMutatingSetMethodSet.h */,
 				917788261E6F9FFD00715DA8 /* DSKeyValueMutatingSetMethodSet.m */,
-				917788271E6F9FFD00715DA8 /* DSKeyValueNonmutatingArrayMethodSet.h */,
-				917788281E6F9FFD00715DA8 /* DSKeyValueNonmutatingArrayMethodSet.m */,
+				917788231E6F9FFD00715DA8 /* DSKeyValueMutatingOrderedSetMethodSet.h */,
+				917788241E6F9FFD00715DA8 /* DSKeyValueMutatingOrderedSetMethodSet.m */,
 				917788291E6F9FFD00715DA8 /* DSKeyValueNonmutatingCollectionMethodSet.h */,
 				9177882A1E6F9FFD00715DA8 /* DSKeyValueNonmutatingCollectionMethodSet.m */,
-				9177882B1E6F9FFD00715DA8 /* DSKeyValueNonmutatingOrderedSetMethodSet.h */,
-				9177882C1E6F9FFD00715DA8 /* DSKeyValueNonmutatingOrderedSetMethodSet.m */,
+				917788271E6F9FFD00715DA8 /* DSKeyValueNonmutatingArrayMethodSet.h */,
+				917788281E6F9FFD00715DA8 /* DSKeyValueNonmutatingArrayMethodSet.m */,
 				9177882D1E6F9FFD00715DA8 /* DSKeyValueNonmutatingSetMethodSet.h */,
 				9177882E1E6F9FFD00715DA8 /* DSKeyValueNonmutatingSetMethodSet.m */,
+				9177882B1E6F9FFD00715DA8 /* DSKeyValueNonmutatingOrderedSetMethodSet.h */,
+				9177882C1E6F9FFD00715DA8 /* DSKeyValueNonmutatingOrderedSetMethodSet.m */,
 			);
 			path = MethodSet;
 			sourceTree = "<group>";

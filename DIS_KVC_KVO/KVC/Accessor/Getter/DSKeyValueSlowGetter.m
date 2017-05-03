@@ -7,15 +7,16 @@
 //
 
 #import "DSKeyValueSlowGetter.h"
-#import <objc/runtime.h>
+#import "DSKeyValueCodingCommon.h"
+#import "NSObject+DSKeyValueCoding.h"
 
 @implementation DSKeyValueSlowGetter
 
 - (id)initWithContainerClassID:(id)containerClassID key:(NSString *)key containerIsa:(Class)containerIsa {
-    Method valueForKeyMethod = class_getInstanceMethod(containerIsa, @selector(valueForKey:));
+    Method valueForKeyMethod = class_getInstanceMethod(containerIsa, @selector(d_valueForKey:));
     void *arguments[3] = {NULL};
     arguments[0] = key;
-    self = [super initWithContainerClassID:containerClassID key:key implementation:method_getImplementation(valueForKeyMethod) selector:@selector(valueForKey:) extraArguments:arguments count:1];
+    self = [super initWithContainerClassID:containerClassID key:key implementation:method_getImplementation(valueForKeyMethod) selector:@selector(d_valueForKey:) extraArguments:arguments count:1];
     return self;
 }
 
