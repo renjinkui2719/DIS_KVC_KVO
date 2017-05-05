@@ -114,15 +114,35 @@
     a.CGRect_field = CGRectMake(arc4random()/100.0, arc4random()/100.0, arc4random()/100.0, arc4random()/100.0);
     return a;
 }
+
+- (NSString *)description {
+    return  self.debugDescription;
+}
+
+- (NSString *)debugDescription {
+    return [NSString stringWithFormat:@"%@, identifier: %@", _identifier];
+}
+
 @end
 
 void TestKVC();
 
 int main(int argc, const char * argv[]) {
     
-    A *a = [A random];
+    A *a = A.random;
+    a.NSArray_field = @[];
     NSMutableArray *mutArray = [a d_mutableArrayValueForKey:@"NSArray_field"];
-    [mutArray addObject:[A random]];
+    [mutArray addObject:A.random];
+    [mutArray insertObject:A.random atIndex:0];
+    [mutArray insertObject:A.random atIndex:2];
+    [mutArray insertObjects:@[A.random,A.random,A.random,A.random,A.random,A.random,A.random,A.random,A.random] atIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(3, 9)]];
+    [mutArray removeObjectAtIndex:0];
+    [mutArray removeObjectAtIndex:mutArray.count - 1];
+    [mutArray removeObjectsAtIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(3, 3)]];
+    [mutArray removeLastObject];
+    [];
+    
+    //[mutArray ];
     
     NSLog(@"");
     
