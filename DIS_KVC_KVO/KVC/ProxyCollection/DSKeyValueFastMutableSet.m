@@ -9,8 +9,9 @@
 #import "DSKeyValueFastMutableSet.h"
 #import "DSKeyValueMutatingSetMethodSet.h"
 #import "DSKeyValueNonmutatingSetMethodSet.h"
+#import "DSKeyValueFastMutableCollection2Getter.h"
 #import "NSObject+DSKeyValueCodingPrivate.h"
-#import <objc/message.h>
+#import "DSKeyValueCodingCommon.h"
 
 @implementation DSKeyValueFastMutableSet
 
@@ -126,7 +127,7 @@
 }
 
 + (DSKeyValueProxyNonGCPoolPointer *)_proxyNonGCPoolPointer {
-    static DSKeyValueProxyNonGCPoolPointer proxyPool = {0};
+    static DSKeyValueProxyNonGCPoolPointer proxyPool;
     return  &proxyPool;
 }
 
@@ -146,7 +147,7 @@
 
 @implementation DSKeyValueFastMutableSet2
 
-- (id)_proxyInitWithContainer:(id)container getter:(DSKeyValueGetter *)getter {
+- (id)_proxyInitWithContainer:(id)container getter:(DSKeyValueFastMutableCollection2Getter *)getter {
     if((self = [super _proxyInitWithContainer:container getter:getter])) {
         _valueGetter = [[getter baseGetter] retain];
     }
@@ -159,7 +160,7 @@
 }
 
 + (DSKeyValueProxyNonGCPoolPointer *)_proxyNonGCPoolPointer {
-    static DSKeyValueProxyNonGCPoolPointer proxyPool = {0};
+    static DSKeyValueProxyNonGCPoolPointer proxyPool;
     return  &proxyPool;
 }
 

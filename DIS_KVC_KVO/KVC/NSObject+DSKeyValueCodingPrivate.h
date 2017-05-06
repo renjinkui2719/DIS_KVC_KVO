@@ -39,16 +39,16 @@ void _DSKeyValueInvalidateCachedMutatorsForIsaAndKey(Class isa, NSString *key);
 void _DSKeyValueInvalidateAllCachesForContainerAndKey(Class containerClassID, NSString *key);
 
 @interface NSObject (DSKeyValueCodingPrivate)
-+ (DSKeyValueGetter *)_createValueGetterWithContainerClassID:(id)containerClassID key:(NSString *)key;
-+ (DSKeyValueGetter *)_createValuePrimitiveGetterWithContainerClassID:(id)containerClassID key:(NSString *)key;
++ (DSKeyValueGetter *)_d_createValueGetterWithContainerClassID:(id)containerClassID key:(NSString *)key;
++ (DSKeyValueGetter *)_d_createValuePrimitiveGetterWithContainerClassID:(id)containerClassID key:(NSString *)key;
 
-+ (DSKeyValueSetter *)_createValueSetterWithContainerClassID:(id)containerClassID key:(NSString *)key;
-+ (DSKeyValueSetter *)_createValuePrimitiveSetterWithContainerClassID:(id)containerClassID key:(NSString *)key;
++ (DSKeyValueSetter *)_d_createValueSetterWithContainerClassID:(id)containerClassID key:(NSString *)key;
++ (DSKeyValueSetter *)_d_createValuePrimitiveSetterWithContainerClassID:(id)containerClassID key:(NSString *)key;
 
 
-+ (DSKeyValueGetter *)_createMutableArrayValueGetterWithContainerClassID:(Class)containerClassID key:(NSString *)key;
-+ (DSKeyValueGetter *)_createMutableOrderedSetValueGetterWithContainerClassID:(id)containerClassID key:(NSString *)key;
-+ (DSKeyValueGetter *)_createMutableSetValueGetterWithContainerClassID:(id)containerClassID key:(NSString *)key;
++ (DSKeyValueGetter *)_d_createMutableArrayValueGetterWithContainerClassID:(Class)containerClassID key:(NSString *)key;
++ (DSKeyValueGetter *)_d_createMutableOrderedSetValueGetterWithContainerClassID:(id)containerClassID key:(NSString *)key;
++ (DSKeyValueGetter *)_d_createMutableSetValueGetterWithContainerClassID:(id)containerClassID key:(NSString *)key;
 @end
 
 

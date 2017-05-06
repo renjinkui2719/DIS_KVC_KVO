@@ -10,10 +10,11 @@
 #import "NSObject+DSKeyValueCodingPrivate.h"
 #import "DSKeyValueNilSetEnumerator.h"
 #import "DSKeyValueCodingCommon.h"
+#import "DSKeyValueSlowMutableCollectionGetter.h"
 
 @implementation DSKeyValueSlowMutableSet
 
-- (id)_proxyInitWithContainer:(id)container getter:(DSKeyValueGetter *)getter {
+- (id)_proxyInitWithContainer:(id)container getter:(DSKeyValueSlowMutableCollectionGetter *)getter {
     if((self = [super _proxyInitWithContainer:container getter:getter])) {
         _valueGetter = [[getter baseGetter] retain];
         _valueSetter = [[getter baseSetter] retain];
@@ -31,7 +32,7 @@
 }
 
 + (DSKeyValueProxyNonGCPoolPointer *)_proxyNonGCPoolPointer {
-    static DSKeyValueProxyNonGCPoolPointer proxyPool = {0};
+    static DSKeyValueProxyNonGCPoolPointer proxyPool;
     return  &proxyPool;
 }
 
@@ -101,24 +102,6 @@
     [setValue release];
 }
 
-- (void)intersectSet:(NSSet *)otherSet {
-    NSMutableSet *setValue = [self _createMutableSetValueWithSelector:_cmd];
-    if(setValue) {
-        [setValue intersectSet:otherSet];
-        _DSSetUsingKeyValueSetter(self.container, _valueSetter, setValue);
-        [setValue release];
-    }
-}
-
-- (void)minusSet:(NSSet *)otherSet {
-    NSMutableSet *setValue = [self _createMutableSetValueWithSelector:_cmd];
-    if(setValue) {
-        [setValue minusSet:otherSet];
-        _DSSetUsingKeyValueSetter(self.container, _valueSetter, setValue);
-        [setValue release];
-    }
-}
-
 - (void)removeAllObjects {
     if(!_treatNilValuesLikeEmptySets) {
         if(!_DSGetUsingKeyValueGetter(self.container, _valueGetter)) {
@@ -150,6 +133,25 @@
     
     _DSSetUsingKeyValueSetter(self.container, _valueSetter, otherSet);
 }
+
+- (void)intersectSet:(NSSet *)otherSet {
+    NSMutableSet *setValue = [self _createMutableSetValueWithSelector:_cmd];
+    if(setValue) {
+        [setValue intersectSet:otherSet];
+        _DSSetUsingKeyValueSetter(self.container, _valueSetter, setValue);
+        [setValue release];
+    }
+}
+
+- (void)minusSet:(NSSet *)otherSet {
+    NSMutableSet *setValue = [self _createMutableSetValueWithSelector:_cmd];
+    if(setValue) {
+        [setValue minusSet:otherSet];
+        _DSSetUsingKeyValueSetter(self.container, _valueSetter, setValue);
+        [setValue release];
+    }
+}
+
 
 - (void)unionSet:(NSSet *)otherSet {
     NSMutableSet *setValue = [self _createMutableSetValueWithSelector:_cmd];

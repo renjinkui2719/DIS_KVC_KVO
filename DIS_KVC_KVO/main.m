@@ -10,6 +10,7 @@
 #import "DSKeyValueCodingCommon.h"
 #import "NSObject+DSKeyValueCoding.h"
 #import <limits.h>
+#import <objc/runtime.h>
 
 #define TEST_1(condition) {\
     printf("%s [%s:%d] => %s\n",(condition) ? "✅" : "❌", __FUNCTION__, __LINE__, #condition);\
@@ -38,6 +39,10 @@
 }
 @end
 
+#define NSArray_MutByContainer 1
+#define NSSet_MutByContainer 0
+#define NSOrderedSet_MutByContainer 1
+
 @interface A : NSObject
 
 @property (nonatomic, copy) NSString *identifier;
@@ -62,9 +67,9 @@
 @property (nonatomic, assign) CGRect CGRect_field;
 
 @property (nonatomic, strong) A *A_field;
-@property (nonatomic, strong) NSArray<A *> *NSArray_field;
-@property (nonatomic, strong) NSSet<A *> *NSSet_field;
-@property (nonatomic, strong) NSOrderedSet<A *> *NSOrderedSet_field;
+@property (nonatomic, strong) NSMutableArray<A *> *NSArray_field;
+@property (nonatomic, strong) NSMutableSet<A *> *NSSet_field;
+@property (nonatomic, strong) NSMutableOrderedSet<A *> *NSOrderedSet_field;
 
 @end
 @implementation A
@@ -80,7 +85,52 @@
     return _identifier.hash;
 }
 
+- (NSString *)description {
+    return  self.debugDescription;
+}
+
+- (NSString *)debugDescription {
+    return [NSString stringWithFormat:@"%@, identifier: %@", self, _identifier];
+}
+
+#if NSArray_MutByContainer
+
+- (void)insertObject:(A *)object inNSArray_fieldAtIndex:(NSUInteger)index {
+    [_NSArray_field insertObject:object atIndex:index];
+}
+
+- (void)removeObjectFromNSArray_fieldAtIndex:(NSUInteger)index {
+    [_NSArray_field removeObjectAtIndex:index];
+}
+
+#endif
+
+#if NSSet_MutByContainer
+
+- (void)addNSSet_fieldObject:(A *)object {
+    [_NSSet_field addObject:object];
+}
+
+- (void)removeNSSet_fieldObject:(A *)object {
+    [_NSSet_field removeObject:object];
+}
+
+#endif
+
+#if NSOrderedSet_MutByContainer
+
+- (void)insertObject:(A *)object inNSOrderedSet_fieldAtIndex:(NSUInteger)index {
+    [_NSOrderedSet_field insertObject:object atIndex:index];
+}
+
+- (void)removeObjectFromNSOrderedSet_fieldAtIndex:(NSUInteger)index {
+    [_NSOrderedSet_field removeObjectAtIndex:index];
+}
+
+#endif
+
 @end
+
 
 @interface A(Random)
 + (instancetype)random;
@@ -114,39 +164,34 @@
     a.CGRect_field = CGRectMake(arc4random()/100.0, arc4random()/100.0, arc4random()/100.0, arc4random()/100.0);
     return a;
 }
-
-- (NSString *)description {
-    return  self.debugDescription;
-}
-
-- (NSString *)debugDescription {
-    return [NSString stringWithFormat:@"%@, identifier: %@", _identifier];
-}
-
 @end
+
+
+
+
+
+static inline A* orderRandomA_1() {
+    static int order = 0;
+    return [A randomWithIdentifier:[NSString stringWithFormat:@"%06d", order ++]];
+}
+
+static inline A* orderRandomA_2() {
+    static int order = 0;
+    return [A randomWithIdentifier:[NSString stringWithFormat:@"%06d", order ++]];
+}
+
+#define OrderedA_1 (orderRandomA_1())
+#define OrderedA_2 (orderRandomA_2())
+
 
 void TestKVC();
 
 int main(int argc, const char * argv[]) {
     
-    A *a = A.random;
-    a.NSArray_field = @[];
-    NSMutableArray *mutArray = [a d_mutableArrayValueForKey:@"NSArray_field"];
-    [mutArray addObject:A.random];
-    [mutArray insertObject:A.random atIndex:0];
-    [mutArray insertObject:A.random atIndex:2];
-    [mutArray insertObjects:@[A.random,A.random,A.random,A.random,A.random,A.random,A.random,A.random,A.random] atIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(3, 9)]];
-    [mutArray removeObjectAtIndex:0];
-    [mutArray removeObjectAtIndex:mutArray.count - 1];
-    [mutArray removeObjectsAtIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(3, 3)]];
-    [mutArray removeLastObject];
-    [];
-    
-    //[mutArray ];
-    
+   
     NSLog(@"");
     
-    //TestKVC();
+    TestKVC();
 }
 
 
@@ -735,4 +780,1032 @@ void TestKVC() {
         TEST_1([defaults d_valueForKey:@"key1"] == nil);
         SEP_LINE
     }
+    
+    
+    {
+#if NSArray_MutByContainer
+        {
+            SEP_LINE
+            
+            A *a = A.random;
+            A *b = A.random;
+            
+            
+            NSMutableArray *mutArray_a = [a d_mutableArrayValueForKey:@"NSArray_field"];
+            NSMutableArray *mutArray_b = [b mutableArrayValueForKey:@"NSArray_field"];
+            
+            TEST_1((mutArray_a.class == NSClassFromString(@"DSKeyValueFastMutableArray2")) && (mutArray_b.class == NSClassFromString(@"NSKeyValueFastMutableArray2")));
+            
+            a.NSArray_field = @[];
+            b.NSArray_field = @[];
+            
+            {
+                NSException *catchException = nil;
+                @try {
+                    [mutArray_a addObject:OrderedA_1];
+                } @catch (NSException *exception) {
+                    catchException = exception;
+                } @finally {
+                    TEST_1([catchException.name isEqualToString:NSInvalidArgumentException])
+                }
+                
+                catchException = nil;
+                @try {
+                    [mutArray_b addObject:OrderedA_2];
+                } @catch (NSException *exception) {
+                    catchException = exception;
+                } @finally {
+                    TEST_1([catchException.name isEqualToString:NSInvalidArgumentException])
+                }
+            }
+            
+            a.NSArray_field = [NSMutableArray array];
+            b.NSArray_field = [NSMutableArray array];
+            
+            [mutArray_a addObject:OrderedA_1];
+            [mutArray_b addObject:OrderedA_2];
+            TEST_1([mutArray_a isEqualToArray:mutArray_b] && [a.NSArray_field isEqualToArray:b.NSArray_field]);
+            
+            [mutArray_a insertObject:OrderedA_1 atIndex:0];
+            [mutArray_b insertObject:OrderedA_2 atIndex:0];
+            TEST_1([mutArray_a isEqualToArray:mutArray_b] && [a.NSArray_field isEqualToArray:b.NSArray_field]);
+            
+            [mutArray_a insertObject:OrderedA_1 atIndex:2];
+            [mutArray_b insertObject:OrderedA_2 atIndex:2];
+            TEST_1([mutArray_a isEqualToArray:mutArray_b] && [a.NSArray_field isEqualToArray:b.NSArray_field]);
+            
+            [mutArray_a insertObjects:@[OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1] atIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(3, 9)]];
+            [mutArray_b insertObjects:@[OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2] atIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(3, 9)]];
+            TEST_1([mutArray_a isEqualToArray:mutArray_b] && [a.NSArray_field isEqualToArray:b.NSArray_field]);
+            
+            [mutArray_a removeObjectAtIndex:0];
+            [mutArray_b removeObjectAtIndex:0];
+            TEST_1([mutArray_a isEqualToArray:mutArray_b] && [a.NSArray_field isEqualToArray:b.NSArray_field]);
+            
+            [mutArray_a removeObjectAtIndex:mutArray_a.count - 1];
+            [mutArray_b removeObjectAtIndex:mutArray_b.count - 1];
+            TEST_1([mutArray_a isEqualToArray:mutArray_b] && [a.NSArray_field isEqualToArray:b.NSArray_field]);
+            
+            [mutArray_a removeObjectsAtIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(3, 3)]];
+            [mutArray_b removeObjectsAtIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(3, 3)]];
+            TEST_1([mutArray_a isEqualToArray:mutArray_b] && [a.NSArray_field isEqualToArray:b.NSArray_field]);
+            
+            [mutArray_a removeLastObject];
+            [mutArray_b removeLastObject];
+            TEST_1([mutArray_a isEqualToArray:mutArray_b] && [a.NSArray_field isEqualToArray:b.NSArray_field]);
+            
+            [mutArray_a replaceObjectAtIndex:0 withObject:OrderedA_1];
+            [mutArray_b replaceObjectAtIndex:0 withObject:OrderedA_2];
+            TEST_1([mutArray_a isEqualToArray:mutArray_b] && [a.NSArray_field isEqualToArray:b.NSArray_field]);
+            
+            [mutArray_a replaceObjectAtIndex:mutArray_a.count - 1 withObject:OrderedA_1];
+            [mutArray_b replaceObjectAtIndex:mutArray_b.count - 1 withObject:OrderedA_2];
+            TEST_1([mutArray_a isEqualToArray:mutArray_b] && [a.NSArray_field isEqualToArray:b.NSArray_field]);
+            
+            [mutArray_a replaceObjectAtIndex:3 withObject:OrderedA_1];
+            [mutArray_b replaceObjectAtIndex:3 withObject:OrderedA_2];
+            TEST_1([mutArray_a isEqualToArray:mutArray_b] && [a.NSArray_field isEqualToArray:b.NSArray_field]);
+            
+            [mutArray_a replaceObjectsAtIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(3, 3)] withObjects:@[OrderedA_1,OrderedA_1,OrderedA_1]];
+            [mutArray_b replaceObjectsAtIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(3, 3)] withObjects:@[OrderedA_2,OrderedA_2,OrderedA_2]];
+            TEST_1([mutArray_a isEqualToArray:mutArray_b] && [a.NSArray_field isEqualToArray:b.NSArray_field]);
+            
+            SEP_LINE
+        }
+#else
+        {
+            SEP_LINE
+            
+            A *a = A.random;
+            A *b = A.random;
+            
+            //以属性名获取代理Array
+            NSMutableArray *mutArray_a = [a d_mutableArrayValueForKey:@"NSArray_field"];
+            NSMutableArray *mutArray_b = [b mutableArrayValueForKey:@"NSArray_field"];
+            
+            TEST_1((mutArray_a.class == NSClassFromString(@"DSKeyValueSlowMutableArray")) && (mutArray_b.class == NSClassFromString(@"NSKeyValueSlowMutableArray")))
+            
+            {
+                //NSArray_field为nil，代理Array找不到原Array，应当报异常
+                
+                NSException *catchException = nil;
+                @try {
+                    [mutArray_a addObject:OrderedA_1];
+                } @catch (NSException *exception) {
+                    catchException = exception;
+                } @finally {
+                    TEST_1([catchException.name isEqualToString:NSInternalInconsistencyException])
+                }
+                
+                catchException = nil;
+                @try {
+                    [mutArray_b addObject:OrderedA_2];
+                } @catch (NSException *exception) {
+                    catchException = exception;
+                } @finally {
+                    TEST_1([catchException.name isEqualToString:NSInternalInconsistencyException])
+                }
+            }
+            
+            a.NSArray_field = @[];
+            b.NSArray_field = @[];
+            
+            [mutArray_a addObject:OrderedA_1];
+            [mutArray_b addObject:OrderedA_2];
+            TEST_1([mutArray_a isEqualToArray:mutArray_b] && [a.NSArray_field isEqualToArray:b.NSArray_field]);
+            
+            //在代理Array的操作下, NSArray_field 由原来的NSArray对象变为 NSMutableArray对象
+            TEST_1([a.NSArray_field isKindOfClass:NSMutableArray.self] && [b.NSArray_field isKindOfClass:NSMutableArray.self])
+            
+            [mutArray_a insertObject:OrderedA_1 atIndex:0];
+            [mutArray_b insertObject:OrderedA_2 atIndex:0];
+            TEST_1([mutArray_a isEqualToArray:mutArray_b] && [a.NSArray_field isEqualToArray:b.NSArray_field]);
+            
+            [mutArray_a insertObject:OrderedA_1 atIndex:2];
+            [mutArray_b insertObject:OrderedA_2 atIndex:2];
+            TEST_1([mutArray_a isEqualToArray:mutArray_b] && [a.NSArray_field isEqualToArray:b.NSArray_field]);
+            
+            [mutArray_a insertObjects:@[OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1] atIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(3, 9)]];
+            [mutArray_b insertObjects:@[OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2] atIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(3, 9)]];
+            TEST_1([mutArray_a isEqualToArray:mutArray_b] && [a.NSArray_field isEqualToArray:b.NSArray_field]);
+            
+            [mutArray_a removeObjectAtIndex:0];
+            [mutArray_b removeObjectAtIndex:0];
+            TEST_1([mutArray_a isEqualToArray:mutArray_b] && [a.NSArray_field isEqualToArray:b.NSArray_field]);
+            
+            [mutArray_a removeObjectAtIndex:mutArray_a.count - 1];
+            [mutArray_b removeObjectAtIndex:mutArray_b.count - 1];
+            TEST_1([mutArray_a isEqualToArray:mutArray_b] && [a.NSArray_field isEqualToArray:b.NSArray_field]);
+            
+            [mutArray_a removeObjectsAtIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(3, 3)]];
+            [mutArray_b removeObjectsAtIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(3, 3)]];
+            TEST_1([mutArray_a isEqualToArray:mutArray_b] && [a.NSArray_field isEqualToArray:b.NSArray_field]);
+            
+            [mutArray_a removeLastObject];
+            [mutArray_b removeLastObject];
+            TEST_1([mutArray_a isEqualToArray:mutArray_b] && [a.NSArray_field isEqualToArray:b.NSArray_field]);
+            
+            [mutArray_a replaceObjectAtIndex:0 withObject:OrderedA_1];
+            [mutArray_b replaceObjectAtIndex:0 withObject:OrderedA_2];
+            TEST_1([mutArray_a isEqualToArray:mutArray_b] && [a.NSArray_field isEqualToArray:b.NSArray_field]);
+            
+            [mutArray_a replaceObjectAtIndex:mutArray_a.count - 1 withObject:OrderedA_1];
+            [mutArray_b replaceObjectAtIndex:mutArray_b.count - 1 withObject:OrderedA_2];
+            TEST_1([mutArray_a isEqualToArray:mutArray_b] && [a.NSArray_field isEqualToArray:b.NSArray_field]);
+            
+            [mutArray_a replaceObjectAtIndex:3 withObject:OrderedA_1];
+            [mutArray_b replaceObjectAtIndex:3 withObject:OrderedA_2];
+            TEST_1([mutArray_a isEqualToArray:mutArray_b] && [a.NSArray_field isEqualToArray:b.NSArray_field]);
+            
+            [mutArray_a replaceObjectsAtIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(3, 3)] withObjects:@[OrderedA_1,OrderedA_1,OrderedA_1]];
+            [mutArray_b replaceObjectsAtIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(3, 3)] withObjects:@[OrderedA_2,OrderedA_2,OrderedA_2]];
+            TEST_1([mutArray_a isEqualToArray:mutArray_b] && [a.NSArray_field isEqualToArray:b.NSArray_field]);
+            
+            SEP_LINE
+        }
+        
+        
+#endif
+        
+        {
+            SEP_LINE
+            
+            A *a = A.random;
+            A *b = A.random;
+            
+            a.NSArray_field = @[];
+            b.NSArray_field = @[];
+            
+            //以实例变量名获取代理Array
+            NSMutableArray *mutArray_a = [a d_mutableArrayValueForKey:@"_NSArray_field"];
+            NSMutableArray *mutArray_b = [b mutableArrayValueForKey:@"_NSArray_field"];
+            
+            TEST_1((mutArray_a.class == NSClassFromString(@"DSKeyValueIvarMutableArray")) && (mutArray_b.class == NSClassFromString(@"NSKeyValueIvarMutableArray")))
+            
+            {
+                //代理Array不会把NSArray替换为NSMutableArray,因此报NSInvalidArgumentException异常
+                NSException *catchException = nil;
+                @try {
+                    [mutArray_a addObject:OrderedA_1];
+                } @catch (NSException *exception) {
+                    catchException = exception;
+                } @finally {
+                    TEST_1([catchException.name isEqualToString:NSInvalidArgumentException])
+                }
+                
+                catchException = nil;
+                @try {
+                    [mutArray_b addObject:OrderedA_2];
+                } @catch (NSException *exception) {
+                    catchException = exception;
+                } @finally {
+                    TEST_1([catchException.name isEqualToString:NSInvalidArgumentException])
+                }
+            }
+            
+            a.NSArray_field = nil;
+            b.NSArray_field = nil;
+            mutArray_a = [a d_mutableArrayValueForKey:@"_NSArray_field"];
+            mutArray_b = [b mutableArrayValueForKey:@"_NSArray_field"];
+            
+            [mutArray_a addObject:OrderedA_1];
+            [mutArray_b addObject:OrderedA_2];
+            
+            //如果原Array为nil，代理Array会创建NSMUtableArray替换原Array
+            TEST_1([a.NSArray_field isKindOfClass:NSMutableArray.self] && [b.NSArray_field isKindOfClass:NSMutableArray.self])
+            TEST_1([mutArray_a isEqualToArray:mutArray_b] && [a.NSArray_field isEqualToArray:b.NSArray_field]);
+            
+            a.NSArray_field = [NSMutableArray array];
+            b.NSArray_field = [NSMutableArray array];
+            
+            mutArray_a = [a d_mutableArrayValueForKey:@"_NSArray_field"];
+            mutArray_b = [b mutableArrayValueForKey:@"_NSArray_field"];
+            
+            [mutArray_a addObject:OrderedA_1];
+            [mutArray_b addObject:OrderedA_2];
+            TEST_1([mutArray_a isEqualToArray:mutArray_b] && [a.NSArray_field isEqualToArray:b.NSArray_field]);
+            
+            [mutArray_a insertObject:OrderedA_1 atIndex:0];
+            [mutArray_b insertObject:OrderedA_2 atIndex:0];
+            TEST_1([mutArray_a isEqualToArray:mutArray_b] && [a.NSArray_field isEqualToArray:b.NSArray_field]);
+            
+            [mutArray_a insertObject:OrderedA_1 atIndex:2];
+            [mutArray_b insertObject:OrderedA_2 atIndex:2];
+            TEST_1([mutArray_a isEqualToArray:mutArray_b] && [a.NSArray_field isEqualToArray:b.NSArray_field]);
+            
+            [mutArray_a insertObjects:@[OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1] atIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(3, 9)]];
+            [mutArray_b insertObjects:@[OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2] atIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(3, 9)]];
+            TEST_1([mutArray_a isEqualToArray:mutArray_b] && [a.NSArray_field isEqualToArray:b.NSArray_field]);
+            
+            [mutArray_a removeObjectAtIndex:0];
+            [mutArray_b removeObjectAtIndex:0];
+            TEST_1([mutArray_a isEqualToArray:mutArray_b] && [a.NSArray_field isEqualToArray:b.NSArray_field]);
+            
+            [mutArray_a removeObjectAtIndex:mutArray_a.count - 1];
+            [mutArray_b removeObjectAtIndex:mutArray_b.count - 1];
+            TEST_1([mutArray_a isEqualToArray:mutArray_b] && [a.NSArray_field isEqualToArray:b.NSArray_field]);
+            
+            [mutArray_a removeObjectsAtIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(3, 3)]];
+            [mutArray_b removeObjectsAtIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(3, 3)]];
+            TEST_1([mutArray_a isEqualToArray:mutArray_b] && [a.NSArray_field isEqualToArray:b.NSArray_field]);
+            
+            [mutArray_a removeLastObject];
+            [mutArray_b removeLastObject];
+            TEST_1([mutArray_a isEqualToArray:mutArray_b] && [a.NSArray_field isEqualToArray:b.NSArray_field]);
+            
+            [mutArray_a replaceObjectAtIndex:0 withObject:OrderedA_1];
+            [mutArray_b replaceObjectAtIndex:0 withObject:OrderedA_2];
+            TEST_1([mutArray_a isEqualToArray:mutArray_b] && [a.NSArray_field isEqualToArray:b.NSArray_field]);
+            
+            [mutArray_a replaceObjectAtIndex:mutArray_a.count - 1 withObject:OrderedA_1];
+            [mutArray_b replaceObjectAtIndex:mutArray_b.count - 1 withObject:OrderedA_2];
+            TEST_1([mutArray_a isEqualToArray:mutArray_b] && [a.NSArray_field isEqualToArray:b.NSArray_field]);
+            
+            [mutArray_a replaceObjectAtIndex:3 withObject:OrderedA_1];
+            [mutArray_b replaceObjectAtIndex:3 withObject:OrderedA_2];
+            TEST_1([mutArray_a isEqualToArray:mutArray_b] && [a.NSArray_field isEqualToArray:b.NSArray_field]);
+            
+            [mutArray_a replaceObjectsAtIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(3, 3)] withObjects:@[OrderedA_1,OrderedA_1,OrderedA_1]];
+            [mutArray_b replaceObjectsAtIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(3, 3)] withObjects:@[OrderedA_2,OrderedA_2,OrderedA_2]];
+            TEST_1([mutArray_a isEqualToArray:mutArray_b] && [a.NSArray_field isEqualToArray:b.NSArray_field]);
+            
+            SEP_LINE
+        }
+        
+    }
+    
+    
+    
+    {
+#if NSSet_MutByContainer
+        {
+            SEP_LINE
+            A *a = A.random;
+            A *b = A.random;
+            NSMutableSet *mutSet_a = [a d_mutableSetValueForKey:@"NSSet_field"];
+            NSMutableSet *mutSet_b = [b mutableSetValueForKey:@"NSSet_field"];
+            
+            TEST_1(mutSet_a.class == NSClassFromString(@"DSKeyValueFastMutableSet2") && mutSet_b.class == NSClassFromString(@"NSKeyValueFastMutableSet2"))
+            
+            a.NSSet_field = [NSSet set];
+            b.NSSet_field = [NSSet set];
+            
+            {
+                //NSSet_field为不可变，修改应当报异常
+                NSException *catchException = nil;
+                @try {
+                    [mutSet_a addObject:OrderedA_1];
+                } @catch (NSException *exception) {
+                    catchException = exception;
+                } @finally {
+                    TEST_1([catchException.name isEqualToString:NSInvalidArgumentException])
+                }
+                
+                catchException = nil;
+                @try {
+                    [mutSet_b addObject:OrderedA_2];
+                } @catch (NSException *exception) {
+                    catchException = exception;
+                } @finally {
+                    TEST_1([catchException.name isEqualToString:NSInvalidArgumentException])
+                }
+            }
+            
+            a.NSSet_field = [NSMutableSet set];
+            b.NSSet_field = [NSMutableSet set];
+            
+            [mutSet_a addObject:OrderedA_1];
+            [mutSet_b addObject:OrderedA_2];
+            TEST_1([mutSet_a isEqualToSet:mutSet_b]);
+            
+            [mutSet_a addObjectsFromArray:@[OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1]];
+            [mutSet_b addObjectsFromArray:@[OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2]];
+            TEST_1([mutSet_a isEqualToSet:mutSet_b]);
+            
+            TEST_1(mutSet_a.count == mutSet_b.count);
+            
+            {
+                id finder_a = OrderedA_1;
+                id finder_b = OrderedA_2;
+                
+                [mutSet_a addObject:finder_a];
+                [mutSet_b addObject:finder_b];
+                
+                TEST_1([[mutSet_a member:finder_a] isEqual: [mutSet_b member:finder_b]]);
+            }
+            
+            {
+                NSEnumerator *enumerator_a = mutSet_a.objectEnumerator;
+                NSEnumerator *enumerator_b = mutSet_b.objectEnumerator;
+                
+                TEST_1([enumerator_a.allObjects isEqualToArray:enumerator_b.allObjects]);
+            }
+            
+            {
+                id remove_a = OrderedA_1;
+                id remove_b = OrderedA_2;
+                
+                [mutSet_a addObject:remove_a];
+                [mutSet_b addObject:remove_b];
+                
+                TEST_1([mutSet_a member:remove_a] == remove_a && [mutSet_b member:remove_b] == remove_b);
+                
+                NSUInteger c = mutSet_a.count;
+                assert(c == mutSet_b.count);
+                
+                [mutSet_a removeObject:remove_a];
+                [mutSet_b removeObject:remove_b];
+                
+                assert(mutSet_b.count == mutSet_a.count && mutSet_a.count == c - 1);
+                
+                TEST_1([mutSet_a isEqualToSet:mutSet_b]);
+                
+                TEST_1([mutSet_a member:remove_a] == nil && [mutSet_b member:remove_b] == nil);
+            }
+            
+            [mutSet_a removeAllObjects];
+            [mutSet_b removeAllObjects];
+            TEST_1(mutSet_a.count == 0 && mutSet_b.count == 0);
+            
+            [mutSet_a setSet:[NSMutableSet setWithArray:@[OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1]]];
+            [mutSet_b setSet:[NSMutableSet setWithArray:@[OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2]]];
+            TEST_1([mutSet_a isEqualToSet:mutSet_b]);
+            
+            {
+                NSSet *set = [NSSet setWithArray:@[[A randomWithIdentifier:@"001"],[A randomWithIdentifier:@"002"],[A randomWithIdentifier:@"003"],[A randomWithIdentifier:@"004"],[A randomWithIdentifier:@"005"],[A randomWithIdentifier:@"006"],[A randomWithIdentifier:@"007"]]];
+                
+                [mutSet_a setSet:[NSMutableSet setWithArray:@[[A randomWithIdentifier:@"001"],[A randomWithIdentifier:@"002"],[A randomWithIdentifier:@"003"],[A randomWithIdentifier:@"004"],[A randomWithIdentifier:@"006"],[A randomWithIdentifier:@"008"],[A randomWithIdentifier:@"009"],[A randomWithIdentifier:@"010"]]]];
+                [mutSet_b setSet:[NSMutableSet setWithArray:@[[A randomWithIdentifier:@"001"],[A randomWithIdentifier:@"002"],[A randomWithIdentifier:@"003"],[A randomWithIdentifier:@"004"],[A randomWithIdentifier:@"006"],[A randomWithIdentifier:@"008"],[A randomWithIdentifier:@"009"],[A randomWithIdentifier:@"010"]]]];
+                
+                //设置 mutSet_a 为 mutSet_a 与 set的交集
+                [mutSet_a intersectSet:set];
+                //设置 mutSet_a 为 mutSet_a 与 set的交集
+                [mutSet_b intersectSet:set];
+                //操作结果相等
+                TEST_1([mutSet_a isEqualToSet:mutSet_b]);
+                
+                [mutSet_a setSet:[NSMutableSet setWithArray:@[[A randomWithIdentifier:@"001"],[A randomWithIdentifier:@"002"],[A randomWithIdentifier:@"003"],[A randomWithIdentifier:@"004"],[A randomWithIdentifier:@"006"],[A randomWithIdentifier:@"008"],[A randomWithIdentifier:@"009"],[A randomWithIdentifier:@"010"]]]];
+                [mutSet_b setSet:[NSMutableSet setWithArray:@[[A randomWithIdentifier:@"001"],[A randomWithIdentifier:@"002"],[A randomWithIdentifier:@"003"],[A randomWithIdentifier:@"004"],[A randomWithIdentifier:@"006"],[A randomWithIdentifier:@"008"],[A randomWithIdentifier:@"009"],[A randomWithIdentifier:@"010"]]]];
+                
+                
+                //设置 mutSet_a 为 mutSet_a 与 set的差集
+                [mutSet_a minusSet:set];
+                //设置 mutSet_a 为 mutSet_a 与 set的差集
+                [mutSet_b minusSet:set];
+                //操作结果相等
+                TEST_1([mutSet_a isEqualToSet:mutSet_b]);
+                
+                [mutSet_a setSet:[NSMutableSet setWithArray:@[[A randomWithIdentifier:@"001"],[A randomWithIdentifier:@"002"],[A randomWithIdentifier:@"003"],[A randomWithIdentifier:@"004"],[A randomWithIdentifier:@"006"],[A randomWithIdentifier:@"008"],[A randomWithIdentifier:@"009"],[A randomWithIdentifier:@"010"]]]];
+                [mutSet_b setSet:[NSMutableSet setWithArray:@[[A randomWithIdentifier:@"001"],[A randomWithIdentifier:@"002"],[A randomWithIdentifier:@"003"],[A randomWithIdentifier:@"004"],[A randomWithIdentifier:@"006"],[A randomWithIdentifier:@"008"],[A randomWithIdentifier:@"009"],[A randomWithIdentifier:@"010"]]]];
+                
+                
+                //设置 mutSet_a 为 mutSet_a 与 set的并集
+                [mutSet_a unionSet:set];
+                //设置 mutSet_a 为 mutSet_a 与 set的并集
+                [mutSet_b unionSet:set];
+                //操作结果相等
+                TEST_1([mutSet_a isEqualToSet:mutSet_b]);
+                
+            }
+            
+            SEP_LINE
+        }
+#else
+        {
+            SEP_LINE
+            A *a = A.random;
+            A *b = A.random;
+            NSMutableSet *mutSet_a = [a d_mutableSetValueForKey:@"NSSet_field"];
+            NSMutableSet *mutSet_b = [b mutableSetValueForKey:@"NSSet_field"];
+            
+            TEST_1(mutSet_a.class == NSClassFromString(@"DSKeyValueSlowMutableSet") && mutSet_b.class == NSClassFromString(@"NSKeyValueSlowMutableSet"))
+            
+            {
+                //NSSet_field为nil，代理Array找不到原Array，应当报异常
+                
+                NSException *catchException = nil;
+                @try {
+                    [mutSet_a addObject:OrderedA_1];
+                } @catch (NSException *exception) {
+                    catchException = exception;
+                } @finally {
+                    TEST_1([catchException.name isEqualToString:NSInternalInconsistencyException])
+                }
+                
+                catchException = nil;
+                @try {
+                    [mutSet_b addObject:OrderedA_2];
+                } @catch (NSException *exception) {
+                    catchException = exception;
+                } @finally {
+                    TEST_1([catchException.name isEqualToString:NSInternalInconsistencyException])
+                }
+            }
+            
+            a.NSSet_field = [NSSet set];
+            b.NSSet_field = [NSSet set];
+            
+            [mutSet_a addObject:OrderedA_1];
+            [mutSet_b addObject:OrderedA_2];
+            //代理将NSSet_field 由NSSet 变更为 NSMutableSet
+            TEST_1([a.NSSet_field isKindOfClass:NSMutableSet.self] && [b.NSSet_field isKindOfClass:NSMutableSet.self]);
+            TEST_1([mutSet_a isEqualToSet:mutSet_b]);
+            
+            [mutSet_a addObjectsFromArray:@[OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1]];
+            [mutSet_b addObjectsFromArray:@[OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2]];
+            TEST_1([mutSet_a isEqualToSet:mutSet_b]);
+            
+            TEST_1(mutSet_a.count == mutSet_b.count);
+            
+            {
+                id finder_a = OrderedA_1;
+                id finder_b = OrderedA_2;
+                
+                [mutSet_a addObject:finder_a];
+                [mutSet_b addObject:finder_b];
+                
+                TEST_1([[mutSet_a member:finder_a] isEqual: [mutSet_b member:finder_b]]);
+            }
+            
+            {
+                NSEnumerator *enumerator_a = mutSet_a.objectEnumerator;
+                NSEnumerator *enumerator_b = mutSet_b.objectEnumerator;
+                
+                TEST_1([enumerator_a.allObjects isEqualToArray:enumerator_b.allObjects]);
+            }
+            
+            {
+                id remove_a = OrderedA_1;
+                id remove_b = OrderedA_2;
+                
+                [mutSet_a addObject:remove_a];
+                [mutSet_b addObject:remove_b];
+                
+                TEST_1([mutSet_a member:remove_a] == remove_a && [mutSet_b member:remove_b] == remove_b);
+                
+                NSUInteger c = mutSet_a.count;
+                assert(c == mutSet_b.count);
+                
+                [mutSet_a removeObject:remove_a];
+                [mutSet_b removeObject:remove_b];
+                
+                assert(mutSet_b.count == mutSet_a.count && mutSet_a.count == c - 1);
+                
+                TEST_1([mutSet_a isEqualToSet:mutSet_b]);
+                
+                TEST_1([mutSet_a member:remove_a] == nil && [mutSet_b member:remove_b] == nil);
+            }
+            
+            [mutSet_a removeAllObjects];
+            [mutSet_b removeAllObjects];
+            TEST_1(mutSet_a.count == 0 && mutSet_b.count == 0);
+            
+            [mutSet_a setSet:[NSSet setWithArray:@[OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1]]];
+            [mutSet_b setSet:[NSSet setWithArray:@[OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2]]];
+            TEST_1([mutSet_a isEqualToSet:mutSet_b]);
+            
+            {
+                NSSet *set = [NSSet setWithArray:@[[A randomWithIdentifier:@"001"],[A randomWithIdentifier:@"002"],[A randomWithIdentifier:@"003"],[A randomWithIdentifier:@"004"],[A randomWithIdentifier:@"005"],[A randomWithIdentifier:@"006"],[A randomWithIdentifier:@"007"]]];
+                
+                [mutSet_a setSet:[NSSet setWithArray:@[[A randomWithIdentifier:@"001"],[A randomWithIdentifier:@"002"],[A randomWithIdentifier:@"003"],[A randomWithIdentifier:@"004"],[A randomWithIdentifier:@"006"],[A randomWithIdentifier:@"008"],[A randomWithIdentifier:@"009"],[A randomWithIdentifier:@"010"]]]];
+                [mutSet_b setSet:[NSSet setWithArray:@[[A randomWithIdentifier:@"001"],[A randomWithIdentifier:@"002"],[A randomWithIdentifier:@"003"],[A randomWithIdentifier:@"004"],[A randomWithIdentifier:@"006"],[A randomWithIdentifier:@"008"],[A randomWithIdentifier:@"009"],[A randomWithIdentifier:@"010"]]]];
+                
+                //设置 mutSet_a 为 mutSet_a 与 set的交集
+                [mutSet_a intersectSet:set];
+                //设置 mutSet_a 为 mutSet_a 与 set的交集
+                [mutSet_b intersectSet:set];
+                //操作结果相等
+                TEST_1([mutSet_a isEqualToSet:mutSet_b]);
+                
+                [mutSet_a setSet:[NSSet setWithArray:@[[A randomWithIdentifier:@"001"],[A randomWithIdentifier:@"002"],[A randomWithIdentifier:@"003"],[A randomWithIdentifier:@"004"],[A randomWithIdentifier:@"006"],[A randomWithIdentifier:@"008"],[A randomWithIdentifier:@"009"],[A randomWithIdentifier:@"010"]]]];
+                [mutSet_b setSet:[NSSet setWithArray:@[[A randomWithIdentifier:@"001"],[A randomWithIdentifier:@"002"],[A randomWithIdentifier:@"003"],[A randomWithIdentifier:@"004"],[A randomWithIdentifier:@"006"],[A randomWithIdentifier:@"008"],[A randomWithIdentifier:@"009"],[A randomWithIdentifier:@"010"]]]];
+                
+                
+                //设置 mutSet_a 为 mutSet_a 与 set的差集
+                [mutSet_a minusSet:set];
+                //设置 mutSet_a 为 mutSet_a 与 set的差集
+                [mutSet_b minusSet:set];
+                //操作结果相等
+                TEST_1([mutSet_a isEqualToSet:mutSet_b]);
+                
+                [mutSet_a setSet:[NSSet setWithArray:@[[A randomWithIdentifier:@"001"],[A randomWithIdentifier:@"002"],[A randomWithIdentifier:@"003"],[A randomWithIdentifier:@"004"],[A randomWithIdentifier:@"006"],[A randomWithIdentifier:@"008"],[A randomWithIdentifier:@"009"],[A randomWithIdentifier:@"010"]]]];
+                [mutSet_b setSet:[NSSet setWithArray:@[[A randomWithIdentifier:@"001"],[A randomWithIdentifier:@"002"],[A randomWithIdentifier:@"003"],[A randomWithIdentifier:@"004"],[A randomWithIdentifier:@"006"],[A randomWithIdentifier:@"008"],[A randomWithIdentifier:@"009"],[A randomWithIdentifier:@"010"]]]];
+                
+                
+                //设置 mutSet_a 为 mutSet_a 与 set的并集
+                [mutSet_a unionSet:set];
+                //设置 mutSet_a 为 mutSet_a 与 set的并集
+                [mutSet_b unionSet:set];
+                //操作结果相等
+                TEST_1([mutSet_a isEqualToSet:mutSet_b]);
+                
+            }
+            
+            SEP_LINE
+        }
+        
+#endif
+        {
+            SEP_LINE
+            A *a = A.random;
+            A *b = A.random;
+            NSMutableSet *mutSet_a = [a d_mutableSetValueForKey:@"_NSSet_field"];
+            NSMutableSet *mutSet_b = [b mutableSetValueForKey:@"_NSSet_field"];
+            
+            TEST_1(mutSet_a.class == NSClassFromString(@"DSKeyValueIvarMutableSet") && mutSet_b.class == NSClassFromString(@"NSKeyValueIvarMutableSet"))
+            
+            a.NSSet_field = [NSSet set];
+            b.NSSet_field = [NSSet set];
+            
+            {
+                //NSSet_field为不可变类型，修改报异常
+                
+                NSException *catchException = nil;
+                @try {
+                    [mutSet_a addObject:OrderedA_1];
+                } @catch (NSException *exception) {
+                    catchException = exception;
+                } @finally {
+                    TEST_1([catchException.name isEqualToString:NSInvalidArgumentException])
+                }
+                
+                catchException = nil;
+                @try {
+                    [mutSet_b addObject:OrderedA_2];
+                } @catch (NSException *exception) {
+                    catchException = exception;
+                } @finally {
+                    TEST_1([catchException.name isEqualToString:NSInvalidArgumentException])
+                }
+            }
+            
+            
+            a.NSSet_field = nil;
+            b.NSSet_field = nil;
+            
+            [mutSet_a addObject:OrderedA_1];
+            [mutSet_b addObject:OrderedA_2];
+            //代理会主动为NSSet_field创建NSMutableSet
+            TEST_1([a.NSSet_field isKindOfClass:NSMutableSet.self] && [a.NSSet_field  isEqualToSet:b.NSSet_field]);
+            
+            [mutSet_a addObject:OrderedA_1];
+            [mutSet_b addObject:OrderedA_2];
+            //代理将NSSet_field 由NSSet 变更为 NSMutableSet
+            TEST_1([a.NSSet_field isKindOfClass:NSMutableSet.self] && [b.NSSet_field isKindOfClass:NSMutableSet.self]);
+            TEST_1([mutSet_a isEqualToSet:mutSet_b]);
+            
+            [mutSet_a addObjectsFromArray:@[OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1]];
+            [mutSet_b addObjectsFromArray:@[OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2]];
+            TEST_1([mutSet_a isEqualToSet:mutSet_b]);
+            
+            TEST_1(mutSet_a.count == mutSet_b.count);
+            
+            {
+                id finder_a = OrderedA_1;
+                id finder_b = OrderedA_2;
+                
+                [mutSet_a addObject:finder_a];
+                [mutSet_b addObject:finder_b];
+                
+                TEST_1([[mutSet_a member:finder_a] isEqual: [mutSet_b member:finder_b]]);
+            }
+            
+            {
+                NSEnumerator *enumerator_a = mutSet_a.objectEnumerator;
+                NSEnumerator *enumerator_b = mutSet_b.objectEnumerator;
+                
+                TEST_1([enumerator_a.allObjects isEqualToArray:enumerator_b.allObjects]);
+            }
+            
+            {
+                id remove_a = OrderedA_1;
+                id remove_b = OrderedA_2;
+                
+                [mutSet_a addObject:remove_a];
+                [mutSet_b addObject:remove_b];
+                
+                TEST_1([mutSet_a member:remove_a] == remove_a && [mutSet_b member:remove_b] == remove_b);
+                
+                NSUInteger c = mutSet_a.count;
+                assert(c == mutSet_b.count);
+                
+                [mutSet_a removeObject:remove_a];
+                [mutSet_b removeObject:remove_b];
+                
+                assert(mutSet_b.count == mutSet_a.count && mutSet_a.count == c - 1);
+                
+                TEST_1([mutSet_a isEqualToSet:mutSet_b]);
+                
+                TEST_1([mutSet_a member:remove_a] == nil && [mutSet_b member:remove_b] == nil);
+            }
+            
+            [mutSet_a removeAllObjects];
+            [mutSet_b removeAllObjects];
+            TEST_1(mutSet_a.count == 0 && mutSet_b.count == 0);
+            
+            [mutSet_a setSet:[NSSet setWithArray:@[OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1]]];
+            [mutSet_b setSet:[NSSet setWithArray:@[OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2]]];
+            TEST_1([mutSet_a isEqualToSet:mutSet_b]);
+            
+            {
+                NSSet *set = [NSSet setWithArray:@[[A randomWithIdentifier:@"001"],[A randomWithIdentifier:@"002"],[A randomWithIdentifier:@"003"],[A randomWithIdentifier:@"004"],[A randomWithIdentifier:@"005"],[A randomWithIdentifier:@"006"],[A randomWithIdentifier:@"007"]]];
+                
+                [mutSet_a setSet:[NSSet setWithArray:@[[A randomWithIdentifier:@"001"],[A randomWithIdentifier:@"002"],[A randomWithIdentifier:@"003"],[A randomWithIdentifier:@"004"],[A randomWithIdentifier:@"006"],[A randomWithIdentifier:@"008"],[A randomWithIdentifier:@"009"],[A randomWithIdentifier:@"010"]]]];
+                [mutSet_b setSet:[NSSet setWithArray:@[[A randomWithIdentifier:@"001"],[A randomWithIdentifier:@"002"],[A randomWithIdentifier:@"003"],[A randomWithIdentifier:@"004"],[A randomWithIdentifier:@"006"],[A randomWithIdentifier:@"008"],[A randomWithIdentifier:@"009"],[A randomWithIdentifier:@"010"]]]];
+                
+                //设置 mutSet_a 为 mutSet_a 与 set的交集
+                [mutSet_a intersectSet:set];
+                //设置 mutSet_a 为 mutSet_a 与 set的交集
+                [mutSet_b intersectSet:set];
+                //操作结果相等
+                TEST_1([mutSet_a isEqualToSet:mutSet_b]);
+                
+                [mutSet_a setSet:[NSSet setWithArray:@[[A randomWithIdentifier:@"001"],[A randomWithIdentifier:@"002"],[A randomWithIdentifier:@"003"],[A randomWithIdentifier:@"004"],[A randomWithIdentifier:@"006"],[A randomWithIdentifier:@"008"],[A randomWithIdentifier:@"009"],[A randomWithIdentifier:@"010"]]]];
+                [mutSet_b setSet:[NSSet setWithArray:@[[A randomWithIdentifier:@"001"],[A randomWithIdentifier:@"002"],[A randomWithIdentifier:@"003"],[A randomWithIdentifier:@"004"],[A randomWithIdentifier:@"006"],[A randomWithIdentifier:@"008"],[A randomWithIdentifier:@"009"],[A randomWithIdentifier:@"010"]]]];
+                
+                
+                //设置 mutSet_a 为 mutSet_a 与 set的差集
+                [mutSet_a minusSet:set];
+                //设置 mutSet_a 为 mutSet_a 与 set的差集
+                [mutSet_b minusSet:set];
+                //操作结果相等
+                TEST_1([mutSet_a isEqualToSet:mutSet_b]);
+                
+                [mutSet_a setSet:[NSSet setWithArray:@[[A randomWithIdentifier:@"001"],[A randomWithIdentifier:@"002"],[A randomWithIdentifier:@"003"],[A randomWithIdentifier:@"004"],[A randomWithIdentifier:@"006"],[A randomWithIdentifier:@"008"],[A randomWithIdentifier:@"009"],[A randomWithIdentifier:@"010"]]]];
+                [mutSet_b setSet:[NSSet setWithArray:@[[A randomWithIdentifier:@"001"],[A randomWithIdentifier:@"002"],[A randomWithIdentifier:@"003"],[A randomWithIdentifier:@"004"],[A randomWithIdentifier:@"006"],[A randomWithIdentifier:@"008"],[A randomWithIdentifier:@"009"],[A randomWithIdentifier:@"010"]]]];
+                
+                
+                //设置 mutSet_a 为 mutSet_a 与 set的并集
+                [mutSet_a unionSet:set];
+                //设置 mutSet_a 为 mutSet_a 与 set的并集
+                [mutSet_b unionSet:set];
+                //操作结果相等
+                TEST_1([mutSet_a isEqualToSet:mutSet_b]);
+                
+            }
+            
+            SEP_LINE
+        }
+    }
+    
+    
+    {
+#if NSOrderedSet_MutByContainer
+        {
+            SEP_LINE
+            
+            A *a = A.random;
+            A *b = A.random;
+            
+            NSMutableOrderedSet *mutOrderSet_a = [a d_mutableOrderedSetValueForKey:@"NSOrderedSet_field"];
+            NSMutableOrderedSet *mutOrderSet_b = [b mutableOrderedSetValueForKey:@"NSOrderedSet_field"];
+            
+            TEST_1((mutOrderSet_a.class == NSClassFromString(@"DSKeyValueFastMutableOrderedSet2")) && (mutOrderSet_b.class == NSClassFromString(@"NSKeyValueFastMutableOrderedSet2")));
+            
+            [mutOrderSet_a insertObject:OrderedA_1 atIndex:0];
+            [mutOrderSet_b insertObject:OrderedA_2 atIndex:0];
+            //NSOrderedSet_field为nil，insertObject无影响
+            TEST_1(a.NSOrderedSet_field == nil && b.NSOrderedSet_field == nil);
+            
+            {
+                a.NSOrderedSet_field = [NSOrderedSet orderedSet];
+                b.NSOrderedSet_field = [NSOrderedSet orderedSet];
+                
+                //NSSet_field为不可变，修改报异常
+                
+                NSException *catchException = nil;
+                @try {
+                    [mutOrderSet_a insertObject:OrderedA_1 atIndex:0];
+                } @catch (NSException *exception) {
+                    catchException = exception;
+                } @finally {
+                    TEST_1([catchException.name isEqualToString:NSInvalidArgumentException])
+                }
+                
+                catchException = nil;
+                @try {
+                    [mutOrderSet_b insertObject:OrderedA_2 atIndex:0];
+                } @catch (NSException *exception) {
+                    catchException = exception;
+                } @finally {
+                    TEST_1([catchException.name isEqualToString:NSInvalidArgumentException])
+                }
+            }
+            
+            a.NSOrderedSet_field = [NSMutableOrderedSet orderedSet];
+            b.NSOrderedSet_field = [NSMutableOrderedSet orderedSet];
+            
+            [mutOrderSet_a insertObject:OrderedA_1 atIndex:0];
+            [mutOrderSet_b insertObject:OrderedA_2 atIndex:0];
+            TEST_1([mutOrderSet_a isEqualToOrderedSet:mutOrderSet_b]);
+            
+            [mutOrderSet_a insertObjects:@[OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1] atIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, 15)]];
+            [mutOrderSet_b insertObjects:@[OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2] atIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, 15)]];
+            TEST_1([mutOrderSet_a isEqualToOrderedSet:mutOrderSet_b]);
+            
+            TEST_1(mutOrderSet_a.count == mutOrderSet_b.count);
+            
+            [mutOrderSet_a removeObjectAtIndex:0];
+            [mutOrderSet_b removeObjectAtIndex:0];
+            TEST_1([mutOrderSet_a isEqualToOrderedSet:mutOrderSet_b]);
+            
+            [mutOrderSet_a removeObjectAtIndex:mutOrderSet_a.count - 1];
+            [mutOrderSet_b removeObjectAtIndex:mutOrderSet_b.count - 1];
+            TEST_1([mutOrderSet_a isEqualToOrderedSet:mutOrderSet_b]);
+            
+            [mutOrderSet_a removeObjectsAtIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(3, 4)]];
+            [mutOrderSet_b removeObjectsAtIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(3, 4)]];
+            TEST_1([mutOrderSet_a isEqualToOrderedSet:mutOrderSet_b]);
+            
+            [mutOrderSet_a replaceObjectAtIndex:2 withObject:OrderedA_1];
+            [mutOrderSet_b replaceObjectAtIndex:2 withObject:OrderedA_2];
+            TEST_1([mutOrderSet_a isEqualToOrderedSet:mutOrderSet_b]);
+            
+            [mutOrderSet_a replaceObjectsAtIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(4, 5)] withObjects:@[OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1]];
+            [mutOrderSet_b replaceObjectsAtIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(4, 5)] withObjects:@[OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2]];
+            TEST_1([mutOrderSet_a isEqualToOrderedSet:mutOrderSet_b]);
+            
+            {
+                id objs_a[5];
+                id objs_b[5];
+                
+                [mutOrderSet_a getObjects:objs_a range:NSMakeRange(3, 5)];
+                [mutOrderSet_b getObjects:objs_b range:NSMakeRange(3, 5)];
+                
+                BOOL all_equal_in_range = YES;
+                for (NSInteger i=0; i < 5; ++i) {
+                    if (![objs_a[i] isEqual:objs_b[i]]) {
+                        all_equal_in_range = NO;
+                        break;
+                    }
+                }
+                
+                TEST_1(all_equal_in_range);
+            }
+            
+            {
+                id finder_a = OrderedA_1;
+                id finder_b = OrderedA_2;
+                
+                [mutOrderSet_a insertObject:finder_a atIndex:4];
+                [mutOrderSet_b insertObject:finder_b atIndex:4];
+                
+                TEST_1([mutOrderSet_a indexOfObject:finder_a] == 4 && [mutOrderSet_b indexOfObject:finder_a] == 4);
+            }
+            
+            TEST_1([[mutOrderSet_a objectsAtIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, 8)]] isEqualToArray:[mutOrderSet_b objectsAtIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, 8)]]])
+            
+            SEP_LINE
+        }
+#else
+        
+        {
+            SEP_LINE
+            
+            A *a = A.random;
+            A *b = A.random;
+            
+            NSMutableOrderedSet *mutOrderSet_a = [a d_mutableOrderedSetValueForKey:@"NSOrderedSet_field"];
+            NSMutableOrderedSet *mutOrderSet_b = [b mutableOrderedSetValueForKey:@"NSOrderedSet_field"];
+            
+            TEST_1((mutOrderSet_a.class == NSClassFromString(@"DSKeyValueSlowMutableOrderedSet")) && (mutOrderSet_b.class == NSClassFromString(@"NSKeyValueSlowMutableOrderedSet")));
+            
+            {
+                //NSSet_field为nil，代理找不到原对象报异常
+                
+                NSException *catchException = nil;
+                @try {
+                    [mutOrderSet_a insertObject:OrderedA_1 atIndex:0];
+                } @catch (NSException *exception) {
+                    catchException = exception;
+                } @finally {
+                    TEST_1([catchException.name isEqualToString:NSInternalInconsistencyException])
+                }
+                
+                catchException = nil;
+                @try {
+                    [mutOrderSet_b insertObject:OrderedA_2 atIndex:0];
+                } @catch (NSException *exception) {
+                    catchException = exception;
+                } @finally {
+                    TEST_1([catchException.name isEqualToString:NSInternalInconsistencyException])
+                }
+            }
+            
+            a.NSOrderedSet_field = [NSOrderedSet orderedSet];
+            b.NSOrderedSet_field = [NSOrderedSet orderedSet];
+            
+            [mutOrderSet_a insertObject:OrderedA_1 atIndex:0];
+            [mutOrderSet_b insertObject:OrderedA_2 atIndex:0];
+            
+            //代理将NSOrderedSet_field 由不可变类型更改为可变类型
+            TEST_1([a.NSOrderedSet_field isKindOfClass:NSMutableOrderedSet.self] && [b.NSOrderedSet_field isKindOfClass:NSMutableOrderedSet.self] && [mutOrderSet_a isEqualToOrderedSet:mutOrderSet_b]);
+            
+            [mutOrderSet_a insertObjects:@[OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1] atIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, 15)]];
+            [mutOrderSet_b insertObjects:@[OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2] atIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, 15)]];
+            TEST_1([mutOrderSet_a isEqualToOrderedSet:mutOrderSet_b]);
+            
+            TEST_1(mutOrderSet_a.count == mutOrderSet_b.count);
+            
+            [mutOrderSet_a removeObjectAtIndex:0];
+            [mutOrderSet_b removeObjectAtIndex:0];
+            TEST_1([mutOrderSet_a isEqualToOrderedSet:mutOrderSet_b]);
+            
+            [mutOrderSet_a removeObjectAtIndex:mutOrderSet_a.count - 1];
+            [mutOrderSet_b removeObjectAtIndex:mutOrderSet_b.count - 1];
+            TEST_1([mutOrderSet_a isEqualToOrderedSet:mutOrderSet_b]);
+            
+            [mutOrderSet_a removeObjectsAtIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(3, 4)]];
+            [mutOrderSet_b removeObjectsAtIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(3, 4)]];
+            TEST_1([mutOrderSet_a isEqualToOrderedSet:mutOrderSet_b]);
+            
+            [mutOrderSet_a replaceObjectAtIndex:2 withObject:OrderedA_1];
+            [mutOrderSet_b replaceObjectAtIndex:2 withObject:OrderedA_2];
+            TEST_1([mutOrderSet_a isEqualToOrderedSet:mutOrderSet_b]);
+            
+            [mutOrderSet_a replaceObjectsAtIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(4, 5)] withObjects:@[OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1]];
+            [mutOrderSet_b replaceObjectsAtIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(4, 5)] withObjects:@[OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2]];
+            TEST_1([mutOrderSet_a isEqualToOrderedSet:mutOrderSet_b]);
+            
+            {
+                id objs_a[5];
+                id objs_b[5];
+                
+                [mutOrderSet_a getObjects:objs_a range:NSMakeRange(3, 5)];
+                [mutOrderSet_b getObjects:objs_b range:NSMakeRange(3, 5)];
+                
+                BOOL all_equal_in_range = YES;
+                for (NSInteger i=0; i < 5; ++i) {
+                    if (![objs_a[i] isEqual:objs_b[i]]) {
+                        all_equal_in_range = NO;
+                        break;
+                    }
+                }
+                
+                TEST_1(all_equal_in_range);
+            }
+            
+            {
+                id finder_a = OrderedA_1;
+                id finder_b = OrderedA_2;
+                
+                [mutOrderSet_a insertObject:finder_a atIndex:4];
+                [mutOrderSet_b insertObject:finder_b atIndex:4];
+                
+                TEST_1([mutOrderSet_a indexOfObject:finder_a] == 4 && [mutOrderSet_b indexOfObject:finder_a] == 4);
+            }
+            
+            TEST_1([[mutOrderSet_a objectsAtIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, 8)]] isEqualToArray:[mutOrderSet_b objectsAtIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, 8)]]])
+            
+            SEP_LINE
+        }
+#endif
+        {
+            SEP_LINE
+            
+            A *a = A.random;
+            A *b = A.random;
+            
+            NSMutableOrderedSet *mutOrderSet_a = [a d_mutableOrderedSetValueForKey:@"_NSOrderedSet_field"];
+            NSMutableOrderedSet *mutOrderSet_b = [b mutableOrderedSetValueForKey:@"_NSOrderedSet_field"];
+            
+            TEST_1((mutOrderSet_a.class == NSClassFromString(@"DSKeyValueIvarMutableOrderedSet")) && (mutOrderSet_b.class == NSClassFromString(@"NSKeyValueIvarMutableOrderedSet")));
+            
+            [mutOrderSet_a insertObject:OrderedA_1 atIndex:0];
+            [mutOrderSet_b insertObject:OrderedA_2 atIndex:0];
+            //NSOrderedSet_field为nil， 代理为NSOrderedSet_field创建新的NSMutableOrderedSet
+            TEST_1([a.NSOrderedSet_field isKindOfClass:NSMutableOrderedSet.self] && [b.NSOrderedSet_field isKindOfClass:NSMutableOrderedSet.self] && [mutOrderSet_a isEqualToOrderedSet:mutOrderSet_b]);
+            
+            {
+                a.NSOrderedSet_field  = [NSOrderedSet orderedSet];
+                b.NSOrderedSet_field  = [NSOrderedSet orderedSet];
+                
+                //NSOrderedSet_field为不可变类型，更改报异常
+                
+                NSException *catchException = nil;
+                @try {
+                    [mutOrderSet_a insertObject:OrderedA_1 atIndex:0];
+                } @catch (NSException *exception) {
+                    catchException = exception;
+                } @finally {
+                    TEST_1([catchException.name isEqualToString:NSInvalidArgumentException])
+                }
+                
+                catchException = nil;
+                @try {
+                    [mutOrderSet_b insertObject:OrderedA_2 atIndex:0];
+                } @catch (NSException *exception) {
+                    catchException = exception;
+                } @finally {
+                    TEST_1([catchException.name isEqualToString:NSInvalidArgumentException])
+                }
+            }
+            
+            a.NSOrderedSet_field  = [NSMutableOrderedSet orderedSet];
+            b.NSOrderedSet_field  = [NSMutableOrderedSet orderedSet];
+            
+            [mutOrderSet_a insertObject:OrderedA_1 atIndex:0];
+            [mutOrderSet_b insertObject:OrderedA_2 atIndex:0];
+            TEST_1([mutOrderSet_a isEqualToOrderedSet:mutOrderSet_b]);
+            
+            [mutOrderSet_a insertObjects:@[OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1] atIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, 15)]];
+            [mutOrderSet_b insertObjects:@[OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2] atIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, 15)]];
+            TEST_1([mutOrderSet_a isEqualToOrderedSet:mutOrderSet_b]);
+            
+            TEST_1(mutOrderSet_a.count == mutOrderSet_b.count);
+            
+            [mutOrderSet_a removeObjectAtIndex:0];
+            [mutOrderSet_b removeObjectAtIndex:0];
+            TEST_1([mutOrderSet_a isEqualToOrderedSet:mutOrderSet_b]);
+            
+            [mutOrderSet_a removeObjectAtIndex:mutOrderSet_a.count - 1];
+            [mutOrderSet_b removeObjectAtIndex:mutOrderSet_b.count - 1];
+            TEST_1([mutOrderSet_a isEqualToOrderedSet:mutOrderSet_b]);
+            
+            [mutOrderSet_a removeObjectsAtIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(3, 4)]];
+            [mutOrderSet_b removeObjectsAtIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(3, 4)]];
+            TEST_1([mutOrderSet_a isEqualToOrderedSet:mutOrderSet_b]);
+            
+            [mutOrderSet_a replaceObjectAtIndex:2 withObject:OrderedA_1];
+            [mutOrderSet_b replaceObjectAtIndex:2 withObject:OrderedA_2];
+            TEST_1([mutOrderSet_a isEqualToOrderedSet:mutOrderSet_b]);
+            
+            [mutOrderSet_a replaceObjectsAtIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(4, 5)] withObjects:@[OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1]];
+            [mutOrderSet_b replaceObjectsAtIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(4, 5)] withObjects:@[OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2]];
+            TEST_1([mutOrderSet_a isEqualToOrderedSet:mutOrderSet_b]);
+            
+            {
+                id objs_a[5];
+                id objs_b[5];
+                
+                [mutOrderSet_a getObjects:objs_a range:NSMakeRange(3, 5)];
+                [mutOrderSet_b getObjects:objs_b range:NSMakeRange(3, 5)];
+                
+                BOOL all_equal_in_range = YES;
+                for (NSInteger i=0; i < 5; ++i) {
+                    if (![objs_a[i] isEqual:objs_b[i]]) {
+                        all_equal_in_range = NO;
+                        break;
+                    }
+                }
+                
+                TEST_1(all_equal_in_range);
+            }
+            
+            {
+                id finder_a = OrderedA_1;
+                id finder_b = OrderedA_2;
+                
+                [mutOrderSet_a insertObject:finder_a atIndex:4];
+                [mutOrderSet_b insertObject:finder_b atIndex:4];
+                
+                TEST_1([mutOrderSet_a indexOfObject:finder_a] == 4 && [mutOrderSet_b indexOfObject:finder_a] == 4);
+            }
+            
+            TEST_1([[mutOrderSet_a objectsAtIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, 8)]] isEqualToArray:[mutOrderSet_b objectsAtIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, 8)]]])
+            
+            SEP_LINE
+        }
+    }
+
 }

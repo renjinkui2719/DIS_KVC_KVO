@@ -149,7 +149,7 @@ extern NSString * _NSMethodExceptionProem(id,SEL);
 
 
 - (void)removeLastObject {
-    NSMutableArray *arrayValue = [self _nonNilArrayValueWithSelector:_cmd];
+    NSMutableArray *arrayValue = [self _createNonNilMutableArrayValueWithSelector:_cmd];
     [arrayValue removeLastObject];
     _DSSetUsingKeyValueSetter(self.container, _valueSetter, arrayValue);
     [arrayValue release];
@@ -157,28 +157,28 @@ extern NSString * _NSMethodExceptionProem(id,SEL);
 
 
 - (void)removeObjectAtIndex:(NSUInteger)index {
-    NSMutableArray *arrayValue = [self _nonNilArrayValueWithSelector:_cmd];
+    NSMutableArray *arrayValue = [self _createNonNilMutableArrayValueWithSelector:_cmd];
     [arrayValue removeObjectAtIndex:index];
     _DSSetUsingKeyValueSetter(self.container, _valueSetter, arrayValue);
     [arrayValue release];
 }
 
 - (void)removeObjectsAtIndexes:(NSIndexSet *)indexes {
-    NSMutableArray *arrayValue = [self _nonNilArrayValueWithSelector:_cmd];
+    NSMutableArray *arrayValue = [self _createNonNilMutableArrayValueWithSelector:_cmd];
     [arrayValue removeObjectsAtIndexes:indexes];
     _DSSetUsingKeyValueSetter(self.container, _valueSetter, arrayValue);
     [arrayValue release];
 }
 
 - (void)replaceObjectAtIndex:(NSUInteger)index withObject:(id)anObject {
-    NSMutableArray *arrayValue = [self _nonNilArrayValueWithSelector:_cmd];
+    NSMutableArray *arrayValue = [self _createNonNilMutableArrayValueWithSelector:_cmd];
     [arrayValue replaceObjectAtIndex:index withObject:anObject];
     _DSSetUsingKeyValueSetter(self.container, _valueSetter, arrayValue);
     [arrayValue release];
 }
 
 - (void)replaceObjectsAtIndexes:(NSIndexSet *)indexes withObjects:(NSArray *)objects {
-    NSMutableArray *arrayValue = [self _nonNilArrayValueWithSelector:_cmd];
+    NSMutableArray *arrayValue = [self _createNonNilMutableArrayValueWithSelector:_cmd];
     [arrayValue replaceObjectsAtIndexes:indexes withObjects:objects];
     _DSSetUsingKeyValueSetter(self.container, _valueSetter, arrayValue);
     [arrayValue release];

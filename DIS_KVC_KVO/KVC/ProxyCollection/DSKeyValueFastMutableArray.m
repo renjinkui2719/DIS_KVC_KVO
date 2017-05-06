@@ -11,13 +11,15 @@
 #import "DSKeyValueNonmutatingArrayMethodSet.h"
 #import "NSObject+DSKeyValueCodingPrivate.h"
 #import "DSKeyValueCodingCommon.h"
-#import <objc/message.h>
+#import "DSKeyValueFastMutableCollection1Getter.h"
+#import "DSKeyValueFastMutableCollection2Getter.h"
+
 
 @implementation DSKeyValueFastMutableArray
 
 - (id)_proxyInitWithContainer:(id)container getter:(DSKeyValueGetter *)getter {
     if ((self = [super _proxyInitWithContainer:container getter:getter])) {
-        _mutatingMethods = [[getter mutatingMethods] retain];
+        _mutatingMethods = [(DSKeyValueMutatingArrayMethodSet *)[getter mutatingMethods] retain];
     }
     return self;
 }
@@ -109,9 +111,9 @@
 
 @implementation DSKeyValueFastMutableArray1
 
-- (id)_proxyInitWithContainer:(id)container getter:(DSKeyValueGetter *)getter {
+- (id)_proxyInitWithContainer:(id)container getter:(DSKeyValueFastMutableCollection1Getter *)getter {
     if ((self = [super _proxyInitWithContainer:container getter:getter])) {
-        _nonmutatingMethods = [[getter nonmutatingMethods] retain];
+        _nonmutatingMethods = [(DSKeyValueNonmutatingArrayMethodSet *)[getter nonmutatingMethods] retain];
     }
     return self;
 }
@@ -164,7 +166,7 @@
 @end
 
 @implementation DSKeyValueFastMutableArray2
-- (id)_proxyInitWithContainer:(id)container getter:(DSKeyValueGetter *)getter {
+- (id)_proxyInitWithContainer:(id)container getter:(DSKeyValueFastMutableCollection2Getter *)getter {
     if ((self = [super _proxyInitWithContainer:container getter:getter])) {
         _valueGetter = [[getter baseGetter] retain];
     }

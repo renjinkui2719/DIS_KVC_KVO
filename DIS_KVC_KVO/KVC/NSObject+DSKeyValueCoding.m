@@ -48,7 +48,7 @@
         finder.hashValue = CFHash(key) ^ (NSUInteger)(self.class);
         DSKeyValueGetter *getter =  CFSetGetValue(DSKeyValueCachedGetters, finder);
         if (!getter) {
-            getter = [self.class _createValueGetterWithContainerClassID:self.class key:key];
+            getter = [self.class _d_createValueGetterWithContainerClassID:self.class key:key];
             CFSetAddValue(DSKeyValueCachedGetters, getter);
         }
         OSSpinLockUnlock(&DSKeyValueCachedAccessorSpinLock);
@@ -125,7 +125,7 @@
         finder.hashValue = CFHash((CFTypeRef)key) ^ (NSUInteger)(self.class);
         DSKeyValueSetter *setter =  CFSetGetValue(DSKeyValueCachedSetters, (void *)finder);
         if (!setter) {
-            setter = [self.class _createValueSetterWithContainerClassID:self.class key:key];
+            setter = [self.class _d_createValueSetterWithContainerClassID:self.class key:key];
             CFSetAddValue(DSKeyValueCachedSetters, (void*)setter);
         }
 
@@ -374,7 +374,7 @@
 
 - (NSMutableArray *)d_mutableArrayValueForKey:(NSString *)key {
     return [self _d_mutableColelctionValueForKey:key cache:&DSKeyValueCachedMutableArrayGetters getterCrateBlock:^DSKeyValueGetter *(Class containerClassID, NSString *key) {
-        return [self.class _createMutableArrayValueGetterWithContainerClassID:containerClassID key:key];
+        return [self.class _d_createMutableArrayValueGetterWithContainerClassID:containerClassID key:key];
     }];
 }
 
@@ -386,7 +386,7 @@
 
 - (NSMutableOrderedSet *)d_mutableOrderedSetValueForKey:(NSString *)key {
     return [self _d_mutableColelctionValueForKey:key cache:&DSKeyValueCachedMutableOrderedSetGetters getterCrateBlock:^DSKeyValueGetter *(Class containerClassID, NSString *key) {
-        return [self.class _createMutableOrderedSetValueGetterWithContainerClassID:containerClassID key:key];
+        return [self.class _d_createMutableOrderedSetValueGetterWithContainerClassID:containerClassID key:key];
     }];
 }
 
@@ -398,7 +398,7 @@
 
 - (NSMutableSet *)d_mutableSetValueForKey:(NSString *)key {
     return [self _d_mutableColelctionValueForKey:key cache:&DSKeyValueCachedMutableSetGetters getterCrateBlock:^DSKeyValueGetter *(Class containerClassID, NSString *key) {
-        return [self.class _createMutableSetValueGetterWithContainerClassID:containerClassID key:key];
+        return [self.class _d_createMutableSetValueGetterWithContainerClassID:containerClassID key:key];
     }];
 }
 

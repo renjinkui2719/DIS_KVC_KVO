@@ -8,12 +8,12 @@
 
 #import "DSKeyValueIvarMutableArray.h"
 #import "DSKeyValueCodingCommon.h"
-#import "DSKeyValueGetter.h"
+#import "DSKeyValueIvarMutableCollectionGetter.h"
 
 
 @implementation DSKeyValueIvarMutableArray
 
-- (id)_proxyInitWithContainer:(id)container getter:(DSKeyValueGetter *)getter {
+- (id)_proxyInitWithContainer:(id)container getter:(DSKeyValueIvarMutableCollectionGetter *)getter {
     if ((self = [super _proxyInitWithContainer:container getter:getter])) {
         _ivar = [getter ivar];
     }
@@ -65,6 +65,7 @@
     }
     else {
         arrayValue = [[NSMutableArray alloc] initWithObjects:&anObject count:1];
+        id o = arrayValue[0];
         object_setIvarDirectly(self.container, _ivar, arrayValue);
     }
 }

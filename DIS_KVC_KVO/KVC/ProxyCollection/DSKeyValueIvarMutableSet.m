@@ -8,7 +8,7 @@
 
 #import "DSKeyValueIvarMutableSet.h"
 #import "DSKeyValueNilSetEnumerator.h"
-#import <objc/runtime.h>
+#import "DSKeyValueCodingCommon.h"
 
 @implementation DSKeyValueIvarMutableSet
 
@@ -25,22 +25,23 @@
 }
 
 + (DSKeyValueProxyNonGCPoolPointer *)_proxyNonGCPoolPointer {
-    static DSKeyValueProxyNonGCPoolPointer proxyPool = {0};
+    static DSKeyValueProxyNonGCPoolPointer proxyPool;
     return  &proxyPool;
 }
 
 - (NSUInteger)count {
-    return [(id)(id *)((uint8 *)self.container + ivar_getOffset(_ivar)) count];
+    
+    return [object_getIvarDirectly(self.container, _ivar) count];
 }
 
 - (id)member:(id)object {
-    return [(id)(id *)((uint8 *)self.container + ivar_getOffset(_ivar)) member:object];
+    return [object_getIvarDirectly(self.container, _ivar) member:object];
 }
 
 - (NSEnumerator *)objectEnumerator {
-    id objOfIvar = (id)(id *)((uint8 *)self.container + ivar_getOffset(_ivar));
-    if(objOfIvar) {
-        return [objOfIvar objectEnumerator];
+    id setValue = object_getIvarDirectly(self.container, _ivar);
+    if(setValue) {
+        return [setValue objectEnumerator];
     }
     else {
         return [[[DSKeyValueNilSetEnumerator alloc] init] autorelease];
@@ -48,58 +49,59 @@
 }
 
 - (void)addObject:(id)object {
-    id objOfIvar = (id)(id *)((uint8 *)self.container + ivar_getOffset(_ivar));
-    if(objOfIvar) {
-        [objOfIvar addObject:object];
+    id setValue = object_getIvarDirectly(self.container, _ivar);
+    if(setValue) {
+        [setValue addObject:object];
     }
     else {
-        *(id *)((uint8 *)self.container + ivar_getOffset(_ivar)) = [[NSMutableSet alloc] initWithObjects:&object count:1];
+        object_setIvarDirectly(self.container, _ivar,  [[NSMutableSet alloc] initWithObjects:&object count:1]);
     }
 }
 
 - (void)addObjectsFromArray:(NSArray *)array {
-    id objOfIvar = (id)(id *)((uint8 *)self.container + ivar_getOffset(_ivar));
-    if(objOfIvar) {
-        [objOfIvar addObjectsFromArray:array];
+    id setValue = object_getIvarDirectly(self.container, _ivar);
+    if(setValue) {
+        [setValue addObjectsFromArray:array];
     }
     else {
-        *(id *)((uint8 *)self.container + ivar_getOffset(_ivar)) = [[NSMutableSet alloc] initWithArray:array];
+        object_setIvarDirectly(self.container, _ivar, [[NSMutableSet alloc] initWithArray:array]);
+    }
+}
+
+
+- (void)removeAllObjects {
+    [object_getIvarDirectly(self.container, _ivar) removeAllObjects];
+}
+
+- (void)removeObject:(id)object {
+    [object_getIvarDirectly(self.container, _ivar) removeObject: object];
+}
+
+- (void)setSet:(NSSet *)otherSet {
+    id setValue =  object_getIvarDirectly(self.container, _ivar);
+    if(setValue) {
+        [setValue setSet:otherSet];
+    }
+    else {
+        object_setIvarDirectly(self.container, _ivar, [otherSet mutableCopy]);
     }
 }
 
 - (void)intersectSet:(NSSet *)otherSet {
-    [(id)(id *)((uint8 *)self.container + ivar_getOffset(_ivar)) intersectSet:otherSet];
+    [object_getIvarDirectly(self.container, _ivar) intersectSet:otherSet];
 }
 
 - (void)minusSet:(NSSet *)otherSet {
-    [(id)(id *)((uint8 *)self.container + ivar_getOffset(_ivar)) minusSet:otherSet];
-}
-
-- (void)removeAllObjects {
-    [(id)(id *)((uint8 *)self.container + ivar_getOffset(_ivar)) removeAllObjects];
-}
-
-- (void)removeObject:(id)object {
-    [(id)(id *)((uint8 *)self.container + ivar_getOffset(_ivar)) removeObject: object];
-}
-
-- (void)setSet:(NSSet *)otherSet {
-    id objOfIvar = (id)(id *)((uint8 *)self.container + ivar_getOffset(_ivar));
-    if(objOfIvar) {
-        [objOfIvar setSet:otherSet];
-    }
-    else {
-        *(id *)((uint8 *)self.container + ivar_getOffset(_ivar)) = [otherSet mutableCopy];
-    }
+    [object_getIvarDirectly(self.container, _ivar) minusSet:otherSet];
 }
 
 - (void)unionSet:(NSSet *)otherSet {
-    id objOfIvar = (id)(id *)((uint8 *)self.container + ivar_getOffset(_ivar));
-    if(objOfIvar) {
-        [objOfIvar unionSet:otherSet];
+    id setValue = object_getIvarDirectly(self.container, _ivar);
+    if(setValue) {
+        [setValue unionSet:otherSet];
     }
     else {
-        *(id *)((uint8 *)self.container + ivar_getOffset(_ivar)) = [otherSet mutableCopy];
+        object_setIvarDirectly(self.container, _ivar, [otherSet mutableCopy]);
     }
 }
 

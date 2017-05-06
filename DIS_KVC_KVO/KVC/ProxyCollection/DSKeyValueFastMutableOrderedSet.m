@@ -10,9 +10,9 @@
 #import "NSObject+DSKeyValueCodingPrivate.h"
 #import "DSKeyValueMutatingOrderedSetMethodSet.h"
 #import "DSKeyValueNonmutatingOrderedSetMethodSet.h"
-#import "DSKeyValueGetter.h"
+#import "DSKeyValueFastMutableCollection2Getter.h"
+#import "DSKeyValueFastMutableCollection1Getter.h"
 #import "DSKeyValueCodingCommon.h"
-#import <objc/message.h>
 
 @implementation DSKeyValueFastMutableOrderedSet
 
@@ -43,8 +43,8 @@
 }
 
 - (void)insertObjects:(NSArray *)objects atIndexes:(NSIndexSet *)indexes {
-    if (_mutatingMethods.insertObjectAtIndex) {
-        ((void (*)(id,Method,...))method_invoke)(self.container, _mutatingMethods.insertObjectAtIndex, objects, indexes);
+    if (_mutatingMethods.insertObjectsAtIndexes) {
+        ((void (*)(id,Method,...))method_invoke)(self.container, _mutatingMethods.insertObjectsAtIndexes, objects, indexes);
     }
     else {
         [super insertObjects:objects atIndexes:indexes];
@@ -101,7 +101,7 @@
 
 @implementation DSKeyValueFastMutableOrderedSet1
 
-- (id)_proxyInitWithContainer:(id)container getter:(DSKeyValueGetter *)getter {
+- (id)_proxyInitWithContainer:(id)container getter:(DSKeyValueFastMutableCollection1Getter *)getter {
     if((self = [super _proxyInitWithContainer:container getter:getter])) {
         _nonmutatingMethods = [[getter nonmutatingMethods] retain];
     }
@@ -162,7 +162,7 @@
 
 @implementation DSKeyValueFastMutableOrderedSet2
 
-- (id)_proxyInitWithContainer:(id)container getter:(DSKeyValueGetter *)getter {
+- (id)_proxyInitWithContainer:(id)container getter:(DSKeyValueFastMutableCollection2Getter *)getter {
     if((self = [super _proxyInitWithContainer:container getter:getter])) {
         _valueGetter = [[getter baseGetter] retain];
     }

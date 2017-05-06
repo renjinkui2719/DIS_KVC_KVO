@@ -7,12 +7,13 @@
 //
 
 #import "DSKeyValueSlowMutableOrderedSet.h"
+#import "DSKeyValueSlowMutableCollectionGetter.h"
 #import "NSObject+DSKeyValueCodingPrivate.h"
 #import "DSKeyValueCodingCommon.h"
 
 @implementation DSKeyValueSlowMutableOrderedSet
 
-- (id)_proxyInitWithContainer:(id)container getter:(DSKeyValueGetter *)getter {
+- (id)_proxyInitWithContainer:(id)container getter:(DSKeyValueSlowMutableCollectionGetter *)getter {
     if((self = [super _proxyInitWithContainer:container getter:getter])) {
         _valueGetter = [[getter baseGetter] retain];
         _valueSetter = [[getter baseSetter] retain];
