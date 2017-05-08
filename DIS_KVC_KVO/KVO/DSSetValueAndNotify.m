@@ -13,6 +13,10 @@
 #import "NSObject+DSKeyValueObserverNotification.h"
 #import "DSKeyValueObserverCommon.h"
 
+#define SetPrimitiveValue_NiceBreakPoint 1
+
+#if !SetPrimitiveValue_NiceBreakPoint
+
 #define __DSSetPrimitiveValueAndNotify(object, selector, value) do {\
     DSKeyValueNotifyingInfo *info = object_getIndexedIvars(object_getClass(object));\
 \
@@ -24,12 +28,12 @@
     pthread_mutex_unlock(&info->mutex);\
 \
     if(info->flag) {\
-        [object willChangeValueForKey:key];\
+        [object d_willChangeValueForKey:key];\
         \
         IMP imp = class_getMethodImplementation(info->originalClass, selector);\
         ((void (*)(id ,SEL , ... ))imp)(object, selector, value);\
         \
-        [object didChangeValueForKey:key];\
+        [object d_didChangeValueForKey:key];\
     }\
     else {\
         [object _d_changeValueForKey:key key:nil key:nil usingBlock:^{\
@@ -41,77 +45,216 @@
     [key release];\
 }while(0)
 
+#else
+
+static inline void __DSSetPrimitiveValueAndNotify(id object,SEL selector, void (^setWithImpBlock)(IMP imp)) {
+    DSKeyValueNotifyingInfo *info = object_getIndexedIvars(object_getClass(object));
+    
+    pthread_mutex_lock(&info->mutex);
+    
+    NSString *key = CFDictionaryGetValue(info->selKeyMap, selector);
+    key = [key copyWithZone:nil];
+    
+    pthread_mutex_unlock(&info->mutex);
+    
+    if(info->overrideWillDidChange) {
+        [object d_willChangeValueForKey:key];
+        
+        IMP imp = class_getMethodImplementation(info->originalClass, selector);
+        setWithImpBlock(imp);
+        
+        [object d_didChangeValueForKey:key];
+    }
+    else {
+        [object _d_changeValueForKey:key key:nil key:nil usingBlock:^{
+            IMP imp = class_getMethodImplementation(info->originalClass, selector);
+            setWithImpBlock(imp);
+        }];
+    }
+    
+    [key release];
+}
+
+#endif
 
 void _DSSetCharValueAndNotify(id object,SEL selector, char value) {
+#if !SetPrimitiveValue_NiceBreakPoint
     __DSSetPrimitiveValueAndNotify(object, selector, value);
+#else
+    __DSSetPrimitiveValueAndNotify(object, selector, ^(IMP imp) {
+        ((void (*)(id ,SEL , ... ))imp)(object, selector, value);
+    });
+#endif
 }
 
 void _DSSetDoubleValueAndNotify(id object,SEL selector, double value) {
+#if !SetPrimitiveValue_NiceBreakPoint
     __DSSetPrimitiveValueAndNotify(object, selector, value);
+#else
+    __DSSetPrimitiveValueAndNotify(object, selector, ^(IMP imp) {
+        ((void (*)(id ,SEL , ... ))imp)(object, selector, value);
+    });
+#endif
 }
 
 void _DSSetFloatValueAndNotify(id object,SEL selector, float value) {
+#if !SetPrimitiveValue_NiceBreakPoint
     __DSSetPrimitiveValueAndNotify(object, selector, value);
+#else
+    __DSSetPrimitiveValueAndNotify(object, selector, ^(IMP imp) {
+        ((void (*)(id ,SEL , ... ))imp)(object, selector, value);
+    });
+#endif
 }
 
 void _DSSetIntValueAndNotify(id object,SEL selector, int value) {
+#if !SetPrimitiveValue_NiceBreakPoint
     __DSSetPrimitiveValueAndNotify(object, selector, value);
+#else
+    __DSSetPrimitiveValueAndNotify(object, selector, ^(IMP imp) {
+        ((void (*)(id ,SEL , ... ))imp)(object, selector, value);
+    });
+#endif
 }
 
 void _DSSetLongValueAndNotify(id object,SEL selector, long value) {
+#if !SetPrimitiveValue_NiceBreakPoint
     __DSSetPrimitiveValueAndNotify(object, selector, value);
+#else
+    __DSSetPrimitiveValueAndNotify(object, selector, ^(IMP imp) {
+        ((void (*)(id ,SEL , ... ))imp)(object, selector, value);
+    });
+#endif
 }
 
 void _DSSetLongLongValueAndNotify(id object,SEL selector, long long value) {
+#if !SetPrimitiveValue_NiceBreakPoint
     __DSSetPrimitiveValueAndNotify(object, selector, value);
+#else
+    __DSSetPrimitiveValueAndNotify(object, selector, ^(IMP imp) {
+        ((void (*)(id ,SEL , ... ))imp)(object, selector, value);
+    });
+#endif
 }
 
 void _DSSetShortValueAndNotify(id object,SEL selector, short value) {
+#if !SetPrimitiveValue_NiceBreakPoint
     __DSSetPrimitiveValueAndNotify(object, selector, value);
+#else
+    __DSSetPrimitiveValueAndNotify(object, selector, ^(IMP imp) {
+        ((void (*)(id ,SEL , ... ))imp)(object, selector, value);
+    });
+#endif
 }
 
 void _DSSetUnsignedShortValueAndNotify(id object,SEL selector, unsigned short value) {
+#if !SetPrimitiveValue_NiceBreakPoint
     __DSSetPrimitiveValueAndNotify(object, selector, value);
+#else
+    __DSSetPrimitiveValueAndNotify(object, selector, ^(IMP imp) {
+        ((void (*)(id ,SEL , ... ))imp)(object, selector, value);
+    });
+#endif
 }
 
 void _DSSetPointValueAndNotify(id object,SEL selector, NSPoint value) {
+#if !SetPrimitiveValue_NiceBreakPoint
     __DSSetPrimitiveValueAndNotify(object, selector, value);
+#else
+    __DSSetPrimitiveValueAndNotify(object, selector, ^(IMP imp) {
+        ((void (*)(id ,SEL , ... ))imp)(object, selector, value);
+    });
+#endif
 }
 
 void _DSSetRangeValueAndNotify(id object,SEL selector, NSRange value) {
+#if !SetPrimitiveValue_NiceBreakPoint
     __DSSetPrimitiveValueAndNotify(object, selector, value);
+#else
+    __DSSetPrimitiveValueAndNotify(object, selector, ^(IMP imp) {
+        ((void (*)(id ,SEL , ... ))imp)(object, selector, value);
+    });
+#endif
 }
 
 void _DSSetRectValueAndNotify(id object,SEL selector, NSRect value) {
+#if !SetPrimitiveValue_NiceBreakPoint
     __DSSetPrimitiveValueAndNotify(object, selector, value);
+#else
+    __DSSetPrimitiveValueAndNotify(object, selector, ^(IMP imp) {
+        ((void (*)(id ,SEL , ... ))imp)(object, selector, value);
+    });
+#endif
 }
 
 void _DSSetSizeValueAndNotify(id object,SEL selector, NSSize value) {
+#if !SetPrimitiveValue_NiceBreakPoint
     __DSSetPrimitiveValueAndNotify(object, selector, value);
+#else
+    __DSSetPrimitiveValueAndNotify(object, selector, ^(IMP imp) {
+        ((void (*)(id ,SEL , ... ))imp)(object, selector, value);
+    });
+#endif
 }
 
 void _DSSetBoolValueAndNotify(id object,SEL selector, BOOL value) {
+#if !SetPrimitiveValue_NiceBreakPoint
     __DSSetPrimitiveValueAndNotify(object, selector, value);
+#else
+    __DSSetPrimitiveValueAndNotify(object, selector, ^(IMP imp) {
+        ((void (*)(id ,SEL , ... ))imp)(object, selector, value);
+    });
+#endif
 }
 
 void _DSSetUnsignedCharValueAndNotify(id object,SEL selector, unsigned char value) {
+#if !SetPrimitiveValue_NiceBreakPoint
     __DSSetPrimitiveValueAndNotify(object, selector, value);
+#else
+    __DSSetPrimitiveValueAndNotify(object, selector, ^(IMP imp) {
+        ((void (*)(id ,SEL , ... ))imp)(object, selector, value);
+    });
+#endif
 }
 
 void _DSSetUnsignedIntValueAndNotify(id object,SEL selector, unsigned int value) {
+#if !SetPrimitiveValue_NiceBreakPoint
     __DSSetPrimitiveValueAndNotify(object, selector, value);
+#else
+    __DSSetPrimitiveValueAndNotify(object, selector, ^(IMP imp) {
+        ((void (*)(id ,SEL , ... ))imp)(object, selector, value);
+    });
+#endif
 }
 
 void _DSSetUnsignedLongValueAndNotify(id object,SEL selector, unsigned long value) {
+#if !SetPrimitiveValue_NiceBreakPoint
     __DSSetPrimitiveValueAndNotify(object, selector, value);
+#else
+    __DSSetPrimitiveValueAndNotify(object, selector, ^(IMP imp) {
+        ((void (*)(id ,SEL , ... ))imp)(object, selector, value);
+    });
+#endif
 }
 
 void _DSSetUnsignedLongLongValueAndNotify(id object,SEL selector, unsigned long long value) {
+#if !SetPrimitiveValue_NiceBreakPoint
     __DSSetPrimitiveValueAndNotify(object, selector, value);
+#else
+    __DSSetPrimitiveValueAndNotify(object, selector, ^(IMP imp) {
+        ((void (*)(id ,SEL , ... ))imp)(object, selector, value);
+    });
+#endif
 }
 
 void _DSSetObjectValueAndNotify(id object,SEL selector, id value) {
+#if !SetPrimitiveValue_NiceBreakPoint
     __DSSetPrimitiveValueAndNotify(object, selector, value);
+#else
+    __DSSetPrimitiveValueAndNotify(object, selector, ^(IMP imp) {
+        ((void (*)(id ,SEL , ... ))imp)(object, selector, value);
+    });
+#endif
 }
 
 void DSKVOInsertObjectAtIndexAndNotify(id object,SEL selector, id value, NSUInteger idx) {

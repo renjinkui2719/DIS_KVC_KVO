@@ -3,6 +3,7 @@
 #import "NSObject+DSKeyValueObservingPrivate.h"
 #import "NSObject+DSKeyValueCodingPrivate.h"
 #import "NSObject+DSKeyValueObservingCustomization.h"
+#import "NSObject+DSKeyValueObserverNotification.h"
 #import "DSSetValueAndNotify.h"
 #import "DSKeyValueGetter.h"
 #import "DSKeyValueSetter.h"
@@ -50,6 +51,7 @@ DSKeyValueObservationInfo *_DSKeyValueRetainedObservationInfoForObject(id object
     DSKeyValueObservationInfo *observationInfo = nil;
     
     os_lock_lock(&DSKeyValueObservationInfoSpinLock);
+    
     if (containerClass) {
        observationInfo = ((DSKeyValueObservationInfo * (*)(id,SEL))containerClass.cachedObservationInfoImplementation)(object, @selector(observationInfo));
     }
@@ -213,11 +215,7 @@ DSKeyValueNotifyingInfo *_DSKVONotifyingCreateInfoWithOriginalClass(Class origin
         DSObjectDidChange = class_getMethodImplementation([NSObject class], @selector(d_didChangeValueForKey:));
     });
     
-    BOOL flag = YES;
-    if(class_getMethodImplementation(notifyingInfo->originalClass, @selector(d_willChangeValueForKey:)) == DSObjectWillChange) {
-        flag = class_getMethodImplementation(notifyingInfo->originalClass, @selector(d_didChangeValueForKey:)) != DSObjectDidChange;
-    }
-    notifyingInfo->flag = flag;
+    notifyingInfo->overrideWillDidChange = class_getMethodImplementation(notifyingInfo->originalClass, @selector(d_willChangeValueForKey:)) != DSObjectWillChange || class_getMethodImplementation(notifyingInfo->originalClass, @selector(d_didChangeValueForKey:)) != DSObjectDidChange;
     
     DSKVONotifyingSetMethodImplementation(notifyingInfo, ISKVOASelector, (IMP)DSKVOIsAutonotifying, NULL);
     DSKVONotifyingSetMethodImplementation(notifyingInfo, @selector(dealloc), (IMP)DSKVODeallocate, NULL);
@@ -328,25 +326,25 @@ void _DSKVONotifyingEnableForInfoAndKey(DSKeyValueNotifyingInfo *info, NSString 
                     imp = (IMP)_DSSetUnsignedShortValueAndNotify;
                 } break;
                 case '{': {
-                    if(strcmp(argType, "{CGPoint=ff}") ==0) {
+                    if(strcmp(argType, @encode(CGPoint)) ==0) {
                         imp = (IMP)_DSSetPointValueAndNotify;
                     }
-                    else if (strcmp(argType, "{_NSPoint=ff}") == 0) {
+                    else if (strcmp(argType, @encode(NSPoint)) == 0) {
                         imp = (IMP)_DSSetPointValueAndNotify;
                     }
-                    else if (strcmp (argType, "{_NSRange=II}") == 0) {
+                    else if (strcmp (argType, @encode(NSRange)) == 0) {
                         imp = (IMP)_DSSetRangeValueAndNotify;
                     }
-                    else if (strcmp(argType,"{CGRect={CGPoint=ff}{CGSize=ff}}") == 0) {
+                    else if (strcmp(argType,@encode(CGRect)) == 0) {
                         imp = (IMP)_DSSetRectValueAndNotify;
                     }
-                    else if (strcmp(argType,"{_NSRect={_NSPoint=ff}{_NSSize=ff}}") == 0) {
+                    else if (strcmp(argType,@encode(NSRect)) == 0) {
                         imp = (IMP)_DSSetRectValueAndNotify;
                     }
-                    else if(strcmp(argType, "{CGSize=ff}") == 0) {
+                    else if(strcmp(argType, @encode(CGSize)) == 0) {
                         imp = (IMP)_DSSetSizeValueAndNotify;
                     }
-                    else if (strcmp(argType, "{_NSSize=ff}") == 0) {
+                    else if (strcmp(argType, @encode(NSSize)) == 0) {
                         imp = (IMP)_DSSetSizeValueAndNotify;
                     }
                     else {

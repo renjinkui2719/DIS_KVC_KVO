@@ -9,6 +9,8 @@
 #import <Foundation/Foundation.h>
 #import "DSKeyValueCodingCommon.h"
 #import "NSObject+DSKeyValueCoding.h"
+#import "NSObject+DSKeyValueObserverRegistration.h"
+#import "DSKeyValueObserverCommon.h"
 #import <limits.h>
 #import <objc/runtime.h>
 
@@ -90,7 +92,15 @@
 }
 
 - (NSString *)debugDescription {
-    return [NSString stringWithFormat:@"%@, identifier: %@", self, _identifier];
+    return [NSString stringWithFormat:@"<%@:%p>, identifier: %@", self.class,self, _identifier];
+}
+
+- (void)d_willChangeValueForKey:(NSString *)key {
+    [super d_willChangeValueForKey:key];
+}
+
++ (NSSet<NSString *> *)keyPathsForValuesAffectingChar_field {
+    return [NSSet setWithObjects:@"BOOL_field",@"unsigned_char_field", nil];
 }
 
 #if NSArray_MutByContainer
@@ -186,12 +196,61 @@ static inline A* orderRandomA_2() {
 
 void TestKVC();
 
+@interface Observer : NSObject
+
+@end
+
+@implementation Observer
+
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change context:(void *)context {
+    NSLog(@"observeValueForKeyPath: %@, object: %@, change:%@, context:%s", keyPath, object, change, (char *)context);
+}
+
+@end
+
+/*
+ _const:0000712C __os_lock_type_handoff dd offset aHandoff ; "handoff"
+ __const:00007130                 dd offset __os_lock_handoff_lock
+ __const:00007134                 dd offset __os_lock_handoff_trylock
+ __const:00007138                 dd offset __os_lock_handoff_unlock
+ */
+
+extern void *_os_lock_type_handoff;
+extern void *_os_lock_handoff_trylock;
+extern void *_os_lock_handoff_lock;
+//extern OSSpinLock NSKeyValueObservationInfoSpinLock;
 int main(int argc, const char * argv[]) {
+//    void *p = &_os_lock_type_handoff;
+////    printf("%p\n", p + 1);
+//    printf("%p\n",_os_lock_type_handoff);
+//    
+//    void *spinLock = &_os_lock_type_handoff;
+//    printf("%p\n", (void *)spinLock);
+//    printf("%p\n", &_os_lock_type_handoff);
+//    
+//    void ***pp = &spinLock;
+//    
+//    void *p1 = *(&_os_lock_type_handoff + 0);//(&_os_lock_type_handoff + 0);
+//    void *p2 = *(&_os_lock_type_handoff + sizeof(void *));//((char *)(*pp) + sizeof(void *));
+//    void *p3 = *(&_os_lock_type_handoff + sizeof(void *));//((char *)(*pp) + sizeof(void *));
+//    
+//    printf("%s\n", p1);
+//    printf("%p\n", p2);
+//    printf("%p\n", p3);
+//    
+//    os_lock_lock(&spinLock);
+//    os_lock_unlock(&spinLock);
     
-   
+    
+    
+    Observer *observer = [Observer new];
+    A *a = A.random;
+    [a d_addObserver:observer forKeyPath:@"char_field" options:DSKeyValueObservingOptionNew context:"context"];
+    a.BOOL_field = YES;
+    
     NSLog(@"");
     
-    TestKVC();
+    //TestKVC();
 }
 
 

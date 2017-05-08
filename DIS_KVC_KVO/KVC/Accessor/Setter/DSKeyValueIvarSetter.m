@@ -9,13 +9,14 @@
 #import "DSKeyValueIvarSetter.h"
 #import "DSSetValueForKeyInIvar.h"
 #import "DSKeyValueContainerClass.h"
+#import "NSObject+DSKeyValueObserverNotification.h"
 
 void _DSSetValueAndNotifyForKeyInIvar(id object, SEL selector, id value, NSString *key, Ivar ivar, IMP imp) {
-    [object willChangeValueForKey:key];
+    [object d_willChangeValueForKey:key];
     
     ((void (*)(id,SEL,id,NSString *, Ivar))imp)(object,NULL,value,key,ivar);
     
-    [object didChangeValueForKey:key];
+    [object d_didChangeValueForKey:key];
 }
 
 @implementation DSKeyValueIvarSetter
@@ -101,25 +102,25 @@ void _DSSetValueAndNotifyForKeyInIvar(id object, SEL selector, id value, NSStrin
             if (idx == NULL) {
                 imp = (IMP)_DSSetValueInIvar;
             }
-            else if (strncmp(typeEncoding, "{CGPoint=ff}", idx - typeEncoding) == 0){
+            else if (strncmp(typeEncoding, @encode(CGPoint), idx - typeEncoding) == 0){
                 imp = (IMP)_DSSetPointValueForKeyInIvar;
             }
-            else if (strncmp(typeEncoding, "{_NSPoint=ff}", idx - typeEncoding) == 0){
+            else if (strncmp(typeEncoding, @encode(NSPoint), idx - typeEncoding) == 0){
                 imp = (IMP)_DSSetPointValueForKeyInIvar;
             }
-            else if (strncmp(typeEncoding, "{_NSRange=II}", idx - typeEncoding) == 0){
+            else if (strncmp(typeEncoding, @encode(NSRange), idx - typeEncoding) == 0){
                 imp = (IMP)_DSSetRangeValueForKeyInIvar;
             }
-            else if (strncmp(typeEncoding, "{CGRect={CGPoint=ff}{CGSize=ff}}", idx - typeEncoding) == 0){
+            else if (strncmp(typeEncoding, @encode(CGRect), idx - typeEncoding) == 0){
                 imp = (IMP)_DSSetRectValueForKeyInIvar;
             }
-            else if (strncmp(typeEncoding, "{_NSRect={_NSPoint=ff}{_NSSize=ff}}", idx - typeEncoding) == 0){
+            else if (strncmp(typeEncoding, @encode(NSRect), idx - typeEncoding) == 0){
                 imp = (IMP)_DSSetRectValueForKeyInIvar;
             }
-            else if (strncmp(typeEncoding, "{CGSize=ff}", idx - typeEncoding) == 0){
+            else if (strncmp(typeEncoding, @encode(CGSize), idx - typeEncoding) == 0){
                 imp = (IMP)_DSSetSizeValueForKeyInIvar;
             }
-            else if (strncmp(typeEncoding, "{_NSSize=ff}", idx - typeEncoding) == 0){
+            else if (strncmp(typeEncoding, @encode(NSSize), idx - typeEncoding) == 0){
                 imp = (IMP)_DSSetSizeValueForKeyInIvar;
             }
             else {

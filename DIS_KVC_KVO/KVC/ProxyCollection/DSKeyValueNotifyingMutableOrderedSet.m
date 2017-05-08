@@ -8,6 +8,7 @@
 
 #import "DSKeyValueNotifyingMutableOrderedSet.h"
 #import "NSObject+DSKeyValueObserverRegistration.h"
+#import "NSObject+DSKeyValueObserverNotification.h"
 #import "DSKeyValueGetter.h"
 
 @implementation DSKeyValueNotifyingMutableOrderedSet
@@ -19,7 +20,7 @@
 }
 
 + (DSKeyValueProxyNonGCPoolPointer *)_proxyNonGCPoolPointer {
-    static DSKeyValueProxyNonGCPoolPointer proxyPool = {0};
+    static DSKeyValueProxyNonGCPoolPointer proxyPool;
     return &proxyPool;
 }
 
@@ -63,52 +64,52 @@
     
     [_mutableOrderedSet insertObject:object atIndex:idx];
     
-    [self.container didChange:DSKeyValueChangeInsertion valuesAtIndexes:indexes forKey:self.key];
+    [self.container d_didChange:DSKeyValueChangeInsertion valuesAtIndexes:indexes forKey:self.key];
     [indexes release];
 }
 
 - (void)insertObjects:(NSArray *)objects atIndexes:(NSIndexSet *)indexes {
-    [self.container willChange:DSKeyValueChangeInsertion valuesAtIndexes:indexes forKey:self.key];
+    [self.container d_willChange:DSKeyValueChangeInsertion valuesAtIndexes:indexes forKey:self.key];
     
     [_mutableOrderedSet insertObjects:objects atIndexes:indexes];
     
-    [self.container didChange:DSKeyValueChangeInsertion valuesAtIndexes:indexes forKey:self.key];
+    [self.container d_didChange:DSKeyValueChangeInsertion valuesAtIndexes:indexes forKey:self.key];
 }
 
 - (void)removeObjectAtIndex:(NSUInteger)idx {
     NSIndexSet *indexes = [[NSIndexSet alloc] initWithIndex:idx];
-    [self.container willChange:DSKeyValueChangeRemoval valuesAtIndexes:indexes forKey:self.key];
+    [self.container d_willChange:DSKeyValueChangeRemoval valuesAtIndexes:indexes forKey:self.key];
     
     [_mutableOrderedSet removeObjectAtIndex:idx];
     
-    [self.container didChange:DSKeyValueChangeRemoval valuesAtIndexes:indexes forKey:self.key];
+    [self.container d_didChange:DSKeyValueChangeRemoval valuesAtIndexes:indexes forKey:self.key];
     [indexes release];
 }
 
 - (void)removeObjectsAtIndexes:(NSIndexSet *)indexes {
-    [self.container willChange:DSKeyValueChangeRemoval valuesAtIndexes:indexes forKey:self.key];
+    [self.container d_willChange:DSKeyValueChangeRemoval valuesAtIndexes:indexes forKey:self.key];
     
     [_mutableOrderedSet removeObjectsAtIndexes:indexes];
     
-    [self.container didChange:DSKeyValueChangeRemoval valuesAtIndexes:indexes forKey:self.key];
+    [self.container d_didChange:DSKeyValueChangeRemoval valuesAtIndexes:indexes forKey:self.key];
 }
 
 - (void)replaceObjectAtIndex:(NSUInteger)idx withObject:(id)object {
     NSIndexSet *indexes = [[NSIndexSet alloc] initWithIndex:idx];
-    [self.container willChange:DSKeyValueChangeReplacement valuesAtIndexes:indexes forKey:self.key];
+    [self.container d_willChange:DSKeyValueChangeReplacement valuesAtIndexes:indexes forKey:self.key];
     
     [_mutableOrderedSet replaceObjectAtIndex:idx withObject:object];
     
-    [self.container didChange:DSKeyValueChangeReplacement valuesAtIndexes:indexes forKey:self.key];
+    [self.container d_didChange:DSKeyValueChangeReplacement valuesAtIndexes:indexes forKey:self.key];
     [indexes release];
 }
 
 - (void)replaceObjectsAtIndexes:(NSIndexSet *)indexes withObjects:(NSArray *)objects {
-    [self.container willChange:DSKeyValueChangeReplacement valuesAtIndexes:indexes forKey:self.key];
+    [self.container d_willChange:DSKeyValueChangeReplacement valuesAtIndexes:indexes forKey:self.key];
     
     [_mutableOrderedSet replaceObjectsAtIndexes:indexes withObjects:objects];
     
-    [self.container didChange:DSKeyValueChangeReplacement valuesAtIndexes:indexes forKey:self.key];
+    [self.container d_didChange:DSKeyValueChangeReplacement valuesAtIndexes:indexes forKey:self.key];
 }
 
 @end

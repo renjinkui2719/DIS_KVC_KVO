@@ -15,38 +15,27 @@
 #import "DSKeyValueCodingCommon.h"
 #import "NSObject+DSKeyValueObserverRegistration.h"
 
-dispatch_once_t isVMWare_onceToken;
-BOOL isVMWare_doWorkarounds;
-
 const void *DSKVOPendingNotificationRetain(CFAllocatorRef allocator, const void *value) {
-    DSKVOPendingChangeNotification *ntf = (DSKVOPendingChangeNotification *)value;
-    ntf->retainCount ++;
-    return ntf;
+    DSKVOPendingChangeNotificationPerThread *notification = (DSKVOPendingChangeNotificationPerThread *)value;
+    notification->retainCount ++;
+    return notification;
 }
 
 void DSKVOPendingNotificationRelease(CFAllocatorRef allocator, const void *value) {
-    DSKVOPendingChangeNotification *ntf = (DSKVOPendingChangeNotification *)value;
-    ntf->retainCount --;
-    if (ntf->retainCount <= 0) {
-        if (ntf->observance) {
-            dispatch_once(&isVMWare_onceToken, ^{
-                isVMWare_doWorkarounds =  _CFAppVersionCheckLessThan("com.vmware.fusion", 5, 0, 0x0BFF00000);
-            });
-            if(!isVMWare_doWorkarounds) {
-                [ntf->observance.observer release];
-            }
-        }
-        [ntf->forwardingValues_p2 release];
-        [ntf->forwardingValues_p1 release];
-        [ntf->extraData release];
-        [ntf->indexes release];
-        [ntf->newValue release];
-        [ntf->oldValue release];
-        [ntf->observationInfo release];
-        [ntf->keyOrKeys release];
-        [ntf->object release];
-        
-        free(ntf);
+    DSKVOPendingChangeNotificationPerThread *notification = (DSKVOPendingChangeNotificationPerThread *)value;
+    notification->retainCount --;
+    if (notification->retainCount <= 0) {
+        [notification->observance.observer release];
+        [notification->forwardingValues_p2 release];
+        [notification->forwardingValues_p1 release];
+        [notification->extraData release];
+        [notification->indexes release];
+        [notification->newValue release];
+        [notification->oldValue release];
+        [notification->observationInfo release];
+        [notification->keyOrKeys release];
+        [notification->object release];
+        free(notification);
     }
 }
 
@@ -356,19 +345,19 @@ const CFArrayCallBacks DSKVOPendingNotificationArrayCallbacks = {
             TSD->pendingArray = CFArrayCreateMutable(NULL,0,&DSKVOPendingNotificationArrayCallbacks);
         }
         
-        DSKVOPendingInfoPerThreadPush pendingInfo = {0};
+        DSKVOPushInfoPerThread pushInfo = {0};
         //loc_12998F
         if(observationInfo) {
-            pendingInfo.pendingArray = TSD->pendingArray;
-            pendingInfo.count = 1;
-            pendingInfo.observationInfo = observationInfo;
-            DSKeyValueWillChange(self, keys, YES, observationInfo, DSKeyValueWillChangeBySetting, nil,  (DSKeyValuePushPendingNotificationCallback)DSKeyValuePushPendingNotificationPerThread, &pendingInfo, nil);
+            pushInfo.pendingArray = TSD->pendingArray;
+            pushInfo.pushAsLastPop = YES;
+            pushInfo.observationInfo = observationInfo;
+            DSKeyValueWillChange(self, keys, YES, observationInfo, DSKeyValueWillChangeBySetting, nil,  (DSKeyValuePushPendingNotificationCallback)DSKeyValuePushPendingNotificationPerThread, &pushInfo, nil);
             //loc_1299DA
         }
         //loc_1299DA
         if(implicitObservationInfo) {
-            pendingInfo.observationInfo = nil;
-            DSKeyValueWillChange(self, keys, YES, implicitObservationInfo, DSKeyValueWillChangeBySetting, nil,  (DSKeyValuePushPendingNotificationCallback)DSKeyValuePushPendingNotificationPerThread, &pendingInfo, nil);
+            pushInfo.observationInfo = nil;
+            DSKeyValueWillChange(self, keys, YES, implicitObservationInfo, DSKeyValueWillChangeBySetting, nil,  (DSKeyValuePushPendingNotificationCallback)DSKeyValuePushPendingNotificationPerThread, &pushInfo, nil);
         }
         //loc_129A1C
     }
@@ -390,14 +379,14 @@ const CFArrayCallBacks DSKVOPendingNotificationArrayCallbacks = {
     DSKeyValueObservingTSD *TSD = _CFGetTSD(DSKeyValueObservingTSDKey);
     
     if(TSD && TSD->pendingArray && CFArrayGetCount(TSD->pendingArray) > 0) {
-        DSKVOPendingInfoPerThreadPop pendingInfo = {0};
-        pendingInfo.pendingArray = TSD->pendingArray;
-        pendingInfo.pendingCount = CFArrayGetCount(TSD->pendingArray);
-        pendingInfo.lastPopedNotification = nil;
-        pendingInfo.lastPopdIndex = -1;
-        pendingInfo.observance = nil;
+        DSKVOPopInfoPerThread popInfo = {0};
+        popInfo.pendingArray = TSD->pendingArray;
+        popInfo.pendingCount = CFArrayGetCount(TSD->pendingArray);
+        popInfo.lastPopedNotification = nil;
+        popInfo.lastPopdIndex = -1;
+        popInfo.observance = nil;
         
-        DSKeyValueDidChange(self, keys, YES, DSKeyValueDidChangeBySetting, (DSKeyValuePopPendingNotificationCallback)DSKeyValuePopPendingNotificationPerThread,&pendingInfo);
+        DSKeyValueDidChange(self, keys, YES, DSKeyValueDidChangeBySetting, (DSKeyValuePopPendingNotificationCallback)DSKeyValuePopPendingNotificationPerThread,&popInfo);
     }
 }
 
@@ -446,10 +435,11 @@ const CFArrayCallBacks DSKVOPendingNotificationArrayCallbacks = {
 
 - (CFMutableArrayRef)_d_pendingChangeNotificationsArrayForKey:(NSString *)key create:(BOOL)create {
     DSKeyValueObservingTSD *TSD = _CFGetTSD(DSKeyValueObservingTSDKey);
-    if(create) {
-        if(TSD->pendingArray) {
-            return TSD->pendingArray;
-        }
+    CFMutableArrayRef pendingArray = NULL;
+    if (TSD) {
+        pendingArray = TSD->pendingArray;
+    }
+    if (create && !pendingArray) {
         if(!TSD) {
             TSD =  NSAllocateScannedUncollectable(sizeof(DSKeyValueObservingTSD));
             _CFSetTSD(DSKeyValueObservingTSDKey, TSD, DSKeyValueObservingTSDDestroy);
@@ -457,11 +447,10 @@ const CFArrayCallBacks DSKVOPendingNotificationArrayCallbacks = {
         if(!TSD->pendingArray) {
             TSD->pendingArray = CFArrayCreateMutable(NULL,0,&DSKVOPendingNotificationArrayCallbacks);
         }
-        return TSD->pendingArray;
+        pendingArray = TSD->pendingArray;
     }
-    else {
-        return TSD ? TSD->pendingArray : NULL;
-    }
+    
+    return pendingArray;
 }
 
 + (BOOL)_d_shouldAddObservationForwardersForKey:(NSString *)key {

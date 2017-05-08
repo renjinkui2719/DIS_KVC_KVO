@@ -9,7 +9,15 @@
 #import "DSKeyValueChangeDictionary.h"
 #import <libkern/OSAtomic.h>
 
-NSNumber* DSKeyValueChangeDictionaryNumberWithKind_numbersByKind[] = { (NSNumber*)0x0FEEDFACE,nil,nil,nil,nil,(NSNumber*)0x0FEEDFACE};
+static inline NSNumber* DSKeyValueChangeDictionaryNumberWithKind(DSKeyValueChange kind) {
+    NSNumber *numbersByKind[] = { (NSNumber*)0x0FEEDFACE,nil,nil,nil,nil,(NSNumber*)0x0FEEDFACE};
+    NSNumber *number = [[NSNumber alloc] initWithInteger:kind];
+    if(!OSAtomicCompareAndSwapPtr(NULL, number, (void **)(numbersByKind + kind))) {
+        [number release];
+    }
+    return numbersByKind[kind];
+}
+
 
 @implementation DSKeyValueChangeDictionary
 
@@ -33,20 +41,9 @@ NSNumber* DSKeyValueChangeDictionaryNumberWithKind_numbersByKind[] = { (NSNumber
     [super dealloc];
 }
 
-
-#define DSKeyValueChangeKindCacheCheck() do {\
-    if(DSKeyValueChangeDictionaryNumberWithKind_numbersByKind[_details.kind] == 0) {\
-        NSNumber *n = [[NSNumber alloc] initWithInteger:_details.kind];\
-        if(!OSAtomicCompareAndSwapPtr(NULL, n, (void **)(DSKeyValueChangeDictionaryNumberWithKind_numbersByKind + _details.kind))) {\
-            [n release];\
-        }\
-    }\
-}while(0)
-
 - (id)objectForKey:(NSString *)aKey {
     if(aKey == DSKeyValueChangeKindKey) {
-        DSKeyValueChangeKindCacheCheck();
-        return DSKeyValueChangeDictionaryNumberWithKind_numbersByKind[_details.kind];
+        return DSKeyValueChangeDictionaryNumberWithKind(_details.kind);
     }
     else if(aKey == DSKeyValueChangeNewKey) {
         return _details.newValue;
@@ -65,8 +62,7 @@ NSNumber* DSKeyValueChangeDictionaryNumberWithKind_numbersByKind[] = { (NSNumber
     }
     else {
         if([aKey isEqualToString:DSKeyValueChangeKindKey]) {
-            DSKeyValueChangeKindCacheCheck();
-            return DSKeyValueChangeDictionaryNumberWithKind_numbersByKind[_details.kind];
+            return DSKeyValueChangeDictionaryNumberWithKind(_details.kind);
         }
         else if([aKey isEqualToString:DSKeyValueChangeNewKey]) {
             return _details.newValue;
@@ -115,10 +111,10 @@ NSNumber* DSKeyValueChangeDictionaryNumberWithKind_numbersByKind[] = { (NSNumber
 
 - (NSUInteger)count {
     return 1                       +
+    (_details.oldValue ? 1 : 0)    +
     (_details.newValue ? 1 : 0)    +
     (_details.indexes ? 1 : 0)     +
     (_originalObservable ? 1 : 0)  +
-    (_details.newValue ? 1 : 0)    +
     (_isPriorNotification ? 1 : 0) ;
 }
 

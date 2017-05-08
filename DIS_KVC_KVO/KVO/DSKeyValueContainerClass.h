@@ -20,7 +20,7 @@ typedef struct DSKeyValueNotifyingInfo {
     CFMutableSetRef keys;
     CFMutableDictionaryRef selKeyMap;
     pthread_mutex_t mutex;
-    BOOL flag;
+    BOOL overrideWillDidChange;
 }DSKeyValueNotifyingInfo;
 
 #define ISKVOASelector NSSelectorFromString(@"_isKVOA")

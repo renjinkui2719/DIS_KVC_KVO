@@ -14,8 +14,12 @@
 #import <pthread.h>
 
 extern void _CF_forwarding_prep_0(void *);
-extern void os_lock_lock(void *);
-extern void os_lock_unlock(void *);
+//extern void os_lock_lock(void *);
+//extern void os_lock_unlock(void *);
+
+#define os_lock_lock OSSpinLockLock
+#define os_lock_unlock OSSpinLockUnlock
+
 extern void *_CFGetTSD(uint32_t slot);
 extern void *_CFSetTSD(uint32_t slot, void *newVal, void (*destructor)(void *));
 extern void *NSAllocateScannedUncollectable(size_t);
@@ -34,6 +38,18 @@ void DSKeyValueObserverRegistrationLockUnlock();
 void DSKeyValueObserverRegistrationLockLock();
 
 static inline NSUInteger _DSKVOPointersHash(NSInteger count,...) {
+#if 1
+    NSUInteger hash = 0;
+    va_list ap;
+    va_start(ap, count);
+    for (NSInteger i=0; i < count; ++i) {
+        void *p = va_arg(ap, void *);
+        hash += (NSUInteger)p;
+    }
+    va_end(ap);
+    return hash;
+#else
+    
     void *pointers[count];
     
     va_list ap;
@@ -48,6 +64,7 @@ static inline NSUInteger _DSKVOPointersHash(NSInteger count,...) {
     unsigned char *p = (unsigned char *)pointers + 3;
     NSUInteger hash = 0;
     NSUInteger a = 0, b = 0;
+    NSInteger loopSize = count * sizeof(void *);
     do {
         hash <<= 4;
         
@@ -111,10 +128,11 @@ static inline NSUInteger _DSKVOPointersHash(NSInteger count,...) {
         hash |= (~0L ^ (0x0FL << (LONG_BIT - 4) ));
         hash ^= (0x0FL << (LONG_BIT - 4) );
         hash &= b;
-        count -= sizeof(id);
-        p += sizeof(id);
+        loopSize -= 4;
+        p += 4;
         
-    } while(count > sizeof(id) - 1);
+    } while(loopSize > 3);
     
     return hash;
+#endif
 }

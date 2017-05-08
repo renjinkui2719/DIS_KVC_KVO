@@ -23,19 +23,19 @@ id _DSGetProxyValueWithGetterNoLock(id object, DSKeyValueProxyGetter *getter) {
     proxyShareKey.container = object;
     proxyShareKey.key = getter.key;
     
-    id member = [proxyShare member:proxyShareKey];
+    id existProxy = [proxyShare member:proxyShareKey];
     
     proxyShareKey.container = nil;
     proxyShareKey.key = nil;
     
-    if(member) {
-        return [[member retain] autorelease];
+    if(existProxy) {
+        return [[existProxy retain] autorelease];
     }
     else {
-        member = [[getter.proxyClass alloc] _proxyInitWithContainer:object getter:getter];
-        [proxyShare addObject:member];
+        existProxy = [[getter.proxyClass alloc] _proxyInitWithContainer:object getter:getter];
+        [proxyShare addObject:existProxy];
         
-        return [member autorelease];
+        return [existProxy autorelease];
     }
 }
 
