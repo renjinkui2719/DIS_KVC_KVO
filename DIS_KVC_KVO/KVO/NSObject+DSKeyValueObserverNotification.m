@@ -9,6 +9,7 @@
 #import "NSObject+DSKeyValueObserverNotification.h"
 #import "DSKeyValueObservationInfo.h"
 #import "NSObject+DSKeyValueObservingPrivate.h"
+#import "NSObject+DSKeyValueObserverRegistration.h"
 #import "DSKeyValueObservance.h"
 #import "DSKeyValueProperty.h"
 #import "DSKeyValueChangeDictionary.h"
@@ -878,7 +879,7 @@ BOOL _DSKeyValueCheckObservationInfoForPendingNotification(id object, DSKeyValue
 
 void DSKeyValueDidChangeBySetting(DSKeyValueChangeDetails *resultChangeDetails, id object, NSString *keyPath, BOOL keyPathExactMatch, int options, DSKeyValueChangeDetails changeDetails) {
     id newValue = nil;
-    if(keyPathExactMatch) {
+    if(options & DSKeyValueObservingOptionNew) {
         newValue = [object valueForKeyPath:keyPath];
         if(!newValue) {
             newValue = [NSNull null];
@@ -899,7 +900,7 @@ BOOL DSKeyValuePopPendingNotificationPerThread(id object,id keyOrKeys, DSKeyValu
     if(popInfo->lastPopedNotification) {
         CFArrayRemoveValueAtIndex(popInfo->pendingArray, popInfo->lastPopdIndex);
         if(popInfo->lastPopedNotification->pushAsLastPop) {
-            return NO;
+            //return NO;
         }
     }
     else {
@@ -931,7 +932,7 @@ BOOL DSKeyValuePopPendingNotificationPerThread(id object,id keyOrKeys, DSKeyValu
             CFArrayRemoveValueAtIndex(popInfo->pendingArray, i);
             
             if (changeNotification->pushAsLastPop) {
-                return NO;
+                //return NO;
             }
         }
     }
@@ -985,14 +986,14 @@ void DSKeyValueWillChange(id object, id keyOrKeys, BOOL isASet, DSKeyValueObserv
     }
 }
 
-void DSKeyValueDidChange(id object, id keyOrKeys, BOOL isASet,DSKeyValueDidChangeByCallback didChangeByCallback, DSKeyValuePopPendingNotificationCallback popPendingNotificationCallback, void *pendingInfo) {
+void DSKeyValueDidChange(id object, id keyOrKeys, BOOL isASet,DSKeyValueDidChangeByCallback didChangeByCallback, DSKeyValuePopPendingNotificationCallback popPendingNotificationCallback, void *popInfo) {
     DSKeyValueObservance *popedObservance = nil;
     DSKeyValueChangeDetails popedChangeDetails = {0};
     DSKeyValuePropertyForwardingValues popedForwardValues = {0};
     id popedKeyOrKeys = nil;
     DSKeyValueChangeDictionary *changeDictionary = nil;
     
-    while(popPendingNotificationCallback(object, keyOrKeys, &popedObservance, &popedChangeDetails, &popedForwardValues, &popedKeyOrKeys, pendingInfo)) {
+    while(popPendingNotificationCallback(object, keyOrKeys, &popedObservance, &popedChangeDetails, &popedForwardValues, &popedKeyOrKeys, popInfo)) {
         [popedObservance.property object:object withObservance:popedObservance didChangeValueForKeyOrKeys:popedKeyOrKeys recurse:YES forwardingValues:popedForwardValues];
         BOOL exactMatch = NO;
         if(!isASet) {
@@ -1010,4 +1011,5 @@ void DSKeyValueDidChange(id object, id keyOrKeys, BOOL isASet,DSKeyValueDidChang
     
     [changeDictionary release];
 }
+
 

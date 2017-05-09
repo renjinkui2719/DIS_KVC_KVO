@@ -37,7 +37,6 @@ static inline NSNumber* DSKeyValueChangeDictionaryNumberWithKind(DSKeyValueChang
         [_details.indexes release];
         [_originalObservable release];
     }
-    //loc_55BD7
     [super dealloc];
 }
 

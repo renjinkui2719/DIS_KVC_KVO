@@ -128,7 +128,7 @@ void DSKeyValueObservingAssertRegistrationLockNotHeld() {
         
         id newValue = nil;
         if (options & DSKeyValueObservingOptionNew) {
-            id newValue = [self valueForKeyPath:keyPath];
+            newValue = [self valueForKeyPath:keyPath];
             if (!newValue) {
                 newValue = [NSNull null];
             }

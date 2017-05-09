@@ -36,6 +36,11 @@ extern NSString *const DSKeyValueChangeIndexesKey;
 extern NSString *const DSKeyValueChangeNotificationIsPriorKey;
 extern NSString *const DSKeyValueChangeOriginalObservableKey;
 
+
+void DSKeyValueObserverRegistrationLockUnlock();
+void DSKeyValueObserverRegistrationLockLock();
+void DSKeyValueObservingAssertRegistrationLockNotHeld();
+
 @class DSKeyValueProperty;
 
 @interface NSObject (DSKeyValueObserverRegistration)

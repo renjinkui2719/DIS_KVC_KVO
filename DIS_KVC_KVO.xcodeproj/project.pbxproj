@@ -410,12 +410,12 @@
 			isa = PBXGroup;
 			children = (
 				91958A811E77ECA7004A7000 /* DSKeyValueObserverCommon.h */,
+				916EC55A1E667511001E7595 /* DSKeyValueProperty.h */,
+				916EC55B1E667511001E7595 /* DSKeyValueProperty.m */,
 				916EC5501E667511001E7595 /* DSKeyValueComputedProperty.h */,
 				916EC5511E667511001E7595 /* DSKeyValueComputedProperty.m */,
 				916EC5541E667511001E7595 /* DSKeyValueNestedProperty.h */,
 				916EC5551E667511001E7595 /* DSKeyValueNestedProperty.m */,
-				916EC55A1E667511001E7595 /* DSKeyValueProperty.h */,
-				916EC55B1E667511001E7595 /* DSKeyValueProperty.m */,
 				916EC55E1E667511001E7595 /* DSKeyValueUnnestedProperty.h */,
 				916EC55F1E667511001E7595 /* DSKeyValueUnnestedProperty.m */,
 				916EC54E1E667511001E7595 /* DSKeyValueChangeDictionary.h */,
@@ -710,7 +710,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 10.12;
 				MTL_ENABLE_DEBUG_INFO = YES;
-				ONLY_ACTIVE_ARCH = YES;
+				ONLY_ACTIVE_ARCH = NO;
 				SDKROOT = macosx;
 			};
 			name = Debug;
@@ -759,6 +759,7 @@
 		916EC4E71E6674FE001E7595 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD)";
 				DEVELOPMENT_TEAM = B5VVHWEWBM;
 				GCC_WARN_ABOUT_DEPRECATED_FUNCTIONS = NO;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -768,6 +769,7 @@
 		916EC4E81E6674FE001E7595 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD)";
 				DEVELOPMENT_TEAM = B5VVHWEWBM;
 				GCC_WARN_ABOUT_DEPRECATED_FUNCTIONS = NO;
 				PRODUCT_NAME = "$(TARGET_NAME)";

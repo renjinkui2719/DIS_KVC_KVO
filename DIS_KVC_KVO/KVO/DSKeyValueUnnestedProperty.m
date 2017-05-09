@@ -80,15 +80,21 @@
 
 - (void)_addDependentValueKey:(NSString *)key {}
 
-
+/**
+ *  获取当前property依赖的其他property
+ *
+ *  @param propertiesBeingInitialized 所有创建的property集合
+ *  @param affectingProperties        依赖的property集合
+ */
 - (void)_givenPropertiesBeingInitialized:(CFMutableSetRef)propertiesBeingInitialized getAffectingProperties:(NSMutableSet *)affectingProperties {
     if (_affectingProperties) {
         [affectingProperties addObjectsFromArray: _affectingProperties];
     }
     else {
-        //获取self.keyPath依赖的其他keyPath
+        //获取当前keyPath依赖的其他keyPath
         NSSet<NSString *>* keyPaths = [self.containerClass.originalClass keyPathsForValuesAffectingValueForKey:self.keyPath];
         for (NSString *eachKeyPath in keyPaths) {
+            //某个依赖的keyPath和当前keyPath相同，出现“自己依赖自己”，非法
             if ([eachKeyPath isEqualToString: self.keyPath]) {
                 [NSException raise:NSInternalInconsistencyException
                             format:@"%@: A +keyPathsForValuesAffectingValueForKey: message returned a set that includes the same key \
@@ -96,6 +102,8 @@
             }
             else {
                 NSString *prefix = [self.keyPath stringByAppendingString:@"."];
+                //某个依赖的keyPath包含当前keyPath，也属于“自己依赖自己”的情况，非法
+                //比如 "student" 依赖 “student.age”
                 if ([eachKeyPath hasPrefix: prefix]) {
                     [NSException raise:NSInternalInconsistencyException format:@"%@: A +keyPathsForValuesAffectingValueForKey: message \
                      returned a set that includes a key path that starts with the same key that was passed in, which is not valid. The \
@@ -103,11 +111,12 @@
                      key: %@\nReturned key path set: %@",  self.containerClass.originalClass, self.keyPath, keyPaths];
                 }
                 else {
-                    //创建被依赖的每个keyPath对应的property
+                    //创建依赖的每个keyPath对应的property
                     DSKeyValueProperty *property = DSKeyValuePropertyForIsaAndKeyPathInner(self.containerClass.originalClass ,eachKeyPath, propertiesBeingInitialized);
                     if(![affectingProperties containsObject:property]) {
                         [affectingProperties addObject:property];
-                        //被依赖property本身也会有自己的其他依赖项,获取之
+                        //依赖property本身也可能会有自己的其他依赖项,递归获取之
+                        //A-依赖->B  B-依赖->C, 那么A-依赖->C
                         [property _givenPropertiesBeingInitialized:propertiesBeingInitialized getAffectingProperties: affectingProperties];
                     }
                 }
@@ -143,7 +152,9 @@
 }
 
 /**
- @return self.keyPath if key is equal to self.keyPath and set exactMatch to YES, otherwise returns nil, and set exactMatch to NO
+ *  判断参数key是否和当前property的keyPath相等
+ *  @param exactMatch key和当前property的keyPath相等,置为YES,否则置为NO
+ *  @return 如果key等于当前property的keyPath，返回当前property的keyPath,  否则返回nil
  */
 - (NSString *)_keyPathIfAffectedByValueForKey:(NSString *)key exactMatch:(BOOL *)exactMatch {
     if(key != self.keyPath && !CFEqual(key, self.keyPath)) {
@@ -155,10 +166,11 @@
     return self.keyPath;
 }
 
+
 /**
- @return self.keyPath if key is equal to self.keyPath and set exactMatch to YES,
-  otherwise returns self.keyPath if key is equal to some other keyPath which affecting self.keyPath and set exactMatch to NO,
-  otherwise returns nil
+ *  判断参数key是否和当前property的keyPath相等， 或者和当前property依赖的某个property的keyPath相等
+ *  @param exactMatch key和当前property的keyPath相等,置为YES,否则置为NO
+ *  @return 找到相等，返回当前property的keyPath值， 否则返回nil
  */
 - (NSString *)keyPathIfAffectedByValueForKey:(NSString *)key exactMatch:(BOOL *)exactMatch {
     NSString *keyPath = [self _keyPathIfAffectedByValueForKey:key exactMatch:exactMatch];
