@@ -103,9 +103,9 @@
     [super didChangeValueForKey:key];
 }
 
-+ (NSSet<NSString *> *)keyPathsForValuesAffectingChar_field {
-    return [NSSet setWithObjects:@"BOOL_field",@"unsigned_char_field", nil];
-}
+//+ (NSSet<NSString *> *)keyPathsForValuesAffectingChar_field {
+//    return [NSSet setWithObjects:@"BOOL_field",@"unsigned_char_field", nil];
+//}
 
 #if NSArray_MutByContainer
 
@@ -237,20 +237,27 @@ extern void *_os_lock_type_handoff;
 extern void *_os_lock_handoff_trylock;
 extern void *_os_lock_handoff_lock;
 //extern OSSpinLock NSKeyValueObservationInfoSpinLock;
+
+//extern pthread_mutex_t __NSKeyValueObserverRegistrationLock;
+
 int main(int argc, const char * argv[]) {
+    
+    //printf("_NSKeyValueObserverRegistrationLock: %p", __NSKeyValueObserverRegistrationLock);
     
     Observer *observer_a = [ObserverA new];
     Observer *observer_b = [ObserverB new];
     Observer *observer_c = [ObserverC new];
     A *a = A.random;
+    a.A_field = A.random;
     
     int options = DSKeyValueObservingOptionNew/*|DSKeyValueObservingOptionPrior|NSKeyValueObservingOptionOld|NSKeyValueObservingOptionInitial*/;
     
-    [a d_addObserver:observer_a forKeyPath:@"char_field" options:options context:"this is context for observer_a"];
-    [a d_addObserver:observer_b forKeyPath:@"char_field" options:options context:"this is context for observer_b"];
-    [a d_addObserver:observer_c forKeyPath:@"char_field" options:options context:"this is context for observer_c"];
+    [a d_addObserver:observer_a forKeyPath:@"A_field.char_field" options:options context:"this is context for observer_a"];
+//    [a d_addObserver:observer_a forKeyPath:@"char_field" options:options context:"this is context for observer_a"];
+//    [a d_addObserver:observer_b forKeyPath:@"char_field" options:options context:"this is context for observer_b"];
+//    [a d_addObserver:observer_c forKeyPath:@"char_field" options:options context:"this is context for observer_c"];
     
-    a.unsigned_char_field = YES;
+    a.A_field.char_field = 'f';
     
     NSLog(@"");
     

@@ -366,7 +366,8 @@ void _DSKVONotifyingEnableForInfoAndKey(DSKeyValueNotifyingInfo *info, NSString 
                 case 'Q': {
                     imp = (IMP)_DSSetUnsignedLongLongValueAndNotify;
                 } break;
-                case '#': {
+                case '#':
+                case '@':{
                     imp = (IMP)_DSSetObjectValueAndNotify;
                 } break;
                 default: {

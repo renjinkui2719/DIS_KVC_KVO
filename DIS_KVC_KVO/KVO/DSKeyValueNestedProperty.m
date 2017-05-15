@@ -76,7 +76,7 @@
         id relationshipValue = [[object valueForKey:_relationshipKey] retain];
         DSKeyValueObserverRegistrationLockLock();
         
-        [relationshipValue addObserver:observance forKeyPath:_keyPathFromRelatedObject options:options context:context];
+        [relationshipValue d_addObserver:observance forKeyPath:_keyPathFromRelatedObject options:options context:context];
         
         [relationshipValue release];
         
@@ -86,7 +86,7 @@
 }
 
 - (Class)_isaForAutonotifying {
-    return [_relationshipProperty _isaForAutonotifying];
+    return [_relationshipProperty isaForAutonotifying];
 }
 
 - (void)object:(id)object didRemoveObservance:(DSKeyValueObservance *)observance recurse:(BOOL)recurse {
