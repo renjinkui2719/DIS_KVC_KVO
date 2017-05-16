@@ -8,14 +8,13 @@
 
 #import "NSObject+DSKeyValueObserverNotification.h"
 #import "DSKeyValueObservationInfo.h"
-#import "NSObject+DSKeyValueObservingPrivate.h"
-#import "NSObject+DSKeyValueObserverRegistration.h"
 #import "DSKeyValueObservance.h"
 #import "DSKeyValueProperty.h"
 #import "DSKeyValueChangeDictionary.h"
 #import "DSKeyValueContainerClass.h"
 #import "DSKeyValueObserverCommon.h"
-
+#import "NSObject+DSKeyValueObservingPrivate.h"
+#import "NSObject+DSKeyValueObserverRegistration.h"
 
 @implementation NSObject (DSKeyValueObserverNotification)
 
@@ -256,7 +255,7 @@
 @end
 
 
-void DSKVONotify(id observer, NSString *keyPath, id object, DSKeyValueChangeDictionary *changeDictionary, void *context) {
+void DSKVONotify(id observer, NSString *keyPath, id object, NSDictionary *changeDictionary, void *context) {
     DSKeyValueObservingAssertRegistrationLockNotHeld();
     [observer observeValueForKeyPath:keyPath ofObject:object change:changeDictionary context:context];
 }
@@ -752,7 +751,7 @@ void DSKeyValuePushPendingNotificationPerThread(id object, id keyOrKeys, DSKeyVa
     pendingNotification->newValue = [changeDetails.newValue retain];
     pendingNotification->indexes = [changeDetails.indexes retain];
     pendingNotification->extraData = [changeDetails.extraData retain];
-    pendingNotification->forwardingValues_p1 = [forwardingValues.p1 retain];
+    pendingNotification->forwardingValues_p1 = [forwardingValues.changingRelationshipObject retain];
     pendingNotification->forwardingValues_p2 = [forwardingValues.p2 retain];
     
     [pendingNotification->observance.observer retain];
@@ -795,13 +794,13 @@ void DSKeyValuePushPendingNotificationLocal(id object, id keyOrKeys, DSKeyValueO
     detail->newValue = changeDetails.newValue;
     detail->indexes = changeDetails.indexes;
     detail->extraData = changeDetails.extraData;
-    detail->forwardingValues_p1 = forwardingValues.p1;
+    detail->forwardingValues_p1 = forwardingValues.changingRelationshipObject;
     detail->forwardingValues_p2 = forwardingValues.p2;
     detail->p5 = pendingInfo->p5;
     detail->keyOrKeys = keyOrKeys;
     
     [changeDetails.oldValue retain];
-    [forwardingValues.p1 retain];
+    [forwardingValues.changingRelationshipObject retain];
     [observance.observer retain];
 }
 
@@ -833,7 +832,7 @@ BOOL DSKeyValuePopPendingNotificationLocal(id object,id keyOrKeys, DSKeyValueObs
         popedChangeDetails->indexes = detail->indexes;
         popedChangeDetails->extraData = detail->extraData;
         
-        popedForwardValues->p1 = detail->forwardingValues_p1;
+        popedForwardValues->changingRelationshipObject = detail->forwardingValues_p1;
         popedForwardValues->p2 = detail->forwardingValues_p1;
         
         *popedKeyOrKeys = detail->keyOrKeys;
@@ -919,7 +918,7 @@ BOOL DSKeyValuePopPendingNotificationPerThread(id object,id keyOrKeys, DSKeyValu
                 popedChangeDetails->indexes = changeNotification->indexes;
                 popedChangeDetails->extraData = changeNotification->extraData;
                 
-                popedForwardValues->p1 = changeNotification->forwardingValues_p1;
+                popedForwardValues->changingRelationshipObject = changeNotification->forwardingValues_p1;
                 popedForwardValues->p2 = changeNotification->forwardingValues_p2;
                 
                 *popedKeyOrKeys = keyOrKeys;

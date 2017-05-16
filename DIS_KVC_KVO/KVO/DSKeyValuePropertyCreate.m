@@ -94,6 +94,7 @@ DSKeyValueProperty * DSKeyValuePropertyForIsaAndKeyPathInner( Class isa, NSStrin
         }
         
         CFSetAddValue(DSKeyValueProperties, property);
+        
         CFSetRemoveValue(initializedProperties, property);
     }
     return property;

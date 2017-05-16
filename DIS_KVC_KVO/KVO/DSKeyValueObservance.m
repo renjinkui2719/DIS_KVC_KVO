@@ -3,6 +3,7 @@
 #import "DSKeyValueChangeDictionary.h"
 #import "DSKeyValueObserverCommon.h"
 #import "NSObject+DSKeyValueObserverRegistration.h"
+#import "NSObject+DSKeyValueObserverNotification.h"
 
 @implementation DSKeyValueObservance
 

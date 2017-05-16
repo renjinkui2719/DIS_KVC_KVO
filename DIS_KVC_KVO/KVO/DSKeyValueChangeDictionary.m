@@ -97,7 +97,7 @@ static inline NSNumber* DSKeyValueChangeDictionaryNumberWithKind(DSKeyValueChang
 }
 
 - (void)setOriginalObservable:(id)originalObservable {
-    if(_originalObservable == originalObservable) {
+    if(_originalObservable != originalObservable) {
         if(_isRetainingObjects) {
             [_originalObservable release];
         }

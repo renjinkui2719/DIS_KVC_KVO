@@ -41,6 +41,10 @@
 }
 @end
 
+@class B;
+@class C;
+@class D;
+
 #define NSArray_MutByContainer 1
 #define NSSet_MutByContainer 0
 #define NSOrderedSet_MutByContainer 1
@@ -73,6 +77,9 @@
 @property (nonatomic, strong) NSMutableSet<A *> *NSSet_field;
 @property (nonatomic, strong) NSMutableOrderedSet<A *> *NSOrderedSet_field;
 
+@property (nonatomic, strong) B *B_field;
+@property (nonatomic, strong) C *C_field;
+@property (nonatomic, strong) D *D_field;
 @end
 @implementation A
 
@@ -156,7 +163,7 @@
 }
 
 + (instancetype)randomWithIdentifier:(NSString *)identifier {
-    A *a = [A new];
+    A *a = [self new];
     a.identifier = identifier;
     a.char_field = arc4random();
     a.BOOL_field = arc4random() % 2 == 0;
@@ -181,7 +188,20 @@
 @end
 
 
+@interface B : A
+@end
+@implementation B
+@end
 
+@interface C : A
+@end
+@implementation C
+@end
+
+@interface D : A
+@end
+@implementation D
+@end
 
 
 static inline A* orderRandomA_1() {
@@ -242,23 +262,23 @@ extern void *_os_lock_handoff_lock;
 
 int main(int argc, const char * argv[]) {
     
-    //printf("_NSKeyValueObserverRegistrationLock: %p", __NSKeyValueObserverRegistrationLock);
-    
     Observer *observer_a = [ObserverA new];
     Observer *observer_b = [ObserverB new];
     Observer *observer_c = [ObserverC new];
     A *a = A.random;
-    a.A_field = A.random;
+    a.B_field = B.random;
+    a.B_field.C_field = C.random;
+    a.B_field.C_field.D_field = D.random;
     
     int options = DSKeyValueObservingOptionNew/*|DSKeyValueObservingOptionPrior|NSKeyValueObservingOptionOld|NSKeyValueObservingOptionInitial*/;
     
-    [a d_addObserver:observer_a forKeyPath:@"A_field.char_field" options:options context:"this is context for observer_a"];
+    [a d_addObserver:observer_a forKeyPath:@"B_field.C_field.D_field.char_field" options:options context:"this is context for observer_a"];
 //    [a d_addObserver:observer_a forKeyPath:@"char_field" options:options context:"this is context for observer_a"];
 //    [a d_addObserver:observer_b forKeyPath:@"char_field" options:options context:"this is context for observer_b"];
 //    [a d_addObserver:observer_c forKeyPath:@"char_field" options:options context:"this is context for observer_c"];
-    
-    a.A_field.char_field = 'f';
-    
+    //a.B_field = B.random;
+    //a.B_field.C_field.D_field = D.random;
+    a.B_field.C_field.D_field.char_field = '3';
     NSLog(@"");
     
     //TestKVC();

@@ -17,7 +17,7 @@
 #import "DSKeyValuePropertyCreate.h"
 #import "DSKeyValueObserverCommon.h"
 
-pthread_mutex_t _DSKeyValueObserverRegistrationLock = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t _DSKeyValueObserverRegistrationLock = PTHREAD_RECURSIVE_MUTEX_INITIALIZER;
 pthread_t _DSKeyValueObserverRegistrationLockOwner = NULL;
 BOOL _DSKeyValueObserverRegistrationEnableLockingAssertions;
 

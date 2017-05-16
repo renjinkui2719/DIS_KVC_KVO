@@ -105,7 +105,7 @@
         info->context  = (observance.property == self ? nil : self);
         info->flag = YES;
         
-        [relationshipValue removeObserver:observance forKeyPath:_keyPathFromRelatedObject];
+        [relationshipValue d_removeObserver:observance forKeyPath:_keyPathFromRelatedObject];
         
         *info = backInfo;
         
@@ -126,18 +126,17 @@
 }
 
 - (BOOL)object:(id)object withObservance:(DSKeyValueObservance *)observance willChangeValueForKeyOrKeys:(id)keyOrKeys recurse:(BOOL)recurse forwardingValues:(DSKeyValuePropertyForwardingValues *)forwardingValues {
-    
     ImplicitObservanceAdditionInfo *info = DSKeyValueGetImplicitObservanceAdditionInfo();
     if(info->object != object || info->observance !=  observance) {
         //loc_6F448
-        forwardingValues->p1 = nil;
+        forwardingValues->changingRelationshipObject = nil;
         forwardingValues->p2 = nil;
         
         if(_isAllowedToResultInForwarding) {
             id relationshipObject = [object valueForKey:self.relationshipKey];
-            forwardingValues->p1 = relationshipObject;
+            forwardingValues->changingRelationshipObject = relationshipObject;
             if(!relationshipObject) {
-                forwardingValues->p1 = [NSNull null];
+                forwardingValues->changingRelationshipObject = [NSNull null];
             }
             //loc_6F4A6
         }
@@ -153,38 +152,49 @@
 
 - (void)object:(id)object withObservance:(DSKeyValueObservance *)observance didChangeValueForKeyOrKeys:(id)keyOrKeys recurse:(BOOL)recurse forwardingValues:(DSKeyValuePropertyForwardingValues)forwardingValues {
     if(_isAllowedToResultInForwarding) {
+        DSKeyValueObservingOptions option = 0;
+        void *context = NULL;
+        if (observance.property == self) {
+            option = observance.options;
+            context = NULL;
+        }
+        else {
+            option = DSKeyValueObservingOptionPrior;
+            context = self;
+        }
+        
         ImplicitObservanceRemovalInfo *removalinfo =  DSKeyValueGetImplicitObservanceRemovalInfo();
         ImplicitObservanceRemovalInfo backRemovalinfo = *removalinfo;
         
-        removalinfo->relationshipObject = (forwardingValues.p1 != [NSNull null] ? forwardingValues.p1 : nil);
+        id changingRelationshipObject = (forwardingValues.changingRelationshipObject != [NSNull null] ? forwardingValues.changingRelationshipObject : nil);
+        
+        removalinfo->relationshipObject = changingRelationshipObject;
         removalinfo->observer = observance;
-        removalinfo->keyPathFromRelatedObject = self.keyPathFromRelatedObject;
+        removalinfo->keyPathFromRelatedObject = _keyPathFromRelatedObject;
         removalinfo->object = object;
-        removalinfo->context  = (observance.property == self ? nil : self);
+        removalinfo->context  = context;
         removalinfo->flag = YES;
 
-        [(forwardingValues.p1 != [NSNull null] ? forwardingValues.p1 : nil) removeObserver:observance forKeyPath:_keyPathFromRelatedObject];
+        [changingRelationshipObject d_removeObserver:observance forKeyPath:_keyPathFromRelatedObject];
         
         *removalinfo = backRemovalinfo;
 
         ImplicitObservanceAdditionInfo *additionInfo = DSKeyValueGetImplicitObservanceAdditionInfo();
-        id prevObject = additionInfo->object;
-        DSKeyValueObservance *prevObservance = additionInfo->observance;
+        ImplicitObservanceAdditionInfo backAdditionInfo = *additionInfo;
+        
         additionInfo->object = object;
         additionInfo->observance = observance;
 
-        id relationshipValue = [object valueForKey:self.relationshipKey];
+        id newRelationshipObject = [object valueForKey:_relationshipKey];
         
-        [relationshipValue addObserver:observance forKeyPath:self.keyPathFromRelatedObject options:(observance.property == self ? observance.options | 0x100 : 0x108) context:(forwardingValues.p1 != [NSNull null] ? forwardingValues.p1 : nil)];
+        [newRelationshipObject d_addObserver:observance forKeyPath:_keyPathFromRelatedObject options:option context:context];
         
-        additionInfo->object = prevObject;
-        additionInfo->observance = prevObservance;
-        
-        if(forwardingValues.p2) {
-            [self.relationshipProperty object:object withObservance:observance didChangeValueForKeyOrKeys:observance recurse:recurse forwardingValues:forwardingValues];
-        }
+        *additionInfo = backAdditionInfo;
     }
     //loc_6F6A1
+    if(forwardingValues.p2) {
+        [_relationshipProperty object:object withObservance:observance didChangeValueForKeyOrKeys:observance recurse:recurse forwardingValues:forwardingValues];
+    }
 }
 
 - (BOOL)matchesWithoutOperatorComponentsKeyPath:(NSString *)keyPath {

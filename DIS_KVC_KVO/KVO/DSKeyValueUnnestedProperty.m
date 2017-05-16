@@ -212,12 +212,12 @@
             }
             if(keyPath) {
                 if([property object:object withObservance:observance willChangeValueForKeyOrKeys:keyOrKeys recurse:NO forwardingValues:&forwardingValuesLocal]) {
-                    if(forwardingValuesLocal.p1) {
+                    if(forwardingValuesLocal.changingRelationshipObject) {
                         if(var_8C) {
-                            [var_8C setObject:forwardingValuesLocal.p1 forKey:property];
+                            [var_8C setObject:forwardingValuesLocal.changingRelationshipObject forKey:property];
                         }
                         else {
-                            var_8C = [NSMutableDictionary dictionaryWithObject:forwardingValuesLocal.p1 forKey:property];
+                            var_8C = [NSMutableDictionary dictionaryWithObject:forwardingValuesLocal.changingRelationshipObject forKey:property];
                         }
                         //loc_41FEB
                     }
@@ -235,7 +235,7 @@
         }
     }
     //loc_4205D
-    forwardingValues->p1 = 0;
+    forwardingValues->changingRelationshipObject = 0;
     forwardingValues->p2 = var_8C;
     
     return YES;

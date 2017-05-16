@@ -12,7 +12,7 @@
 @class DSKeyValueObservance;
 
 typedef struct {
-    id p1;
+    id changingRelationshipObject;
     NSMutableDictionary *p2;
 }DSKeyValuePropertyForwardingValues;
 
