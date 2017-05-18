@@ -19,15 +19,16 @@
     return self;
 }
 
-
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
     id originalObservable = change[DSKeyValueChangeOriginalObservableKey];
-	if(originalObservable) {
+	
+    if(originalObservable) {
 		if (context) {
 			BOOL isASet = NO;
 			id dependentValueKeyOrKeys = [(DSKeyValueProperty *)context dependentValueKeyOrKeysIsASet: &isASet];
             BOOL isPrior = [change[DSKeyValueChangeNotificationIsPriorKey] boolValue];
-			if(isPrior) {
+			
+            if(isPrior) {
 				DSKeyValueWillChangeForObservance(originalObservable, dependentValueKeyOrKeys, isASet, self);
 			}
 			else {
@@ -68,24 +69,12 @@
 	}
 
 	DSKeyValueObservance *other = (DSKeyValueObservance *)object;
-	if (other.observer != self.observer) {
-		return NO;
-	}
-	unsigned char opt_self = (unsigned char)self.options;
-	unsigned char opt_other = (unsigned char)other.options;
-	if (opt_self ^ opt_other) {
-		return NO;
-	}
-
-	if (other.context != self.context) {
-		return NO;
-	}
-
-    if (self.originalObservable == other.originalObservable) {
-    	return YES;
-    }
-
-    return NO;
+    
+    return  other.observer == self.observer &&
+            other.options == self.options &&
+            other.context == self.context &&
+            other.originalObservable == self.originalObservable;
+    
 }
 
 - (NSString *)description {

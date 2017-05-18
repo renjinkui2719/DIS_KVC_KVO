@@ -206,26 +206,26 @@
 }
 
 - (void)_givenPropertiesBeingInitialized:(CFMutableSetRef)propertiesBeingInitialized getAffectingProperties:(NSMutableSet *)affectingProperties {
-    [self.relationshipProperty _givenPropertiesBeingInitialized:propertiesBeingInitialized getAffectingProperties:affectingProperties];
+    [_relationshipProperty _givenPropertiesBeingInitialized:propertiesBeingInitialized getAffectingProperties:affectingProperties];
 }
 
 - (void)_addDependentValueKey:(id)valueKey {
     id valueKeyCopy = [valueKey copy];
     if(_dependentValueKeyOrKeys) {
         if(_dependentValueKeyOrKeysIsASet) {
-            self.dependentValueKeyOrKeys = [self.dependentValueKeyOrKeys setByAddingObject:valueKeyCopy];
+            _dependentValueKeyOrKeys = [_dependentValueKeyOrKeys setByAddingObject:valueKeyCopy];
             //loc_C90F5
         }
         else {
             //loc_C9090
-            self.dependentValueKeyOrKeys = [[NSSet alloc] initWithObjects:self.dependentValueKeyOrKeys,valueKeyCopy, nil];
-            self.dependentValueKeyOrKeysIsASet = YES;
+            _dependentValueKeyOrKeys = [[NSSet alloc] initWithObjects:_dependentValueKeyOrKeys,valueKeyCopy, nil];
+            _dependentValueKeyOrKeysIsASet = YES;
             //loc_C90F5
         }
     }
     else {
         //loc_C906C
-        self.dependentValueKeyOrKeys = valueKeyCopy;
+        _dependentValueKeyOrKeys = valueKeyCopy;
         //loc_C90F5
     }
     //loc_C90F5

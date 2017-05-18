@@ -39,9 +39,13 @@ typedef struct {
     ImplicitObservanceRemovalInfo implicitObservanceRemovalInfo;
 }DSKeyValueObservingTSD;
 
-#define DSKeyValueObservingTSDKey 0x15
-#define DSKeyValueObservingKeyPathTSDKey 0x20
-#define DSKeyValueObservingObjectTSDKey 0x1F
+#define NSKeyValueObservingTSDKey 0x15
+#define NSKeyValueObservingKeyPathTSDKey 0x20
+#define NSKeyValueObservingObjectTSDKey 0x1F
+
+#define DSKeyValueObservingTSDKey (NSKeyValueObservingTSDKey +1)
+#define DSKeyValueObservingKeyPathTSDKey (NSKeyValueObservingKeyPathTSDKey +1)
+#define DSKeyValueObservingObjectTSDKey (NSKeyValueObservingObjectTSDKey +1)
 
 void DSKeyValueObservingTSDDestroy(void *data);
 ImplicitObservanceAdditionInfo *DSKeyValueGetImplicitObservanceAdditionInfo();

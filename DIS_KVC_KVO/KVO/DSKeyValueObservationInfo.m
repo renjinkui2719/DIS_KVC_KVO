@@ -54,6 +54,7 @@ NSHashTable *DSKeyValueShareableObservances;
     
     NSUInteger result_count = _observances.count + 1;
 
+    //result_count 超过 NSIntegerMax，抛 too  large  异常
     if (((NSInteger)result_count) < 0) {
         [NSException raise:NSGenericException format:@"*** attempt to create a temporary id buffer which is too large or with a negative count (%lu) -- possibly data is corrupt",(NSUInteger)result_count];
     }
@@ -62,20 +63,26 @@ NSHashTable *DSKeyValueShareableObservances;
             result_count = 1;
         }
         if (result_count > 256) {
+            //大于256个对象， 堆分配内存
             DSKeyValueObservance **observance_objs = (DSKeyValueObservance **)NSAllocateObjectArray(result_count);
             if (!observance_objs) {
                 [NSException raise:NSMallocException format:@"*** attempt to create a temporary id buffer of length (%lu) failed",(NSUInteger)result_count];
             }
             observance_objs[_observances.count] = observance;
             [_observances getObjects:observance_objs range:NSMakeRange(0, _observances.count)];
+            
             copied.observances = [[NSArray alloc] initWithObjects:observance_objs count:result_count];
+            
             NSFreeObjectArray(observance_objs);
         }
         else {
+            //栈分配
             DSKeyValueObservance *observance_objs[result_count];
             memset(observance_objs, 0, result_count);
             observance_objs[_observances.count] = observance;
+            
             [_observances getObjects:observance_objs range:NSMakeRange(0, _observances.count)];
+            
             copied.observances = [[NSArray alloc] initWithObjects:observance_objs count:result_count];
         }
         
@@ -334,7 +341,7 @@ BOOL DSKeyValueShareableObservationInfoNSHTIsEqual(const void * item1, const voi
     }
 }
 
-DSKeyValueObservationInfo *_DSKeyValueObservationInfoCreateByAdding(DSKeyValueObservationInfo *baseObservationInfo, id observer, DSKeyValueProperty *property, int options, void *context, id originalObservable,  BOOL *cacheHit, DSKeyValueObservance **createdObservance) {
+DSKeyValueObservationInfo *_DSKeyValueObservationInfoCreateByAdding(DSKeyValueObservationInfo *baseObservationInfo, id observer, DSKeyValueProperty *property, int options, void *context, id originalObservable,  BOOL *cacheHit, DSKeyValueObservance **addedObservance) {
     DSKeyValueObservationInfo *createdObservationInfo = nil;
     
     os_lock_lock(&DSKeyValueObservationInfoCreationSpinLock);
@@ -392,10 +399,15 @@ DSKeyValueObservationInfo *_DSKeyValueObservationInfoCreateByAdding(DSKeyValueOb
         shareableObservanceKey.options = options;
         shareableObservanceKey.context = context;
         shareableObservanceKey.originalObservable = originalObservable;
+        
+        //查找缓存
         DSKeyValueObservance *existsObservance = [DSKeyValueShareableObservances member:shareableObservanceKey];
+        
         shareableObservanceKey.originalObservable = nil;
         shareableObservanceKey.observer = nil;
+        
         DSKeyValueObservance *observance = nil;
+        
         if (!existsObservance) {
             observance = [[DSKeyValueObservance alloc] _initWithObserver:observer property:property options:options context:context originalObservable:originalObservable];
             if(observance.cachedIsShareable) {
@@ -407,9 +419,11 @@ DSKeyValueObservationInfo *_DSKeyValueObservationInfoCreateByAdding(DSKeyValueOb
         }
         
         if(baseObservationInfo) {
+            //复制baseObservationInfo并追加observance
             createdObservationInfo = [baseObservationInfo _copyByAddingObservance:observance];
         }
         else {
+            //创建新的ObservationInfo
             createdObservationInfo = [[DSKeyValueObservationInfo alloc] _initWithObservances:&observance count:1 hashValue:0];
         }
         
@@ -418,13 +432,13 @@ DSKeyValueObservationInfo *_DSKeyValueObservationInfoCreateByAdding(DSKeyValueOb
         }
         
         *cacheHit = NO;
-        *createdObservance = observance;
+        *addedObservance = observance;
     }
     else {
         //缓存中存在
         *cacheHit = YES;
         //observance必定就是已存在的info.observance列表最后一个， 因为判断equal就是按照这个原则去判断的
-        *createdObservance = existsObservationInfo.observances.lastObject;
+        *addedObservance = existsObservationInfo.observances.lastObject;
         
         createdObservationInfo = existsObservationInfo;
     }
@@ -434,32 +448,35 @@ DSKeyValueObservationInfo *_DSKeyValueObservationInfoCreateByAdding(DSKeyValueOb
     return createdObservationInfo;
 }
 
-DSKeyValueObservationInfo *_DSKeyValueObservationInfoCreateByRemoving(DSKeyValueObservationInfo *baseObservationInfo, id observer, DSKeyValueProperty *property, void *context, BOOL flag,  id originalObservable,  BOOL *fromCache, DSKeyValueObservance **pObservance) {
+
+DSKeyValueObservationInfo *_DSKeyValueObservationInfoCreateByRemoving(DSKeyValueObservationInfo *baseObservationInfo, id observer, DSKeyValueProperty *property, void *context, BOOL flag,  id originalObservable,  BOOL *cacheHit, DSKeyValueObservance **removalObservance) {
+    DSKeyValueObservationInfo *createdObservationInfo = nil;
+    
     NSUInteger observanceCount = CFArrayGetCount((CFArrayRef)baseObservationInfo.observances);
     DSKeyValueObservance *observancesBuff[observanceCount];
-    CFArrayGetValues((CFArrayRef)baseObservationInfo.observances, CFRangeMake(0, observanceCount), (const void**)observancesBuff);
+    CFArrayGetValues((CFArrayRef)baseObservationInfo.observances, CFRangeMake(0, observanceCount), (const void**)observanceCount);
     
-    NSUInteger observanceIndex = NSNotFound;
+    NSUInteger removalObservanceIndex = NSNotFound;
+    
     for (NSInteger i = observanceCount - 1; i >= 0; --i) {
         DSKeyValueObservance *observance = observancesBuff[i];
         if (observance.property == property && observance.observer == observer) {
             if (!flag || observance.context == context) {
                 if (!originalObservable || observance.originalObservable == originalObservable) {
                     //loc_5A4C1
-                    *pObservance = observance;
-                    observanceIndex = i;
+                    *removalObservance = observance;
+                    removalObservanceIndex = i;
                     //loc_5A4C6
                     break;
                 }
             }
         }
     }//for
-    //loc_5A4AA
     
     //loc_5A4AA
-    if (*pObservance) {
+    if (*removalObservance) {
         //loc_5A4C6
-        if (observanceCount >= 2) {
+        if (observanceCount > 1) {
             os_lock_lock(&DSKeyValueObservationInfoCreationSpinLock);
             if (!DSKeyValueShareableObservationInfos) {
                 NSPointerFunctions *functions = [[NSPointerFunctions alloc] initWithOptions:NSPointerFunctionsWeakMemory];
@@ -484,36 +501,39 @@ DSKeyValueObservationInfo *_DSKeyValueObservationInfoCreateByRemoving(DSKeyValue
             //loc_5A5F5
             shareableObservationInfoKey.addingNotRemoving = NO;
             shareableObservationInfoKey.baseObservationInfo = baseObservationInfo;
-            shareableObservationInfoKey.removalObservance = *pObservance;
-            shareableObservationInfoKey.removalObservanceIndex = observanceIndex;
+            shareableObservationInfoKey.removalObservance = *removalObservance;
+            shareableObservationInfoKey.removalObservanceIndex = removalObservanceIndex;
             shareableObservationInfoKey.cachedHash = DSKeyValueShareableObservationInfoNSHTHash(shareableObservationInfoKey, NULL);
             
-            DSKeyValueObservationInfo *observationInfo = [DSKeyValueShareableObservationInfos member:shareableObservationInfoKey];
+            DSKeyValueObservationInfo *existsObservationInfo = [DSKeyValueShareableObservationInfos member:shareableObservationInfoKey];
             
             shareableObservationInfoKey.removalObservance = nil;
             shareableObservationInfoKey.baseObservationInfo = nil;
+            
             NSUInteger cachedHash = shareableObservationInfoKey.cachedHash;
+            
             shareableObservationInfoKey.cachedHash = 0;
             
-            if (!observationInfo) {
-                memmove(observancesBuff + observanceIndex, observancesBuff + observanceIndex + 1, observanceCount - (observanceIndex + 1));
-                observationInfo = [[DSKeyValueObservationInfo alloc] _initWithObservances:observancesBuff count:observanceCount - 1 hashValue:cachedHash];
-                if (observationInfo.cachedIsShareable) {
-                    [DSKeyValueShareableObservationInfos addObject:observationInfo];
+            if (!existsObservationInfo) {
+                memmove(observancesBuff + removalObservanceIndex, observancesBuff + removalObservanceIndex + 1, observanceCount - (removalObservanceIndex + 1));
+                createdObservationInfo = [[DSKeyValueObservationInfo alloc] _initWithObservances:observancesBuff count:observanceCount - 1 hashValue:cachedHash];
+                if (createdObservationInfo.cachedIsShareable) {
+                    [DSKeyValueShareableObservationInfos addObject:createdObservationInfo];
                 }
-                *fromCache = NO;
+                *cacheHit = NO;
             }
             else {
-                *fromCache = YES;
-                [observationInfo retain];
+                *cacheHit = YES;
+                createdObservationInfo = [existsObservationInfo retain];
             }
             
             os_lock_unlock(&DSKeyValueObservationInfoCreationSpinLock);
-            return observationInfo;
+            
+            return createdObservationInfo;
         }
         else {
             //loc_5A6A8
-            *fromCache = YES;
+            *cacheHit = YES;
         }
     }
     
@@ -529,16 +549,17 @@ void _DSKeyValueReplaceObservationInfoForObject(id object, DSKeyValueContainerCl
     
     DSKeyValueObservingTSD *TSD = _CFGetTSD(DSKeyValueObservingTSDKey);
     if(TSD) {
-        ObservationInfoWatcher *watcher = TSD->firstWatcher;
-        while(watcher) {
-            if (watcher->object == object) {
-                [watcher->observationInfo release];
-                watcher->observationInfo = [newObservationInfo retain];
+        ObservationInfoWatcher *next = TSD->firstWatcher;
+        while(next) {
+            if (next->object == object) {
+                [next->observationInfo release];
+                next->observationInfo = [newObservationInfo retain];
                 break;
             }
-            watcher = watcher->next;
+            next = next->next;
         }
     }
+    
     if(containerClass) {
         containerClass.cachedSetObservationInfoImplementation(object, @selector(setObservationInfo:), newObservationInfo);
     }

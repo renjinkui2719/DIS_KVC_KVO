@@ -89,8 +89,8 @@ void DSKeyValueObservingAssertRegistrationLockNotHeld() {
     
     DSKeyValueObservationInfo *oldObservationInfo = _DSKeyValueRetainedObservationInfoForObject(self,property.containerClass);
     
-    BOOL fromCache = NO;
-    DSKeyValueObservance *observance = nil;
+    BOOL cacheHit = NO;
+    DSKeyValueObservance *addedObservance = nil;
     id originalObservable = nil;
     
     DSKeyValueObservingTSD *TSD = NULL;
@@ -101,11 +101,11 @@ void DSKeyValueObservingAssertRegistrationLockNotHeld() {
         originalObservable = TSD->implicitObservanceAdditionInfo.object;
     }
     
-    DSKeyValueObservationInfo *newObservationInfo = _DSKeyValueObservationInfoCreateByAdding(oldObservationInfo, observer, property, options, context, originalObservable,&fromCache,&observance);
+    DSKeyValueObservationInfo *newObservationInfo = _DSKeyValueObservationInfoCreateByAdding(oldObservationInfo, observer, property, options, context, originalObservable,&cacheHit,&addedObservance);
     
     _DSKeyValueReplaceObservationInfoForObject(self,property.containerClass,oldObservationInfo,newObservationInfo);
     
-    [property object:self didAddObservance:observance recurse:YES];
+    [property object:self didAddObservance:addedObservance recurse:YES];
     
     Class isaForAutonotifying = [property isaForAutonotifying];
     if(isaForAutonotifying) {
@@ -116,7 +116,6 @@ void DSKeyValueObservingAssertRegistrationLockNotHeld() {
     }
     
     [newObservationInfo release];
-    
     [oldObservationInfo release];
 }
 
@@ -132,7 +131,7 @@ void DSKeyValueObservingAssertRegistrationLockNotHeld() {
     TSD->implicitObservanceRemovalInfo.context = context;
     TSD->implicitObservanceRemovalInfo.flag = YES;
     
-    [self removeObserver:observer forKeyPath:keyPath];
+    [self d_removeObserver:observer forKeyPath:keyPath];
     
     *(TSD) = backTSD;
 }
@@ -149,13 +148,13 @@ void DSKeyValueObservingAssertRegistrationLockNotHeld() {
 }
 
 - (void)_d_removeObserver:(id)observer forProperty:(DSKeyValueProperty *)property {
-    DSKeyValueObservationInfo *retainedObervationInfo = _DSKeyValueRetainedObservationInfoForObject(self, property.containerClass);
-    if (retainedObervationInfo) {
+    DSKeyValueObservationInfo *oldObservationInfo = _DSKeyValueRetainedObservationInfoForObject(self, property.containerClass);
+    if (oldObservationInfo) {
         void *context = NULL;
         BOOL flag = NO;
         id originalObservable = nil;
         BOOL fromCache = NO;
-        DSKeyValueObservance *observance = nil;
+        DSKeyValueObservance *removalObservance = nil;
         
         DSKeyValueObservingTSD *TSD = _CFGetTSD(DSKeyValueObservingTSDKey);
         if (TSD && TSD->implicitObservanceRemovalInfo.relationshipObject == self && TSD->implicitObservanceRemovalInfo.observer == observer && [TSD->implicitObservanceRemovalInfo.keyPathFromRelatedObject isEqualToString:property.keyPath]) {
@@ -163,22 +162,29 @@ void DSKeyValueObservingAssertRegistrationLockNotHeld() {
             context = TSD->implicitObservanceRemovalInfo.context;
             flag = TSD->implicitObservanceRemovalInfo.flag;
         }
-        DSKeyValueObservationInfo *createdObservationInfo = _DSKeyValueObservationInfoCreateByRemoving(retainedObervationInfo, observer, property, context, flag, originalObservable, &fromCache, &observance);
-        if (observance) {
-            [observance retain];
-            _DSKeyValueReplaceObservationInfoForObject(self, property.containerClass, retainedObervationInfo, createdObservationInfo);
-            [property object:self didRemoveObservance:observance recurse:YES];
-            if (!createdObservationInfo) {
+        
+        DSKeyValueObservationInfo *newObservationInfo = _DSKeyValueObservationInfoCreateByRemoving(oldObservationInfo, observer, property, context, flag, originalObservable, &fromCache, &removalObservance);
+        
+        if (removalObservance) {
+            [removalObservance retain];
+            
+            _DSKeyValueReplaceObservationInfoForObject(self, property.containerClass, oldObservationInfo, newObservationInfo);
+            
+            [property object:self didRemoveObservance:removalObservance recurse:YES];
+            
+            if (!newObservationInfo) {
                 if (self.class != property.containerClass.originalClass) {
                     object_setClass(self, property.containerClass.originalClass);
                 }
             }
-            [observance release];
-            [createdObservationInfo release];
-            [retainedObervationInfo release];
+            
+            [removalObservance release];
+            [newObservationInfo release];
+            [oldObservationInfo release];
             
             return;
         }
+        //没有找到对应的observance，继续往下走，报Cannot remove an observer...异常
     }
 
     [NSException raise:NSRangeException format:@"Cannot remove an observer <%@ %p> for the key path \"%@\" from <%@ %p> because it is not registered as an observer.",[observer class], observer, property.keyPath, self.class, self];
