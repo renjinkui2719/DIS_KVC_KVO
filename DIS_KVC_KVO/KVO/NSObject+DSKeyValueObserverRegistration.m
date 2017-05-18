@@ -11,11 +11,11 @@
 #import "DSKeyValueContainerClass.h"
 #import "DSKeyValueObservance.h"
 #import "DSKeyValueObservationInfo.h"
-#import "NSObject+DSKeyValueObservingPrivate.h"
-#import "NSObject+DSKeyValueObserverNotification.h"
 #import "DSKeyValueChangeDictionary.h"
 #import "DSKeyValuePropertyCreate.h"
 #import "DSKeyValueObserverCommon.h"
+#import "NSObject+DSKeyValueObservingPrivate.h"
+#import "NSObject+DSKeyValueObserverNotification.h"
 
 pthread_mutex_t _DSKeyValueObserverRegistrationLock = PTHREAD_RECURSIVE_MUTEX_INITIALIZER;
 pthread_t _DSKeyValueObserverRegistrationLockOwner = NULL;
@@ -56,6 +56,70 @@ void DSKeyValueObservingAssertRegistrationLockNotHeld() {
     
     pthread_mutex_unlock(&_DSKeyValueObserverRegistrationLock);
 }
+
+- (void)_d_addObserver:(id)observer forProperty:(DSKeyValueProperty *)property options:(int)options context:(void *)context {
+    if(options & DSKeyValueObservingOptionInitial) {
+        NSString *keyPath = [property keyPath];
+        _DSKeyValueObserverRegistrationLockOwner = NULL;
+        pthread_mutex_unlock(&_DSKeyValueObserverRegistrationLock);
+        
+        id newValue = nil;
+        if (options & DSKeyValueObservingOptionNew) {
+            newValue = [self valueForKeyPath:keyPath];
+            if (!newValue) {
+                newValue = [NSNull null];
+            }
+        }
+        
+        DSKeyValueChangeDictionary *changeDictionary = nil;
+        DSKeyValueChangeDetails changeDetails = {0};
+        changeDetails.kind = DSKeyValueChangeSetting;
+        changeDetails.oldValue = nil;
+        changeDetails.newValue = newValue;
+        changeDetails.indexes = nil;
+        changeDetails.extraData = nil;
+        
+        DSKeyValueNotifyObserver(observer,keyPath, self, context, nil, NO,changeDetails, &changeDictionary);
+        
+        [changeDictionary release];
+        
+        pthread_mutex_lock(&_DSKeyValueObserverRegistrationLock);
+        _DSKeyValueObserverRegistrationLockOwner = pthread_self();
+    }
+    
+    DSKeyValueObservationInfo *oldObservationInfo = _DSKeyValueRetainedObservationInfoForObject(self,property.containerClass);
+    
+    BOOL fromCache = NO;
+    DSKeyValueObservance *observance = nil;
+    id originalObservable = nil;
+    
+    DSKeyValueObservingTSD *TSD = NULL;
+    if(options & DSKeyValueObservingOptionNew) {
+        TSD = _CFGetTSD(DSKeyValueObservingTSDKey);
+    }
+    if (TSD) {
+        originalObservable = TSD->implicitObservanceAdditionInfo.object;
+    }
+    
+    DSKeyValueObservationInfo *newObservationInfo = _DSKeyValueObservationInfoCreateByAdding(oldObservationInfo, observer, property, options, context, originalObservable,&fromCache,&observance);
+    
+    _DSKeyValueReplaceObservationInfoForObject(self,property.containerClass,oldObservationInfo,newObservationInfo);
+    
+    [property object:self didAddObservance:observance recurse:YES];
+    
+    Class isaForAutonotifying = [property isaForAutonotifying];
+    if(isaForAutonotifying) {
+        Class cls = object_getClass(self);
+        if(cls != isaForAutonotifying) {
+            object_setClass(self,isaForAutonotifying);
+        }
+    }
+    
+    [newObservationInfo release];
+    
+    [oldObservationInfo release];
+}
+
 
 - (void)d_removeObserver:(NSObject *)observer forKeyPath:(NSString *)keyPath context:(nullable void *)context {
     DSKeyValueObservingTSD *TSD = _CFGetTSD(DSKeyValueObservingTSDKey);
@@ -118,68 +182,6 @@ void DSKeyValueObservingAssertRegistrationLockNotHeld() {
     }
 
     [NSException raise:NSRangeException format:@"Cannot remove an observer <%@ %p> for the key path \"%@\" from <%@ %p> because it is not registered as an observer.",[observer class], observer, property.keyPath, self.class, self];
-}
-
-- (void)_d_addObserver:(id)observer forProperty:(DSKeyValueProperty *)property options:(int)options context:(void *)context {
-    if(options & DSKeyValueObservingOptionInitial) {
-        NSString *keyPath = [property keyPath];
-        _DSKeyValueObserverRegistrationLockOwner = NULL;
-        pthread_mutex_unlock(&_DSKeyValueObserverRegistrationLock);
-        
-        id newValue = nil;
-        if (options & DSKeyValueObservingOptionNew) {
-            newValue = [self valueForKeyPath:keyPath];
-            if (!newValue) {
-                newValue = [NSNull null];
-            }
-        }
-        
-        DSKeyValueChangeDictionary *changeDictionary = nil;
-        DSKeyValueChangeDetails changeDetails = {0};
-        changeDetails.kind = DSKeyValueChangeSetting;
-        changeDetails.oldValue = nil;
-        changeDetails.newValue = newValue;
-        changeDetails.indexes = nil;
-        changeDetails.extraData = nil;
-        
-        DSKeyValueNotifyObserver(observer,keyPath, self, context, nil, NO,changeDetails, &changeDictionary);
-        
-        [changeDictionary release];
-        
-        pthread_mutex_lock(&_DSKeyValueObserverRegistrationLock);
-        _DSKeyValueObserverRegistrationLockOwner = pthread_self();
-    }
-    
-    DSKeyValueObservationInfo *retainedObservInfo = _DSKeyValueRetainedObservationInfoForObject(self,property.containerClass);
-    
-    DSKeyValueObservingTSD *TSD = NULL;
-    id originalObservable = nil;
-    if(options & DSKeyValueObservingOptionNew) {
-        TSD = _CFGetTSD(DSKeyValueObservingTSDKey);
-    }
-    if (TSD) {
-        originalObservable = TSD->implicitObservanceAdditionInfo.object;
-    }
-    BOOL fromCache = NO;
-    DSKeyValueObservance *observance = nil;
-    
-    DSKeyValueObservationInfo *createdObservInfo = _DSKeyValueObservationInfoCreateByAdding(retainedObservInfo, observer, property, options, context, originalObservable,&fromCache,&observance);
-   
-    _DSKeyValueReplaceObservationInfoForObject(self,property.containerClass,retainedObservInfo,createdObservInfo);
-    
-    [property object:self didAddObservance:observance recurse:YES];
-    
-    Class isaForAutonotifying = [property isaForAutonotifying];
-    if(isaForAutonotifying) {
-        Class cls = object_getClass(self);
-        if(cls != isaForAutonotifying) {
-            object_setClass(self,isaForAutonotifying);
-        }
-    }
-    
-    [createdObservInfo release];
-    
-    [retainedObservInfo release];
 }
 
 @end

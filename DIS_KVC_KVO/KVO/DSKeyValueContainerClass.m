@@ -53,7 +53,7 @@ DSKeyValueObservationInfo *_DSKeyValueRetainedObservationInfoForObject(id object
     os_lock_lock(&DSKeyValueObservationInfoSpinLock);
     
     if (containerClass) {
-       observationInfo = ((DSKeyValueObservationInfo * (*)(id,SEL))containerClass.cachedObservationInfoImplementation)(object, @selector(observationInfo));
+        observationInfo = ((DSKeyValueObservationInfo * (*)(id,SEL))containerClass.cachedObservationInfoImplementation)(object, @selector(observationInfo));
     }
     else {
         observationInfo = (DSKeyValueObservationInfo *)[object observationInfo];

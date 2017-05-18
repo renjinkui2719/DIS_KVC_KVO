@@ -140,55 +140,74 @@ NSHashTable *DSKeyValueShareableObservances;
 @end
 
 
-
+/**
+ *  计算 DSKeyValueObservationInfo 或者 DSKeyValueShareableObservationInfoKey对象的hash值
+ *
+ *  @param item 待计算hash值对象
+ *  @param size 无用
+ *
+ *  @return hash值
+ */
 NSUInteger DSKeyValueShareableObservationInfoNSHTHash(const void * item, NSUInteger (* size)(const void * item)) {
-    DSKeyValueShareableObservationInfoKey *infoKey = (DSKeyValueShareableObservationInfoKey *)item;
-    if(infoKey.class == DSKeyValueShareableObservationInfoKeyIsa) {
-        if(infoKey.addingNotRemoving) {
-            NSUInteger count = 0;
-            if(infoKey.baseObservationInfo) {
-                count = CFArrayGetCount((CFArrayRef)infoKey.baseObservationInfo.observances);
-                count &= 0x1F;
+    DSKeyValueShareableObservationInfoKey *keyOrInfo = (DSKeyValueShareableObservationInfoKey *)item;
+    // DSKeyValueShareableObservationInfoKey对象
+    if(keyOrInfo.class == DSKeyValueShareableObservationInfoKeyIsa) {
+        DSKeyValueShareableObservationInfoKey *key = (DSKeyValueShareableObservationInfoKey *)keyOrInfo;
+        if(key.addingNotRemoving) {
+            NSUInteger shift = 0;
+            if(key.baseObservationInfo) {
+                shift = CFArrayGetCount((CFArrayRef)key.baseObservationInfo.observances);
+                shift &= 0x1F;
             }
-            NSUInteger hashValue =  _DSKVOPointersHash(4,infoKey.additionObserver,infoKey.additionProperty, infoKey.additionContext, infoKey.additionOriginalObservable);
-            hashValue = (hashValue << count) | (hashValue >> count);
-            hashValue ^= (infoKey.baseObservationInfo ? infoKey.baseObservationInfo.cachedHash : 0);
+            NSUInteger hashValue =  _DSKVOPointersHash(4,key.additionObserver,key.additionProperty, key.additionContext, key.additionOriginalObservable);
+            hashValue = (hashValue << shift) | (hashValue >> shift);
+            hashValue ^= (key.baseObservationInfo ? key.baseObservationInfo.cachedHash : 0);
+            return hashValue;
+        }
+        else if(key.cachedHash == 0) {
+            NSUInteger base_observance_count = CFArrayGetCount((CFArrayRef)key.baseObservationInfo.observances);
+            DSKeyValueObservance *base_observance_objs[base_observance_count];
+            [key.baseObservationInfo.observances getObjects:base_observance_objs range:NSMakeRange(0, base_observance_count)];
+            NSUInteger hashValue = 0;
+            for (NSUInteger i = 0; i < base_observance_count; ++i) {
+                if (i != key.removalObservanceIndex) {
+                    DSKeyValueObservance *observance = base_observance_objs[i];
+                    NSUInteger hash =  _DSKVOPointersHash(4,observance.observer,observance.property, observance.context, observance.originalObservable);
+                    hash = (hash << (i & 0x1f)) | (hash >> (i & 0x1f));
+                    hash ^= hashValue;
+                    hashValue = hash;
+                }
+            }
             return hashValue;
         }
         else {
-            if(infoKey.cachedHash == 0) {
-                NSUInteger count = CFArrayGetCount((CFArrayRef)infoKey.baseObservationInfo.observances);
-                DSKeyValueObservance *observance_objs[count];
-                [infoKey.baseObservationInfo.observances getObjects:observance_objs range:NSMakeRange(0, count)];
-                NSUInteger hashValue = 0;
-                for (NSUInteger i = 0; i < count; ++i) {
-                    if (i != infoKey.removalObservanceIndex) {
-                        DSKeyValueObservance *observance = observance_objs[i];
-                        NSUInteger hash =  _DSKVOPointersHash(4,observance.observer,observance.property, observance.context, observance.originalObservable);
-                        hash = (hash << (i & 0x1f)) | (hash >> (i & 0x1f));
-                        hash ^= hashValue;
-                        hashValue = hash;
-                    }
-                }
-                return hashValue;
-            }
-            else {
-                return infoKey.cachedHash;
-            }
+            return key.cachedHash;
         }
     }
+    // DSKeyValueObservationInfo对象，直接获取 cachedHash
     else {
         return ((DSKeyValueObservationInfo *)item).cachedHash;
     }
 }
 
+/**
+ *  判断相等方法， 用以在 DSKeyValueShareableObservationInfos 缓存里查找 符合条件的ObservationInfo
+ *
+ *  @param item1 key/info
+ *  @param item2 key/info
+ *  @param size 无用
+ *
+ *  @return YES/NO
+ */
 BOOL DSKeyValueShareableObservationInfoNSHTIsEqual(const void * item1, const void * item2, NSUInteger (* size)(const void * item)) {
     if(item1 == item2) {
         return YES;
     }
+    //一个key 与 一个info比较
     if(object_getClass((id)item1) == DSKeyValueShareableObservationInfoKeyIsa || object_getClass((id)item1) == DSKeyValueShareableObservationInfoKeyIsa) {
         DSKeyValueObservationInfo *info = nil;
         DSKeyValueShareableObservationInfoKey *key = nil;
+        
         if (object_getClass((id)item1) == DSKeyValueShareableObservationInfoKeyIsa) {
             info = (DSKeyValueObservationInfo *)item2;
             key = (DSKeyValueShareableObservationInfoKey *)item1;
@@ -197,41 +216,43 @@ BOOL DSKeyValueShareableObservationInfoNSHTIsEqual(const void * item1, const voi
             info = (DSKeyValueObservationInfo *)item1;
             key = (DSKeyValueShareableObservationInfoKey *)item2;
         }
-        
+        //key是个“想要添加observance”的key
         if(key.addingNotRemoving) {
             NSUInteger observance_count_inkey = 0;
-            NSUInteger observance_count = info.observances.count;
+            NSUInteger observance_count_inInfo = info.observances.count;
             if(key.baseObservationInfo) {
                 observance_count_inkey = key.baseObservationInfo.observances.count;
             }
-            if(observance_count == observance_count_inkey + 1) {
+            //判断是否 (key.baseObservationInfo 加上 key自带的observer等信息后) 恰好等于该 info
+            if(observance_count_inInfo == observance_count_inkey + 1) {
                 DSKeyValueObservance * observance_objs_inkey[observance_count_inkey];
                 if(key.baseObservationInfo) {
                     [key.baseObservationInfo.observances getObjects:observance_objs_inkey range:NSMakeRange(0, observance_count_inkey)];
                 }
-
-                DSKeyValueObservance * observance_objs[observance_count];
-                [info.observances getObjects:observance_objs range:NSMakeRange(0, observance_count)];
+                
+                DSKeyValueObservance * observance_objs_inInfo[observance_count_inInfo];
+                [info.observances getObjects:observance_objs_inInfo range:NSMakeRange(0, observance_count_inInfo)];
                 
                 for (NSUInteger i = 0; i < observance_count_inkey; ++i) {
-                    if (observance_objs_inkey[i] != observance_objs[i]) {
+                    if (observance_objs_inkey[i] != observance_objs_inInfo[i]) {
                         return NO;
                     }
                 }
    
-                if(observance_objs[observance_count_inkey].property != key.additionProperty) {
+                //info.observance列表最后一个observance 和 key带的（observer, property,...）全等
+                if(observance_objs_inInfo[observance_count_inkey].property != key.additionProperty) {
                     return NO;
                 }
-                if(observance_objs[observance_count_inkey].options != key.additionOptions) {
+                if(observance_objs_inInfo[observance_count_inkey].options != key.additionOptions) {
                     return NO;
                 }
-                if(observance_objs[observance_count_inkey].context != key.additionContext) {
+                if(observance_objs_inInfo[observance_count_inkey].context != key.additionContext) {
                     return NO;
                 }
-                if(observance_objs[observance_count_inkey].originalObservable != key.additionOriginalObservable) {
+                if(observance_objs_inInfo[observance_count_inkey].originalObservable != key.additionOriginalObservable) {
                     return NO;
                 }
-                if(observance_objs[observance_count_inkey].observer != key.additionObserver) {
+                if(observance_objs_inInfo[observance_count_inkey].observer != key.additionObserver) {
                     return NO;
                 }
                 
@@ -241,34 +262,39 @@ BOOL DSKeyValueShareableObservationInfoNSHTIsEqual(const void * item1, const voi
                 return NO;
             }
         }
+        //key是个“想要移除observance”的key
         else {
+            //判断是否 (key.baseObservationInfo 减去 key.removalObservanceIndex 处的observance后) 恰好等于该 info
             NSUInteger observance_count_inkey = CFArrayGetCount(( CFArrayRef)key.baseObservationInfo.observances);
-            NSUInteger observance_count = CFArrayGetCount(( CFArrayRef)info.observances);
-            if(observance_count_inkey - 1 != observance_count) {
+            NSUInteger observance_count_inInfo = CFArrayGetCount(( CFArrayRef)info.observances);
+            
+            if(observance_count_inkey - 1 != observance_count_inInfo) {
                 return NO;
             }
             
             DSKeyValueObservance * observance_objs_inkey[observance_count_inkey];
             [key.baseObservationInfo.observances getObjects:observance_objs_inkey range:NSMakeRange(0, observance_count_inkey)];
             
-            DSKeyValueObservance * observance_objs[observance_count];
-            [info.observances getObjects:observance_objs range:NSMakeRange(0, observance_count)];
+            DSKeyValueObservance * observance_objs_inInfo[observance_count_inInfo];
+            [info.observances getObjects:observance_objs_inInfo range:NSMakeRange(0, observance_count_inInfo)];
             
+            //removalObservanceIndex 前的observance列表全等
             for (NSUInteger i = 0; i < key.removalObservanceIndex; ++i) {
-                if(observance_objs_inkey[i] != observance_objs[i]) {
+                if(observance_objs_inkey[i] != observance_objs_inInfo[i]) {
                     return NO;
                 }
             }
             
+            //removalObservanceIndex 后的observance列表全等
             NSUInteger leftCount = observance_count_inkey - (key.removalObservanceIndex + 1);
             if(leftCount == 0) {
                 return YES;
             }
             else {
-                DSKeyValueObservance * *  p_observance_objs = &observance_objs[key.removalObservanceIndex];
+                DSKeyValueObservance * *  p_observance_objs_inInfo = &observance_objs_inInfo[key.removalObservanceIndex];
                 DSKeyValueObservance * *  p_observance_objs_inkey = &observance_objs_inkey[key.removalObservanceIndex + 1];
                 for (NSUInteger i = 0; i < leftCount; ++i) {
-                    if(p_observance_objs[i] != p_observance_objs_inkey[i]) {
+                    if(p_observance_objs_inInfo[i] != p_observance_objs_inkey[i]) {
                         return NO;
                     }
                 }
@@ -277,17 +303,19 @@ BOOL DSKeyValueShareableObservationInfoNSHTIsEqual(const void * item1, const voi
             }
         }
     }
+    //两个info比较
     else {
         DSKeyValueObservationInfo *info1 = (DSKeyValueObservationInfo *)item1;
         DSKeyValueObservationInfo *info2 = (DSKeyValueObservationInfo *)item2;
         NSUInteger info1_observance_count = CFArrayGetCount((CFArrayRef)info1.observances);
         NSUInteger info2_observance_count = CFArrayGetCount((CFArrayRef)info2.observances);
+        //两个info的observance数目应该相等
         if(info1_observance_count != info2_observance_count) {
             return NO;
         }
-        
         DSKeyValueObservance * info1_observance_objs[info1_observance_count];
         [info1.observances getObjects:info1_observance_objs range:NSMakeRange(0, info1_observance_count)];
+        
         DSKeyValueObservance * info2_observance_objs[info2_observance_count];
         [info1.observances getObjects:info2_observance_objs range:NSMakeRange(0, info2_observance_count)];
         
@@ -295,6 +323,7 @@ BOOL DSKeyValueShareableObservationInfoNSHTIsEqual(const void * item1, const voi
             return  YES;
         }
         else {
+            //两个info的每一个observance应相同
             for (NSUInteger i = 0; i < info1_observance_count; ++i) {
                 if(info1_observance_objs[i] != info2_observance_objs[i]) {
                     return NO;
@@ -305,27 +334,30 @@ BOOL DSKeyValueShareableObservationInfoNSHTIsEqual(const void * item1, const voi
     }
 }
 
-DSKeyValueObservationInfo *_DSKeyValueObservationInfoCreateByAdding(DSKeyValueObservationInfo *baseObservationInfo, id observer, DSKeyValueProperty *property, int options, void *context, id originalObservable,  BOOL *fromCache, DSKeyValueObservance **pObservance) {
+DSKeyValueObservationInfo *_DSKeyValueObservationInfoCreateByAdding(DSKeyValueObservationInfo *baseObservationInfo, id observer, DSKeyValueProperty *property, int options, void *context, id originalObservable,  BOOL *cacheHit, DSKeyValueObservance **createdObservance) {
     DSKeyValueObservationInfo *createdObservationInfo = nil;
     
     os_lock_lock(&DSKeyValueObservationInfoCreationSpinLock);
     
+    //observationInfo缓存
     if(!DSKeyValueShareableObservationInfos) {
         NSPointerFunctions *pointerFunctions = [[NSPointerFunctions alloc] initWithOptions:NSPointerFunctionsWeakMemory];
         [pointerFunctions setHashFunction:DSKeyValueShareableObservationInfoNSHTHash];
         [pointerFunctions setIsEqualFunction:DSKeyValueShareableObservationInfoNSHTIsEqual];
         DSKeyValueShareableObservationInfos = [[NSHashTable alloc] initWithPointerFunctions:pointerFunctions capacity:0];
     }
+    
     if(!DSKeyValueShareableObservationInfoKeyIsa) {
         DSKeyValueShareableObservationInfoKeyIsa = [DSKeyValueShareableObservationInfoKey class];
     }
     
+    //observationInfo查找key
     static DSKeyValueShareableObservationInfoKey * shareableObservationInfoKey;
-    static DSKeyValueShareableObservanceKey *shareableObservanceKey;
     
     if(!shareableObservationInfoKey) {
         shareableObservationInfoKey = [[DSKeyValueShareableObservationInfoKey alloc] init];
     }
+    
     shareableObservationInfoKey.addingNotRemoving = YES;
     shareableObservationInfoKey.baseObservationInfo = baseObservationInfo;
     shareableObservationInfoKey.additionObserver = observer;
@@ -333,17 +365,28 @@ DSKeyValueObservationInfo *_DSKeyValueObservationInfoCreateByAdding(DSKeyValueOb
     shareableObservationInfoKey.additionOptions = options;
     shareableObservationInfoKey.additionContext = context;
     shareableObservationInfoKey.additionOriginalObservable = originalObservable;
+    
+    //查找缓存里 是否已经包含 和  baseObservationInfo + observance(observer, property, options, context) 一样的 observationInfo
+    //避免不必要的创建
     DSKeyValueObservationInfo * existsObservationInfo = [DSKeyValueShareableObservationInfos member:shareableObservationInfoKey];
+    
     shareableObservationInfoKey.additionOriginalObservable = nil;
     shareableObservationInfoKey.additionObserver = nil;
     shareableObservationInfoKey.baseObservationInfo = nil;
+    
+    //缓存中不存在
     if(!existsObservationInfo) {
+        //observance缓存
         if(!DSKeyValueShareableObservances) {
             DSKeyValueShareableObservances = [NSHashTable weakObjectsHashTable];
         }
+        //observance查找key
+        static DSKeyValueShareableObservanceKey *shareableObservanceKey;
+        
         if(!shareableObservanceKey) {
             shareableObservanceKey = [[DSKeyValueShareableObservanceKey alloc] init];
         }
+        
         shareableObservanceKey.observer = observer;
         shareableObservanceKey.property = property;
         shareableObservanceKey.options = options;
@@ -374,12 +417,15 @@ DSKeyValueObservationInfo *_DSKeyValueObservationInfoCreateByAdding(DSKeyValueOb
             [DSKeyValueShareableObservationInfos addObject:createdObservationInfo];
         }
         
-        *fromCache = NO;
-        *pObservance = observance;
+        *cacheHit = NO;
+        *createdObservance = observance;
     }
     else {
-        *fromCache = YES;
-        *pObservance = existsObservationInfo.observances.lastObject;
+        //缓存中存在
+        *cacheHit = YES;
+        //observance必定就是已存在的info.observance列表最后一个， 因为判断equal就是按照这个原则去判断的
+        *createdObservance = existsObservationInfo.observances.lastObject;
+        
         createdObservationInfo = existsObservationInfo;
     }
     
