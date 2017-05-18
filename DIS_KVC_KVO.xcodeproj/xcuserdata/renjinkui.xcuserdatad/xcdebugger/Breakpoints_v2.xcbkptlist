@@ -271,7 +271,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "488"
             endingLineNumber = "488"
-            landmarkName = "_DSKeyValueReplaceObservationInfoForObject()"
+            landmarkName = "_DSKeyValueObservationInfoCreateByRemoving()"
             landmarkType = "9">
          </BreakpointContent>
       </BreakpointProxy>
@@ -288,22 +288,6 @@
             startingLineNumber = "129"
             endingLineNumber = "129"
             landmarkName = "-object:withObservance:willChangeValueForKeyOrKeys:recurse:forwardingValues:"
-            landmarkType = "7">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "Yes"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "DIS_KVC_KVO/KVO/DSKeyValueObservance.m"
-            timestampString = "516598957.973232"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "26"
-            endingLineNumber = "26"
-            landmarkName = "-observeValueForKeyPath:ofObject:change:context:"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
