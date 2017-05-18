@@ -18,7 +18,7 @@
     switch (ivarEncoding[0]) {
         case '#':
         case '@': {
-            objc_ivar_memory_management_t mngment = _class_getIvarMemoryManagement(containerIsa, ivar);
+            objc_ivar_memory_management_t mngment = objc_ivar_memoryUnknown;//_class_getIvarMemoryManagement(containerIsa, ivar);
             if(mngment < objc_ivar_memoryWeak) {
                 imp = (IMP)_DSGetObjectGetAssignValueInIvar;
             }

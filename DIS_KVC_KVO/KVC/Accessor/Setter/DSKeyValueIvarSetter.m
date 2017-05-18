@@ -79,7 +79,7 @@ void _DSSetValueAndNotifyForKeyInIvar(id object, SEL selector, id value, NSStrin
             break;
         case '#':
         case '@':{
-            objc_ivar_memory_management_t mngMent = _class_getIvarMemoryManagement(containerIsa, ivar);
+            objc_ivar_memory_management_t mngMent = objc_ivar_memoryUnknown;//_class_getIvarMemoryManagement(containerIsa, ivar);
             if(mngMent > objc_ivar_memoryUnretained) {
                 imp = (IMP)_DSSetObjectSetIvarValueForKeyInIvar;
             }
