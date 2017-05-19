@@ -6,17 +6,17 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            shouldBeEnabled = "Yes"
+            shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "DIS_KVC_KVO/KVO/NSObject+DSKeyValueObserverRegistration.m"
-            timestampString = "516640096.301849"
+            filePath = "DIS_KVC_KVO/KVO/NSObject+DSKeyValueObserverNotification.m"
+            timestampString = "516925380.890362"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "53"
-            endingLineNumber = "53"
-            landmarkName = "-d_addObserver:forKeyPath:options:context:"
-            landmarkType = "5">
+            startingLineNumber = "995"
+            endingLineNumber = "995"
+            landmarkName = "DSKeyValueDidChange()"
+            landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>

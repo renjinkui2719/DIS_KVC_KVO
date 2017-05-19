@@ -278,7 +278,7 @@ int main(int argc, const char * argv[]) {
 //    [a d_addObserver:observer_c forKeyPath:@"char_field" options:options context:"this is context for observer_c"];
     //a.B_field = B.random;
     //a.B_field.C_field.D_field = D.random;
-    //a.B_field.C_field.D_field.char_field = '3';
+    a.B_field.C_field.D_field.char_field = '3';
     NSLog(@"");
     
     //TestKVC();
