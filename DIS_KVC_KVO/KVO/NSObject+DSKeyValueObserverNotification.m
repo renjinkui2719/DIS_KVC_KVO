@@ -14,6 +14,7 @@
 #import "DSKeyValueContainerClass.h"
 #import "DSKeyValueObserverCommon.h"
 #import "NSObject+DSKeyValueObservingPrivate.h"
+#import "NSObject+DSKeyValueObservingCustomization.h"
 #import "NSObject+DSKeyValueObserverRegistration.h"
 
 @implementation NSObject (DSKeyValueObserverNotification)
@@ -25,7 +26,7 @@
     
     os_lock_lock(&DSKeyValueObservationInfoSpinLock);
     
-    DSKeyValueObservationInfo *observationInfo = self.observationInfo;
+    DSKeyValueObservationInfo *observationInfo = self.d_observationInfo;
     [observationInfo retain];
     
     os_lock_unlock(&DSKeyValueObservationInfoSpinLock);
@@ -100,7 +101,7 @@
     _DSKeyValueObserverRegistrationLockOwner = pthread_self();
     
     os_lock_lock(&DSKeyValueObservationInfoSpinLock);
-    DSKeyValueObservationInfo *observationInfo = [(id)self.observationInfo retain];
+    DSKeyValueObservationInfo *observationInfo = [(id)self.d_observationInfo retain];
     os_lock_unlock(&DSKeyValueObservationInfoSpinLock);
     
     DSKeyValueObservationInfo *implicitObservationInfo = [self _d_implicitObservationInfo];
@@ -181,7 +182,7 @@
     _DSKeyValueObserverRegistrationLockOwner = pthread_self();
     
     os_lock_lock(&DSKeyValueObservationInfoSpinLock);
-    DSKeyValueObservationInfo *observationInfo = [(id)self.observationInfo retain];
+    DSKeyValueObservationInfo *observationInfo = [(id)self.d_observationInfo retain];
     os_lock_unlock(&DSKeyValueObservationInfoSpinLock);
     
     DSKeyValueObservationInfo *implicitObservationInfo = [self _d_implicitObservationInfo];
@@ -940,7 +941,6 @@ BOOL DSKeyValuePopPendingNotificationPerThread(id object,id keyOrKeys, DSKeyValu
 
 void DSKeyValueWillChange(id object, id keyOrKeys, BOOL isASet, DSKeyValueObservationInfo *observationInfo, DSKeyValueWillChangeByCallback willChangeByCallback, void *changeInfo, DSKeyValuePushPendingNotificationCallback pushPendingNotificationCallback, void *pushInfo, DSKeyValueObservance *observance) {
     NSUInteger observanceCount = _DSKeyValueObservationInfoGetObservanceCount(observationInfo);
-    
     DSKeyValueObservance *observanceBuff[observanceCount];
     _DSKeyValueObservationInfoGetObservances(observationInfo, observanceBuff, observanceCount);
     
@@ -965,6 +965,7 @@ void DSKeyValueWillChange(id object, id keyOrKeys, BOOL isASet, DSKeyValueObserv
                     DSKeyValueChangeDictionary *changeDictionary = nil;
                     
                     willChangeByCallback(&changeDetails, object, affectedKeyPath,keyPathExactMatch,eachObservance.options, changeInfo, &detailsRetained);
+                    
                     pushPendingNotificationCallback(object, keyOrKeys, eachObservance, changeDetails , forwardingValues, pushInfo);
                     
                     if(eachObservance.options & DSKeyValueObservingOptionPrior) {

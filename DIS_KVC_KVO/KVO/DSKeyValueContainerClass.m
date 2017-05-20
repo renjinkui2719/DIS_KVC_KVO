@@ -20,9 +20,9 @@
     if(self = [super init]) {
         _originalClass = originalClass;
         
-        _cachedObservationInfoImplementation = (void * (*)(id,SEL))class_getMethodImplementation(originalClass,sel_registerName("observationInfo"));
+        _cachedObservationInfoImplementation = (void * (*)(id,SEL))class_getMethodImplementation(originalClass,sel_registerName("d_observationInfo"));
         
-        Method method = class_getInstanceMethod(_originalClass, sel_registerName("setObservationInfo:"));
+        Method method = class_getInstanceMethod(_originalClass, sel_registerName("d_setObservationInfo:"));
         _cachedSetObservationInfoImplementation = (void  (*)(id,SEL, void *))method_getImplementation(method);
         
         char type = 0;
@@ -56,7 +56,7 @@ DSKeyValueObservationInfo *_DSKeyValueRetainedObservationInfoForObject(id object
         observationInfo = ((DSKeyValueObservationInfo * (*)(id,SEL))containerClass.cachedObservationInfoImplementation)(object, @selector(observationInfo));
     }
     else {
-        observationInfo = (DSKeyValueObservationInfo *)[object observationInfo];
+        observationInfo = (DSKeyValueObservationInfo *)[object d_observationInfo];
     }
     
     [observationInfo retain];

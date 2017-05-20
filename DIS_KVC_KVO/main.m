@@ -102,13 +102,13 @@
     return [NSString stringWithFormat:@"<%@:%p>, identifier: %@", self.class,self, _identifier];
 }
 
-- (void)d_willChangeValueForKey:(NSString *)key {
-    [super d_willChangeValueForKey:key];
-}
-
-- (void)didChangeValueForKey:(NSString *)key {
-    [super didChangeValueForKey:key];
-}
+//- (void)d_willChangeValueForKey:(NSString *)key {
+//    [super d_willChangeValueForKey:key];
+//}
+//
+//- (void)didChangeValueForKey:(NSString *)key {
+//    [super didChangeValueForKey:key];
+//}
 
 //+ (NSSet<NSString *> *)keyPathsForValuesAffectingChar_field {
 //    return [NSSet setWithObjects:@"BOOL_field",@"unsigned_char_field", nil];
@@ -272,13 +272,17 @@ int main(int argc, const char * argv[]) {
     
     int options = DSKeyValueObservingOptionNew/*|DSKeyValueObservingOptionPrior|NSKeyValueObservingOptionOld|NSKeyValueObservingOptionInitial*/;
     
-    [a d_addObserver:observer_a forKeyPath:@"B_field.C_field.D_field.char_field" options:options context:"this is context for observer_a"];
+    void *context = "this is context for observer_a";
+    [a d_addObserver:observer_a forKeyPath:@"B_field"/*@"B_field.C_field.D_field.char_field"*/ options:options context: context];
+    //[a d_addObserver:observer_a forKeyPath:@"B_field.C_field.D_field.char_field" options:options context: context];
+    //[a d_addObserver:observer_a forKeyPath:@"B_field.C_field.D_field.char_field" options:options context: context];
 //    [a d_addObserver:observer_a forKeyPath:@"char_field" options:options context:"this is context for observer_a"];
 //    [a d_addObserver:observer_b forKeyPath:@"char_field" options:options context:"this is context for observer_b"];
 //    [a d_addObserver:observer_c forKeyPath:@"char_field" options:options context:"this is context for observer_c"];
-    //a.B_field = B.random;
+    a.B_field = B.random;
     //a.B_field.C_field.D_field = D.random;
-    a.B_field.C_field.D_field.char_field = '3';
+    //a.B_field.C_field.D_field.char_field = '3';
+    //[a d_removeObserver:observer_a forKeyPath:@"B_field" context:context];
     NSLog(@"");
     
     //TestKVC();

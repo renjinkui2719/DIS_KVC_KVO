@@ -153,7 +153,7 @@ void DSKeyValueObservingAssertRegistrationLockNotHeld() {
         void *context = NULL;
         BOOL flag = NO;
         id originalObservable = nil;
-        BOOL fromCache = NO;
+        BOOL cacheHit = NO;
         DSKeyValueObservance *removalObservance = nil;
         
         DSKeyValueObservingTSD *TSD = _CFGetTSD(DSKeyValueObservingTSDKey);
@@ -163,7 +163,7 @@ void DSKeyValueObservingAssertRegistrationLockNotHeld() {
             flag = TSD->implicitObservanceRemovalInfo.flag;
         }
         
-        DSKeyValueObservationInfo *newObservationInfo = _DSKeyValueObservationInfoCreateByRemoving(oldObservationInfo, observer, property, context, flag, originalObservable, &fromCache, &removalObservance);
+        DSKeyValueObservationInfo *newObservationInfo = _DSKeyValueObservationInfoCreateByRemoving(oldObservationInfo, observer, property, context, flag, originalObservable, &cacheHit, &removalObservance);
         
         if (removalObservance) {
             [removalObservance retain];
@@ -173,7 +173,7 @@ void DSKeyValueObservingAssertRegistrationLockNotHeld() {
             [property object:self didRemoveObservance:removalObservance recurse:YES];
             
             if (!newObservationInfo) {
-                if (self.class != property.containerClass.originalClass) {
+                if (object_getClass(self) != property.containerClass.originalClass) {
                     object_setClass(self, property.containerClass.originalClass);
                 }
             }

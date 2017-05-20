@@ -2,6 +2,7 @@
 #import "DSKeyValueObservance.h"
 #import "DSKeyValueContainerClass.h"
 #import "NSObject+DSKeyValueObservingPrivate.h"
+#import "NSObject+DSKeyValueObservingCustomization.h"
 #import "DSKeyValueCodingCommon.h"
 #import "DSKeyValueObserverCommon.h"
 
@@ -454,7 +455,7 @@ DSKeyValueObservationInfo *_DSKeyValueObservationInfoCreateByRemoving(DSKeyValue
     
     NSUInteger observanceCount = CFArrayGetCount((CFArrayRef)baseObservationInfo.observances);
     DSKeyValueObservance *observancesBuff[observanceCount];
-    CFArrayGetValues((CFArrayRef)baseObservationInfo.observances, CFRangeMake(0, observanceCount), (const void**)observanceCount);
+    CFArrayGetValues((CFArrayRef)baseObservationInfo.observances, CFRangeMake(0, observanceCount), (const void **)observancesBuff);
     
     NSUInteger removalObservanceIndex = NSNotFound;
     
@@ -564,7 +565,7 @@ void _DSKeyValueReplaceObservationInfoForObject(id object, DSKeyValueContainerCl
         containerClass.cachedSetObservationInfoImplementation(object, @selector(setObservationInfo:), newObservationInfo);
     }
     else {
-        [object setObservationInfo: newObservationInfo];
+        [object d_setObservationInfo: newObservationInfo];
     }
     
     os_lock_unlock(&DSKeyValueObservationInfoSpinLock);

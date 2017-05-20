@@ -13,8 +13,10 @@ extern CFMutableDictionaryRef DSKeyValueOldStyleDependenciesByClass;
 extern OSSpinLock DSKeyValueOldStyleDependenciesSpinLock;
 
 @interface NSObject (DSKeyValueObservingCustomization)
+
 - (void *)d_observationInfo;
 - (void)d_setObservationInfo:(void *)info ;
 + (NSSet<NSString *> *)d_keyPathsForValuesAffectingValueForKey:(NSString *)key;
 + (BOOL)d_automaticallyNotifiesObserversForKey:(NSString *)key;
+
 @end

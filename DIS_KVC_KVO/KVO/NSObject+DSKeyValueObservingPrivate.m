@@ -9,11 +9,12 @@
 #import "NSObject+DSKeyValueObservingPrivate.h"
 #import "DSKeyValueObservationInfo.h"
 #import "DSKeyValueObservance.h"
-#import "NSObject+DSKeyValueObserverNotification.h"
 #import "DSKeyValueChangeDictionary.h"
 #import "DSKeyValueObserverCommon.h"
 #import "DSKeyValueCodingCommon.h"
+#import "NSObject+DSKeyValueObserverNotification.h"
 #import "NSObject+DSKeyValueObserverRegistration.h"
+#import "NSObject+DSKeyValueObservingCustomization.h"
 
 const void *DSKVOPendingNotificationRetain(CFAllocatorRef allocator, const void *value) {
     DSKVOPendingChangeNotificationPerThread *notification = (DSKVOPendingChangeNotificationPerThread *)value;
@@ -68,7 +69,7 @@ const CFArrayCallBacks DSKVOPendingNotificationArrayCallbacks = {
     
     os_lock_lock(&DSKeyValueObservationInfoSpinLock);
     
-    DSKeyValueObservationInfo *observationInfo = self.observationInfo;
+    DSKeyValueObservationInfo *observationInfo = self.d_observationInfo;
     [observationInfo retain];
     
     os_lock_unlock(&DSKeyValueObservationInfoSpinLock);
@@ -96,17 +97,15 @@ const CFArrayCallBacks DSKVOPendingNotificationArrayCallbacks = {
         _DSKeyValueObservationInfoGetObservances(observationInfo, observances + observationCount,implicitObservationInfoCount);
     }
     
-    if(totalObservationCount) {
-        NSUInteger i = 0;
-        do{
-            if(!object_isClass(observances[i].observer)) {
-                observances[i] = [observances[i].observer retain];
-            }
-            else {
-                observances[i] = nil;
-            }
-        }while(++i != totalObservationCount);
+    for (int i = 0; i < totalObservationCount; ++i) {
+        if(!object_isClass(observances[i].observer)) {
+            observances[i] = [observances[i].observer retain];
+        }
+        else {
+            observances[i] = nil;
+        }
     }
+
     //loc_12A374
     _DSKeyValueObserverRegistrationLockOwner = NULL;
     
@@ -117,7 +116,7 @@ const CFArrayCallBacks DSKVOPendingNotificationArrayCallbacks = {
     
     DSKVOPendingInfoLocalPush pendingInfoPush = {0};
     
-    if(observationInfo && implicitObservationInfo) {
+    if(observationInfo || implicitObservationInfo) {
         //loc_12A3AA
         pendingInfoPush.capacity = 16;
         pendingInfoPush.isStackBuff = YES;
@@ -125,28 +124,30 @@ const CFArrayCallBacks DSKVOPendingNotificationArrayCallbacks = {
         pendingInfoPush.detailsCount = 0;
         pendingInfoPush.p5 = YES;
         pendingInfoPush.p6 = 0;
+        
         if(observationInfo && keyCount) {
-            NSUInteger i = 0;
-            do {
+            for (int i = 0; i < keyCount; ++i) {
                 NSString *key = keys[i];
                 if(key) {
                     DSKeyValueWillChange(self, key, NO,observationInfo,DSKeyValueWillChangeBySetting,oldValuesDict,(DSKeyValuePushPendingNotificationCallback)DSKeyValuePushPendingNotificationLocal,&pendingInfoPush,nil);
                 }
-            }while(++i != keyCount);
+            }
         }
+        
         if(implicitObservationInfo && keyCount >= 1) {
-            NSUInteger i = keyCount - 1;
-            do {
+            for (int i = (keyCount - 1); i >= 0; --i) {
                 NSString *key = keys[i];
                 if(key) {
                     DSKeyValueWillChange(self, key,NO,implicitObservationInfo,DSKeyValueWillChangeBySetting,oldValuesDict,(DSKeyValuePushPendingNotificationCallback)DSKeyValuePushPendingNotificationLocal,&pendingInfoPush,nil);
                 }
-            }while((NSInteger)(--i) >= 0);
+            }
         }
     }
+    
     if(block) {
         block();
     }
+    
     DSKVOPendingInfoLocalPop pendingInfoPop = {0};
     if(pendingInfoPush.detailsCount > 0) {
         pendingInfoPop.detailsBuff = (DSKVOPendingInfoLocalDetail *)detailsBuff;
@@ -160,12 +161,10 @@ const CFArrayCallBacks DSKVOPendingNotificationArrayCallbacks = {
     //loc_12A552
     [observationInfo release];
     //loc_12A587
-    if(totalObservationCount) {
-        NSUInteger i = 0;
-        do{
-            [observances[i] release];
-        }while(++i != totalObservationCount);
+    for (int i = 0; i < totalObservationCount; ++i) {
+        [observances[i] release];
     }
+
     //loc_12A59B
     if(detailsBuff != (unsigned char *)pendingInfoPush.detailsBuff) {
         free(pendingInfoPush.detailsBuff);
@@ -176,6 +175,63 @@ const CFArrayCallBacks DSKVOPendingNotificationArrayCallbacks = {
     return nil;
 }
 
+- (CFMutableArrayRef)_d_pendingChangeNotificationsArrayForKey:(NSString *)key create:(BOOL)create {
+    DSKeyValueObservingTSD *TSD = _CFGetTSD(DSKeyValueObservingTSDKey);
+    CFMutableArrayRef pendingArray = NULL;
+    if (TSD) {
+        pendingArray = TSD->pendingArray;
+    }
+    if (create && !pendingArray) {
+        if(!TSD) {
+            TSD =  NSAllocateScannedUncollectable(sizeof(DSKeyValueObservingTSD));
+            _CFSetTSD(DSKeyValueObservingTSDKey, TSD, DSKeyValueObservingTSDDestroy);
+        }
+        if(!TSD->pendingArray) {
+            TSD->pendingArray = CFArrayCreateMutable(NULL,0,&DSKVOPendingNotificationArrayCallbacks);
+        }
+        pendingArray = TSD->pendingArray;
+    }
+    
+    return pendingArray;
+}
+
++ (BOOL)_d_shouldAddObservationForwardersForKey:(NSString *)key {
+    return YES;
+}
+
+
+@end
+
+void DSKeyValueObservingTSDDestroy(void *data) {
+    CFTypeRef pendingArray = ((DSKeyValueObservingTSD *)data)->pendingArray;
+    if(pendingArray) {
+        CFRelease(pendingArray);
+    }
+    free(data);
+}
+
+ImplicitObservanceAdditionInfo *DSKeyValueGetImplicitObservanceAdditionInfo() {
+    DSKeyValueObservingTSD *TSD = _CFGetTSD(DSKeyValueObservingTSDKey);
+    if(!TSD) {
+        TSD = (DSKeyValueObservingTSD *)NSAllocateScannedUncollectable(sizeof(DSKeyValueObservingTSD));
+        _CFSetTSD(DSKeyValueObservingTSDKey, TSD, DSKeyValueObservingTSDDestroy);
+    }
+    return &TSD->implicitObservanceAdditionInfo;
+}
+
+ImplicitObservanceRemovalInfo *DSKeyValueGetImplicitObservanceRemovalInfo() {
+    DSKeyValueObservingTSD *TSD = _CFGetTSD(DSKeyValueObservingTSDKey);
+    if(!TSD) {
+        TSD = (DSKeyValueObservingTSD *)NSAllocateScannedUncollectable(sizeof(DSKeyValueObservingTSD));
+        _CFSetTSD(DSKeyValueObservingTSDKey, TSD, DSKeyValueObservingTSDDestroy);
+    }
+    return &TSD->implicitObservanceRemovalInfo;
+}
+
+
+
+
+#if 0
 - (void)_d_notifyObserversForKeyPath:(NSString *)keyPath change:(DSKeyValueChangeDictionary *)change {
     os_lock_lock(&DSKeyValueObservationInfoSpinLock);
     DSKeyValueObservationInfo *observationInfo = self.observationInfo;
@@ -210,10 +266,10 @@ const CFArrayCallBacks DSKVOPendingNotificationArrayCallbacks = {
                     changeDetails.kind = [[change objectForKey:DSKeyValueChangeKindKey] integerValue];
                     
                     if(observance.options & DSKeyValueObservingOptionOld) {
-                       //loc_B4509
-                       id value =  [change objectForKey:DSKeyValueChangeOldKey];
+                        //loc_B4509
+                        id value =  [change objectForKey:DSKeyValueChangeOldKey];
                         if(restOfKeyPathLength) {
-                           value =  [value valueForKeyPath:restOfKeyPath];
+                            value =  [value valueForKeyPath:restOfKeyPath];
                         }
                         if(!value) {
                             value = [NSNull null];
@@ -330,7 +386,7 @@ const CFArrayCallBacks DSKVOPendingNotificationArrayCallbacks = {
             }
         }while(++i != totalObservationCount);
     }
-
+    
     //loc_129910
     _DSKeyValueObserverRegistrationLockOwner = nil;
     pthread_mutex_unlock(&_DSKeyValueObserverRegistrationLock);
@@ -433,56 +489,4 @@ const CFArrayCallBacks DSKVOPendingNotificationArrayCallbacks = {
     }];
 }
 
-- (CFMutableArrayRef)_d_pendingChangeNotificationsArrayForKey:(NSString *)key create:(BOOL)create {
-    DSKeyValueObservingTSD *TSD = _CFGetTSD(DSKeyValueObservingTSDKey);
-    CFMutableArrayRef pendingArray = NULL;
-    if (TSD) {
-        pendingArray = TSD->pendingArray;
-    }
-    if (create && !pendingArray) {
-        if(!TSD) {
-            TSD =  NSAllocateScannedUncollectable(sizeof(DSKeyValueObservingTSD));
-            _CFSetTSD(DSKeyValueObservingTSDKey, TSD, DSKeyValueObservingTSDDestroy);
-        }
-        if(!TSD->pendingArray) {
-            TSD->pendingArray = CFArrayCreateMutable(NULL,0,&DSKVOPendingNotificationArrayCallbacks);
-        }
-        pendingArray = TSD->pendingArray;
-    }
-    
-    return pendingArray;
-}
-
-+ (BOOL)_d_shouldAddObservationForwardersForKey:(NSString *)key {
-    return YES;
-}
-
-
-@end
-
-void DSKeyValueObservingTSDDestroy(void *data) {
-    CFTypeRef pendingArray = ((DSKeyValueObservingTSD *)data)->pendingArray;
-    if(pendingArray) {
-        CFRelease(pendingArray);
-    }
-    free(data);
-}
-
-ImplicitObservanceAdditionInfo *DSKeyValueGetImplicitObservanceAdditionInfo() {
-    DSKeyValueObservingTSD *TSD = _CFGetTSD(DSKeyValueObservingTSDKey);
-    if(!TSD) {
-        TSD = (DSKeyValueObservingTSD *)NSAllocateScannedUncollectable(sizeof(DSKeyValueObservingTSD));
-        _CFSetTSD(DSKeyValueObservingTSDKey, TSD, DSKeyValueObservingTSDDestroy);
-    }
-    return &TSD->implicitObservanceAdditionInfo;
-}
-
-ImplicitObservanceRemovalInfo *DSKeyValueGetImplicitObservanceRemovalInfo() {
-    DSKeyValueObservingTSD *TSD = _CFGetTSD(DSKeyValueObservingTSDKey);
-    if(!TSD) {
-        TSD = (DSKeyValueObservingTSD *)NSAllocateScannedUncollectable(sizeof(DSKeyValueObservingTSD));
-        _CFSetTSD(DSKeyValueObservingTSDKey, TSD, DSKeyValueObservingTSDDestroy);
-    }
-    return &TSD->implicitObservanceRemovalInfo;
-}
-
+#endif
