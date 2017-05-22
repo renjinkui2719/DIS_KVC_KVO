@@ -15,8 +15,5 @@
 @property(nonatomic, copy) NSString *operationArgumentKeyPath;
 @property(nonatomic, strong) DSKeyValueProperty *operationArgumentProperty;
 
-- (void)_givenPropertiesBeingInitialized:(CFMutableSetRef)propertiesBeingInitialized getAffectingProperties:(NSMutableSet *)affectingProperties;
-- (void)_addDependentValueKey:(id)valueKey;
-
 @end
 

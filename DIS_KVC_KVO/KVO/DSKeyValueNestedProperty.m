@@ -32,12 +32,14 @@
         NSRange dotAtRange =  [keyPath rangeOfString:@".@"];
         if(dotAtRange.length) {
             //"aaa.bbb"
-            NSString *keyPathWithoutOperatorComponents =  [keyPath substringToIndex:dotAtRange.location];
-            //range of ".ddd.eee"
-            NSRange dotRange = [keyPath rangeOfString:@"." options:0 range:NSMakeRange(dotAtRange.location + dotAtRange.length, keyPath.length - (dotAtRange.location + dotAtRange.length))];
-            if(dotRange.length) {
+            NSString *keyPathBeforeDotAt =  [keyPath substringToIndex:dotAtRange.location];
+            //range of "." in ".ddd.eee"
+            NSRange dotRangeAfterDotAt = [keyPath rangeOfString:@"." options:0 range:NSMakeRange(dotAtRange.location + dotAtRange.length, keyPath.length - (dotAtRange.location + dotAtRange.length))];
+            //aaa.bbb"
+            NSString * keyPathWithoutOperatorComponents = keyPathBeforeDotAt;
+            if(dotRangeAfterDotAt.length) {
                 //"aaa.bbb.ddd.eee"
-                keyPathWithoutOperatorComponents = [keyPathWithoutOperatorComponents stringByAppendingString:[keyPath substringFromIndex:dotRange.location]];
+                keyPathWithoutOperatorComponents = [keyPathWithoutOperatorComponents stringByAppendingString:[keyPath substringFromIndex:dotRangeAfterDotAt.location]];
             }
             //"aaa.bbb.ddd.eee"
             _keyPathWithoutOperatorComponents = keyPathWithoutOperatorComponents.retain;

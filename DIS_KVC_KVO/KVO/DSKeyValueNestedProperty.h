@@ -21,7 +21,4 @@
 @property (nonatomic, assign) BOOL dependentValueKeyOrKeysIsASet;
 
 - (DSKeyValueNestedProperty *)_initWithContainerClass:(DSKeyValueContainerClass *)containerClass keyPath:(NSString *)keyPath firstDotIndex:(NSUInteger)firstDotIndex propertiesBeingInitialized:(CFMutableSetRef)propertiesBeingInitialized;
-- (void)_givenPropertiesBeingInitialized:(CFMutableSetRef)propertiesBeingInitialized getAffectingProperties:(NSMutableSet *)affectingProperties;
-- (void)_addDependentValueKey:(id)valueKey;
-
 @end

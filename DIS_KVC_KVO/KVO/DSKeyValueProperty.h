@@ -37,7 +37,7 @@ typedef struct {
 - (Class)_isaForAutonotifying;
 - (NSString *)_keyPathIfAffectedByValueForMemberOfKeys:(id)keys;
 
-- (void)_givenPropertiesBeingInitialized:(CFSetRef)propertiesBeingInitialized getAffectingProperties:(NSMutableSet *)affectingProperties;
+- (void)_givenPropertiesBeingInitialized:(CFMutableSetRef)propertiesBeingInitialized getAffectingProperties:(NSMutableSet *)affectingProperties;
 
 - (void)_addDependentValueKey:(id)valueKey;
 

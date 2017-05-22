@@ -14,8 +14,6 @@
 @property (nonatomic, assign) BOOL cachedIsaForAutonotifyingIsValid;
 @property (nonatomic, assign) Class cachedIsaForAutonotifying;
 
-- (void)_addDependentValueKey:(id)arg1;
-- (void)_givenPropertiesBeingInitialized:(CFMutableSetRef)propertiesBeingInitialized getAffectingProperties:(NSMutableSet *)affectingProperties;
 - (id)_initWithContainerClass:(DSKeyValueContainerClass *)containerClass key:(NSString *)key propertiesBeingInitialized:(CFMutableSetRef)propertiesBeingInitialized;
 
 @end
