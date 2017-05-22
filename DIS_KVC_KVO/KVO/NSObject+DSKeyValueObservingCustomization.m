@@ -22,12 +22,9 @@ OSSpinLock DSKeyValueOldStyleDependenciesSpinLock = OS_SPINLOCK_INIT;
 
 @implementation NSObject (DSKeyValueObservingCustomization)
 
-- (void *)_observationInfoKey {
-    return ((void *)(~(NSUInteger)self));
-}
 
 - (void *)d_observationInfo {
-    return DSKeyValueObservationInfoPerObject ? (void *)CFDictionaryGetValue(DSKeyValueObservationInfoPerObject, [self _observationInfoKey]) : NULL;
+    return DSKeyValueObservationInfoPerObject ? (void *)CFDictionaryGetValue(DSKeyValueObservationInfoPerObject, OBSERVATION_INFO_KEY(self)) : NULL;
 }
 
 - (void)d_setObservationInfo:(void *)info {
@@ -35,10 +32,10 @@ OSSpinLock DSKeyValueOldStyleDependenciesSpinLock = OS_SPINLOCK_INIT;
         DSKeyValueObservationInfoPerObject = CFDictionaryCreateMutable(NULL, 0, NULL, NULL);
     }
     if(info) {
-        CFDictionarySetValue(DSKeyValueObservationInfoPerObject, [self _observationInfoKey], info);
+        CFDictionarySetValue(DSKeyValueObservationInfoPerObject, OBSERVATION_INFO_KEY(self), info);
     }
     else {
-        CFDictionaryRemoveValue(DSKeyValueObservationInfoPerObject, [self _observationInfoKey]);
+        CFDictionaryRemoveValue(DSKeyValueObservationInfoPerObject, OBSERVATION_INFO_KEY(self));
     }
 }
 

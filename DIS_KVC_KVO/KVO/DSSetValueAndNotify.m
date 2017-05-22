@@ -57,7 +57,7 @@ static inline void __DSSetPrimitiveValueAndNotify(id object,SEL selector, void (
     
     pthread_mutex_unlock(&info->mutex);
     
-    if(info->overrideWillDidChange) {
+    if(info->overrideWillOrDidChange) {
         [object d_willChangeValueForKey:key];
         
         IMP imp = class_getMethodImplementation(info->originalClass, selector);

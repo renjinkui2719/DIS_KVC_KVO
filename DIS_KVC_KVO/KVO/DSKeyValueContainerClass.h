@@ -16,14 +16,16 @@
 
 typedef struct DSKeyValueNotifyingInfo {
     Class originalClass;
-    Class containerClass;
+    Class newSubClass;
     CFMutableSetRef keys;
     CFMutableDictionaryRef selKeyMap;
     pthread_mutex_t mutex;
-    BOOL overrideWillDidChange;
+    //originalClass类是否覆写了 willChangeValueForKey: 或  didChangeValueForKey:
+    BOOL overrideWillOrDidChange;
 }DSKeyValueNotifyingInfo;
 
-#define ISKVOASelector NSSelectorFromString(@"_isKVOA")
+#define ISKVOA_SELECTOR NSSelectorFromString(@"_isKVOA")
+#define NOTIFY_CLASSNAME_PREFIX "DSKVONotifying_"
 
 DSKeyValueNotifyingInfo *_DSKeyValueContainerClassGetNotifyingInfo(DSKeyValueContainerClass *containerClass);
 
@@ -36,8 +38,6 @@ BOOL _DSKVONotifyingMutatorsShouldNotifyForIsaAndKey(Class isa, NSString *key);
 DSKeyValueContainerClass * _DSKeyValueContainerClassForIsa(Class isa);
 
 void _DSKVONotifyingEnableForInfoAndKey(DSKeyValueNotifyingInfo *info, NSString *key);
-
-DSKeyValueObservationInfo *_DSKeyValueRetainedObservationInfoForObject(id object, DSKeyValueContainerClass *containerClass) ;
 
 Class _DSKVONotifyingOriginalClassForIsa(Class isa);
 

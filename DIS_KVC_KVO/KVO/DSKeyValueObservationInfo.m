@@ -464,19 +464,15 @@ DSKeyValueObservationInfo *_DSKeyValueObservationInfoCreateByRemoving(DSKeyValue
         if (observance.property == property && observance.observer == observer) {
             if (!flag || observance.context == context) {
                 if (!originalObservable || observance.originalObservable == originalObservable) {
-                    //loc_5A4C1
                     *removalObservance = observance;
                     removalObservanceIndex = i;
-                    //loc_5A4C6
                     break;
                 }
             }
         }
-    }//for
+    }
     
-    //loc_5A4AA
     if (*removalObservance) {
-        //loc_5A4C6
         if (observanceCount > 1) {
             os_lock_lock(&DSKeyValueObservationInfoCreationSpinLock);
             if (!DSKeyValueShareableObservationInfos) {
@@ -488,18 +484,15 @@ DSKeyValueObservationInfo *_DSKeyValueObservationInfoCreateByRemoving(DSKeyValue
                 
                 [functions release];
             }
-            //loc_5A596
             if (!DSKeyValueShareableObservationInfoKeyIsa) {
                 DSKeyValueShareableObservationInfoKeyIsa = DSKeyValueShareableObservationInfoKey.self;
             }
-            //loc_5A5BC
             
             static DSKeyValueShareableObservationInfoKey * shareableObservationInfoKey = nil;
             if (!shareableObservationInfoKey) {
                 shareableObservationInfoKey = [[DSKeyValueShareableObservationInfoKey alloc] init];
             }
             
-            //loc_5A5F5
             shareableObservationInfoKey.addingNotRemoving = NO;
             shareableObservationInfoKey.baseObservationInfo = baseObservationInfo;
             shareableObservationInfoKey.removalObservance = *removalObservance;
@@ -533,7 +526,6 @@ DSKeyValueObservationInfo *_DSKeyValueObservationInfoCreateByRemoving(DSKeyValue
             return createdObservationInfo;
         }
         else {
-            //loc_5A6A8
             *cacheHit = YES;
         }
     }
@@ -562,12 +554,67 @@ void _DSKeyValueReplaceObservationInfoForObject(id object, DSKeyValueContainerCl
     }
     
     if(containerClass) {
-        containerClass.cachedSetObservationInfoImplementation(object, @selector(setObservationInfo:), newObservationInfo);
+        containerClass.cachedSetObservationInfoImplementation(object, @selector(d_setObservationInfo:), newObservationInfo);
     }
     else {
         [object d_setObservationInfo: newObservationInfo];
     }
     
+    os_lock_unlock(&DSKeyValueObservationInfoSpinLock);
+}
+
+DSKeyValueObservationInfo *_DSKeyValueRetainedObservationInfoForObject(id object, DSKeyValueContainerClass *containerClass) {
+    DSKeyValueObservationInfo *observationInfo = nil;
+    
+    os_lock_lock(&DSKeyValueObservationInfoSpinLock);
+    
+    if (containerClass) {
+        observationInfo = ((DSKeyValueObservationInfo * (*)(id,SEL))containerClass.cachedObservationInfoImplementation)(object, @selector(observationInfo));
+    }
+    else {
+        observationInfo = (DSKeyValueObservationInfo *)[object d_observationInfo];
+    }
+    
+    [observationInfo retain];
+    
+    os_lock_unlock(&DSKeyValueObservationInfoSpinLock);
+    
+    return  observationInfo;
+}
+
+
+void _DSKeyValueAddObservationInfoWatcher(ObservationInfoWatcher * watcher) {
+    DSKeyValueObservingTSD *TSD = _CFGetTSD(DSKeyValueObservingTSDKey);
+    if (!TSD) {
+        TSD = (DSKeyValueObservingTSD *)NSAllocateScannedUncollectable(sizeof(DSKeyValueObservingTSD));
+        _CFSetTSD(DSKeyValueObservingTSDKey, TSD, DSKeyValueObservingTSDDestroy);
+    }
+    watcher->next = TSD->firstWatcher;
+    TSD->firstWatcher = watcher;
+}
+
+void _DSKeyValueRemoveObservationInfoWatcher(ObservationInfoWatcher * watcher) {
+    DSKeyValueObservingTSD *TSD = _CFGetTSD(DSKeyValueObservingTSDKey);
+    if (!TSD) {
+        TSD = (DSKeyValueObservingTSD *)NSAllocateScannedUncollectable(sizeof(DSKeyValueObservingTSD));
+        _CFSetTSD(DSKeyValueObservingTSDKey, TSD, DSKeyValueObservingTSDDestroy);
+    }
+    
+    if(TSD->firstWatcher != watcher) {
+        NSLog(@"_DSKeyValueRemoveObservationInfoWatcher() was called in a surprising way.");
+    }
+    
+    if(TSD->firstWatcher) {
+        TSD->firstWatcher = watcher->next;
+    }
+}
+
+void _DSKeyValueRemoveObservationInfoForObject(id object, DSKeyValueObservationInfo *observationInfo) {
+    os_lock_lock(&DSKeyValueObservationInfoSpinLock);
+    if(!DSKeyValueObservationInfoPerObject) {
+        DSKeyValueObservationInfoPerObject = CFDictionaryCreateMutable(NULL, 0, NULL, NULL);
+    }
+    CFDictionaryRemoveValue(DSKeyValueObservationInfoPerObject, OBSERVATION_INFO_KEY(object));
     os_lock_unlock(&DSKeyValueObservationInfoSpinLock);
 }
 

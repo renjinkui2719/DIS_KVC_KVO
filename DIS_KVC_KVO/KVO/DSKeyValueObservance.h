@@ -23,8 +23,7 @@
 @property (nonatomic, assign) int options;
 @property (nonatomic, assign) int cachedIsShareable;
 
-
-- (id)_initWithObserver:(id)observer property:(id)property options:(int)options context:(void *)context originalObservable:(id)originalObservable;
+- (id)_initWithObserver:(id)observer property:(DSKeyValueProperty *)property options:(int)options context:(void *)context originalObservable:(id)originalObservable;
 
 @end
 

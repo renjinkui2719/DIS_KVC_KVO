@@ -78,10 +78,9 @@ static inline NSNumber* DSKeyValueChangeDictionaryNumberWithKind(DSKeyValueChang
         else if([aKey isEqualToString:DSKeyValueChangeNotificationIsPriorKey]) {
             return _isPriorNotification ? (id)kCFBooleanTrue : nil;
         }
-        else  {
-            return nil;
-        }
     }
+    
+    return nil;
 }
 
 - (void)setDetailsNoCopy:(DSKeyValueChangeDetails)details originalObservable:(id)originalObservable {

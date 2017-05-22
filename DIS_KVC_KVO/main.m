@@ -94,6 +94,11 @@
     return _identifier.hash;
 }
 
+- (void)dealloc {
+    NSLog(@"%@ dealloc", self);
+    [super dealloc];
+}
+
 - (NSString *)description {
     return  self.debugDescription;
 }
@@ -274,6 +279,7 @@ int main(int argc, const char * argv[]) {
     
     void *context = "this is context for observer_a";
     [a d_addObserver:observer_a forKeyPath:@"B_field"/*@"B_field.C_field.D_field.char_field"*/ options:options context: context];
+    [a release];
     //[a d_addObserver:observer_a forKeyPath:@"B_field.C_field.D_field.char_field" options:options context: context];
     //[a d_addObserver:observer_a forKeyPath:@"B_field.C_field.D_field.char_field" options:options context: context];
 //    [a d_addObserver:observer_a forKeyPath:@"char_field" options:options context:"this is context for observer_a"];

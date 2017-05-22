@@ -12,6 +12,7 @@
 @class DSKeyValueObservance;
 @class DSKeyValueProperty;
 @class DSKeyValueContainerClass;
+struct ObservationInfoWatcher;
 
 @interface DSKeyValueObservationInfo : NSObject
 @property (nonatomic, strong) NSArray<DSKeyValueObservance *> *observances;
@@ -48,5 +49,9 @@ void _DSKeyValueObservationInfoGetObservances(DSKeyValueObservationInfo *info, D
 
 BOOL _DSKeyValueObservationInfoContainsObservance(DSKeyValueObservationInfo *info, DSKeyValueObservance *observance);
 
+DSKeyValueObservationInfo *_DSKeyValueRetainedObservationInfoForObject(id object, DSKeyValueContainerClass *containerClass);
 
+void _DSKeyValueAddObservationInfoWatcher(struct ObservationInfoWatcher * watcher);
+void _DSKeyValueRemoveObservationInfoWatcher(struct ObservationInfoWatcher * watcher);
+void _DSKeyValueRemoveObservationInfoForObject(id object, DSKeyValueObservationInfo *observationInfo);
 

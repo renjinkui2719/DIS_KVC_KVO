@@ -22,12 +22,12 @@
         
         _cachedObservationInfoImplementation = (void * (*)(id,SEL))class_getMethodImplementation(originalClass,sel_registerName("d_observationInfo"));
         
-        Method method = class_getInstanceMethod(_originalClass, sel_registerName("d_setObservationInfo:"));
-        _cachedSetObservationInfoImplementation = (void  (*)(id,SEL, void *))method_getImplementation(method);
+        Method setMethod = class_getInstanceMethod(_originalClass, sel_registerName("d_setObservationInfo:"));
+        _cachedSetObservationInfoImplementation = (void  (*)(id,SEL, void *))method_getImplementation(setMethod);
         
-        char type = 0;
-        method_getArgumentType(method, 2, &type, 1);
-        if (type == '@') {
+        char argType = 0;
+        method_getArgumentType(setMethod, 2, &argType, 1);
+        if (argType == '@') {
             _cachedSetObservationInfoTakesAnObject = YES;
         }
     }
@@ -37,7 +37,7 @@
 - (id)description {
     Class notifyingClass = NULL;
     if(_notifyingInfo) {
-        notifyingClass = _notifyingInfo->containerClass;
+        notifyingClass = _notifyingInfo->newSubClass;
     }
     else {
         notifyingClass = @"not cached yet".class;
@@ -47,71 +47,17 @@
 
 @end
 
-DSKeyValueObservationInfo *_DSKeyValueRetainedObservationInfoForObject(id object, DSKeyValueContainerClass *containerClass) {
-    DSKeyValueObservationInfo *observationInfo = nil;
-    
-    os_lock_lock(&DSKeyValueObservationInfoSpinLock);
-    
-    if (containerClass) {
-        observationInfo = ((DSKeyValueObservationInfo * (*)(id,SEL))containerClass.cachedObservationInfoImplementation)(object, @selector(observationInfo));
-    }
-    else {
-        observationInfo = (DSKeyValueObservationInfo *)[object d_observationInfo];
-    }
-    
-    [observationInfo retain];
-    
-    os_lock_unlock(&DSKeyValueObservationInfoSpinLock);
-    
-    return  observationInfo;
-}
-
-
-void _DSKeyValueAddObservationInfoWatcher(ObservationInfoWatcher * watcher) {
-    DSKeyValueObservingTSD *TSD = _CFGetTSD(DSKeyValueObservingTSDKey);
-    if (!TSD) {
-        TSD = (DSKeyValueObservingTSD *)NSAllocateScannedUncollectable(sizeof(DSKeyValueObservingTSD));
-        _CFSetTSD(DSKeyValueObservingTSDKey, TSD, DSKeyValueObservingTSDDestroy);
-    }
-    watcher->next = TSD->firstWatcher;
-    TSD->firstWatcher = watcher;
-}
-
-void _DSKeyValueRemoveObservationInfoWatcher(ObservationInfoWatcher * watcher) {
-    DSKeyValueObservingTSD *TSD = _CFGetTSD(DSKeyValueObservingTSDKey);
-    if (!TSD) {
-        TSD = (DSKeyValueObservingTSD *)NSAllocateScannedUncollectable(sizeof(DSKeyValueObservingTSD));
-        _CFSetTSD(DSKeyValueObservingTSDKey, TSD, DSKeyValueObservingTSDDestroy);
-    }
-    
-    if(TSD->firstWatcher != watcher) {
-        NSLog(@"_DSKeyValueRemoveObservationInfoWatcher() was called in a surprising way.");
-    }
-    
-    if(TSD->firstWatcher) {
-        TSD->firstWatcher = watcher->next;
-    }
-}
-
-void _DSKeyValueRemoveObservationInfoForObject(id object, DSKeyValueObservationInfo *observationInfo) {
-    os_lock_lock(&DSKeyValueObservationInfoSpinLock);
-    if(!DSKeyValueObservationInfoPerObject) {
-        DSKeyValueObservationInfoPerObject = CFDictionaryCreateMutable(NULL, 0, NULL, NULL);
-    }
-    CFDictionaryRemoveValue(DSKeyValueObservationInfoPerObject, (void*)~(NSUInteger)(void *)object);
-    os_lock_unlock(&DSKeyValueObservationInfoSpinLock);
-}
 
 BOOL DSKVOIsAutonotifying() {
     return YES;
 }
 
 Class DSKVOClass(id object, SEL selector) {
-    Class objClass = object_getClass(object);
-    Class originalClass =  _DSKVONotifyingOriginalClassForIsa(objClass);
-    if (objClass == originalClass) {
-        Method m = class_getInstanceMethod(objClass, selector);
-        return ((id (*)(id,Method))method_invoke)(object, m);
+    Class currentClass = object_getClass(object);
+    Class originalClass =  _DSKVONotifyingOriginalClassForIsa(currentClass);
+    if (currentClass == originalClass) {
+        Method m = class_getInstanceMethod(currentClass, selector);
+        return ((Class (*)(id,Method))method_invoke)(object, m);
     }
     else {
         return [originalClass class];
@@ -126,28 +72,25 @@ void DSKVODeallocateBreak(id object) {
 
 void DSKVODeallocate(id object, SEL selector) {
     DSKeyValueObservationInfo *observationInfo = _DSKeyValueRetainedObservationInfoForObject(object, nil);
+    
     ObservationInfoWatcher watcher = {object, observationInfo, NULL};
     _DSKeyValueAddObservationInfoWatcher(&watcher);
+    
     DSKeyValueNotifyingInfo *notifyInfo = (DSKeyValueNotifyingInfo *)object_getIndexedIvars(object_getClass(object));
+    
     Method originDellocMethod = class_getInstanceMethod(notifyInfo->originalClass, selector);
     ((id (*)(id,Method))method_invoke)(object, originDellocMethod);
     
     if(observationInfo) {
-        Boolean keyExistsAndHasValidFormat = false;
-        Boolean NSKVODeallocateCleansUpBeforeThrowing = false;
+        BOOL keyExistsAndHasValidFormat = false;
+        BOOL cleansUpBeforeThrowing = false;
         
-        NSKVODeallocateCleansUpBeforeThrowing = CFPreferencesGetAppBooleanValue(CFSTR("NSKVODeallocateCleansUpBeforeThrowing"), kCFPreferencesCurrentApplication, &keyExistsAndHasValidFormat);
+        cleansUpBeforeThrowing = (BOOL)CFPreferencesGetAppBooleanValue(CFSTR("NSKVODeallocateCleansUpBeforeThrowing"), kCFPreferencesCurrentApplication, (Boolean *)&keyExistsAndHasValidFormat);
         
-        if (!NSKVODeallocateCleansUpBeforeThrowing) {
-            NSKVODeallocateCleansUpBeforeThrowing = true;
-        }
+        cleansUpBeforeThrowing = cleansUpBeforeThrowing && keyExistsAndHasValidFormat;
         
-        if(!keyExistsAndHasValidFormat) {
-            keyExistsAndHasValidFormat = true;
-        }
-        
-        if(dyld_get_program_sdk_version() > 0x7FFFF || !(keyExistsAndHasValidFormat || NSKVODeallocateCleansUpBeforeThrowing)) {
-            if(!(keyExistsAndHasValidFormat || NSKVODeallocateCleansUpBeforeThrowing)) {
+        if (dyld_get_program_sdk_version() > 0x7FFFF || cleansUpBeforeThrowing) {
+            if (cleansUpBeforeThrowing) {
                 _DSKeyValueRemoveObservationInfoForObject(object, observationInfo);
             }
             [NSException raise:NSInternalInconsistencyException format:@"An instance %p of class %@ was deallocated while key value observers were still registered with it. Current observation info: %@", object, notifyInfo->originalClass, observationInfo];
@@ -159,12 +102,13 @@ void DSKVODeallocate(id object, SEL selector) {
     }
 
     _DSKeyValueRemoveObservationInfoWatcher(&watcher);
+    
     [observationInfo release];
 }
 
 void DSKVONotifyingSetMethodImplementation(DSKeyValueNotifyingInfo *info, SEL sel, IMP imp, NSString *key) {
-    Method m = class_getInstanceMethod(info->originalClass, sel);
-    if (m) {
+    Method originMethod = class_getInstanceMethod(info->originalClass, sel);
+    if (originMethod) {
         if (key) {
             pthread_mutex_lock(&info->mutex);
             
@@ -172,34 +116,34 @@ void DSKVONotifyingSetMethodImplementation(DSKeyValueNotifyingInfo *info, SEL se
             
             pthread_mutex_unlock(&info->mutex);
         }
-        const char *encoding = method_getTypeEncoding(m);
-        class_addMethod(info->containerClass, sel, imp, encoding);
+        const char *encoding = method_getTypeEncoding(originMethod);
+        class_addMethod(info->newSubClass, sel, imp, encoding);
     }
 }
 
 DSKeyValueNotifyingInfo *_DSKVONotifyingCreateInfoWithOriginalClass(Class originalClass) {
-    static const char *notifyingClassNamePrefix = "DSKVONotifying_";
     
     static IMP DSObjectWillChange;
     static IMP DSObjectDidChange;
     
+    //构造新的子类名
     const char *originalClassName = class_getName(originalClass);
-    size_t size = strlen(originalClassName) + 16;
+    size_t size = strlen(originalClassName) + 16/*NOTIFY_CLASSNAME_PREFIX长度 + 1('\0')*/;
     char *newClassName = (char *)malloc(size);
     
-    strlcpy(newClassName, notifyingClassNamePrefix, size);
+    strlcpy(newClassName, NOTIFY_CLASSNAME_PREFIX, size);
     strlcat(newClassName, originalClassName, size);
     
-    Class containerClass = objc_allocateClassPair(originalClass, newClassName, sizeof(DSKeyValueNotifyingInfo));
-    objc_registerClassPair(containerClass);
+    //创建子类
+    Class newSubClass = objc_allocateClassPair(originalClass, newClassName, sizeof(DSKeyValueNotifyingInfo));
+    objc_registerClassPair(newSubClass);
     
     free(newClassName);
     
-    unsigned char *ivars = object_getIndexedIvars(containerClass);
+    unsigned char *ivars = object_getIndexedIvars(newSubClass);
     DSKeyValueNotifyingInfo *notifyingInfo = (DSKeyValueNotifyingInfo *)ivars;
     notifyingInfo->originalClass = originalClass;
-    notifyingInfo->containerClass = containerClass;
-    
+    notifyingInfo->newSubClass = newSubClass;
     notifyingInfo->keys = CFSetCreateMutable(NULL, 0, &kCFCopyStringSetCallBacks);
     notifyingInfo->selKeyMap = CFDictionaryCreateMutable(NULL, 0, NULL, &kCFTypeDictionaryValueCallBacks);
     
@@ -209,16 +153,20 @@ DSKeyValueNotifyingInfo *_DSKVONotifyingCreateInfoWithOriginalClass(Class origin
     pthread_mutex_init(&notifyingInfo->mutex, &mutexattr);
     pthread_mutexattr_destroy(&mutexattr);
     
+    //获取根类的 willChangeValueForKey 和 didChangeValueForKey实现
     static dispatch_once_t NSObjectIMPLookupOnce;
     dispatch_once(&NSObjectIMPLookupOnce, ^{
         DSObjectWillChange = class_getMethodImplementation([NSObject class], @selector(d_willChangeValueForKey:));
         DSObjectDidChange = class_getMethodImplementation([NSObject class], @selector(d_didChangeValueForKey:));
     });
     
-    notifyingInfo->overrideWillDidChange = class_getMethodImplementation(notifyingInfo->originalClass, @selector(d_willChangeValueForKey:)) != DSObjectWillChange || class_getMethodImplementation(notifyingInfo->originalClass, @selector(d_didChangeValueForKey:)) != DSObjectDidChange;
-    
-    DSKVONotifyingSetMethodImplementation(notifyingInfo, ISKVOASelector, (IMP)DSKVOIsAutonotifying, NULL);
+    //originalClass类是否覆写了 willChangeValueForKey: 或  didChangeValueForKey:
+    notifyingInfo->overrideWillOrDidChange = class_getMethodImplementation(notifyingInfo->originalClass, @selector(d_willChangeValueForKey:)) != DSObjectWillChange || class_getMethodImplementation(notifyingInfo->originalClass, @selector(d_didChangeValueForKey:)) != DSObjectDidChange;
+    //添加子类 _isKVOA方法
+    DSKVONotifyingSetMethodImplementation(notifyingInfo, ISKVOA_SELECTOR, (IMP)DSKVOIsAutonotifying, NULL);
+    //添加子类 dealloc方法
     DSKVONotifyingSetMethodImplementation(notifyingInfo, @selector(dealloc), (IMP)DSKVODeallocate, NULL);
+    //添加子类 class方法
     DSKVONotifyingSetMethodImplementation(notifyingInfo, @selector(class), (IMP)DSKVOClass, NULL);
     
     return notifyingInfo;
@@ -234,7 +182,7 @@ DSKeyValueNotifyingInfo *_DSKeyValueContainerClassGetNotifyingInfo(DSKeyValueCon
 }
 
 Class _DSKVONotifyingOriginalClassForIsa(Class isa) {
-    if(class_getMethodImplementation(isa, ISKVOASelector) == (IMP)DSKVOIsAutonotifying) {
+    if(class_getMethodImplementation(isa, ISKVOA_SELECTOR) == (IMP)DSKVOIsAutonotifying) {
         void *ivars = object_getIndexedIvars(isa);
         return ((DSKeyValueNotifyingInfo *)ivars)->originalClass;
     }
@@ -243,13 +191,12 @@ Class _DSKVONotifyingOriginalClassForIsa(Class isa) {
 
 
 BOOL _DSKVONotifyingMutatorsShouldNotifyForIsaAndKey(Class isa, NSString *key) {
-    IMP imp =  class_getMethodImplementation(isa, ISKVOASelector);
-    if(imp == (IMP)DSKVOIsAutonotifying) {
+    if(class_getMethodImplementation(isa, ISKVOA_SELECTOR) == (IMP)DSKVOIsAutonotifying) {
         DSKeyValueNotifyingInfo *info = (DSKeyValueNotifyingInfo *)object_getIndexedIvars(isa);
         pthread_mutex_lock(&info->mutex);
-        BOOL contains = CFSetContainsValue(info->keys, (CFTypeRef)key);
+        BOOL containsKey = CFSetContainsValue(info->keys, (CFTypeRef)key);
         pthread_mutex_unlock(&info->mutex);
-        return contains;
+        return containsKey;
     }
     return NO;
 }
@@ -392,7 +339,7 @@ void _DSKVONotifyingEnableForInfoAndKey(DSKeyValueNotifyingInfo *info, NSString 
                             setMethodSelectorNameLen + 11);
                     strlcat(prefixedName, setMethodSelectorName, setMethodSelectorNameLen + 11);
                     
-                    class_addMethod(info->containerClass, sel_registerName(prefixedName), method_getImplementation(setMethod), method_getTypeEncoding(setMethod));
+                    class_addMethod(info->newSubClass, sel_registerName(prefixedName), method_getImplementation(setMethod), method_getTypeEncoding(setMethod));
                 }
             }
             else {
@@ -483,5 +430,5 @@ void _DSKVONotifyingEnableForInfoAndKey(DSKeyValueNotifyingInfo *info, NSString 
         }
     }
     
-    _DSKeyValueInvalidateCachedMutatorsForIsaAndKey(info->containerClass, key);
+    _DSKeyValueInvalidateCachedMutatorsForIsaAndKey(info->newSubClass, key);
 }

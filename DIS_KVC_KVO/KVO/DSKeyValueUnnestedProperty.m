@@ -72,7 +72,7 @@
         DSKeyValueNotifyingInfo *info = _DSKeyValueContainerClassGetNotifyingInfo(self.containerClass);
         if (info) {
             _DSKVONotifyingEnableForInfoAndKey(info,self.keyPath);
-            return info->containerClass;
+            return info->newSubClass;
         }
     }
     return NULL;

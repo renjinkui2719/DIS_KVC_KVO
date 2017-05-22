@@ -12,6 +12,8 @@ extern CFMutableDictionaryRef DSKeyValueObservationInfoPerObject;
 extern CFMutableDictionaryRef DSKeyValueOldStyleDependenciesByClass;
 extern OSSpinLock DSKeyValueOldStyleDependenciesSpinLock;
 
+#define OBSERVATION_INFO_KEY(object) ((void *)(~(NSUInteger)(object)))
+
 @interface NSObject (DSKeyValueObservingCustomization)
 
 - (void *)d_observationInfo;
