@@ -27,6 +27,7 @@
         _keyPathFromRelatedObject = [keyPath substringFromIndex:firstDotIndex + 1].copy;
         
         //property of "aaa"
+        //_relationshipProperty 必定是Unnested Property
         _relationshipProperty = (DSKeyValueUnnestedProperty *)DSKeyValuePropertyForIsaAndKeyPathInner(self.containerClass.originalClass, _relationshipKey, propertiesBeingInitialized);
         
         NSRange dotAtRange =  [keyPath rangeOfString:@".@"];
@@ -84,6 +85,7 @@
         
         *info = backInfo;
     }
+    //为_relationshipProperty依赖的所有 property继续添加监听
     [_relationshipProperty object:object didAddObservance:observance recurse:recurse];
 }
 
@@ -113,7 +115,7 @@
         
         DSKeyValueObserverRegistrationLockLock();
     }
-    [self.relationshipProperty object:object didRemoveObservance:observance recurse:recurse];
+    [_relationshipProperty object:object didRemoveObservance:observance recurse:recurse];
 }
 
 - (NSString *)_keyPathIfAffectedByValueForKey:(id)key exactMatch:(BOOL *)exactMatch {
@@ -144,7 +146,7 @@
         }
         //loc_6F4A6
         DSKeyValuePropertyForwardingValues forwardingValuesLocal = {0};
-        if([self.relationshipProperty object:object withObservance:observance willChangeValueForKeyOrKeys:keyOrKeys recurse:recurse forwardingValues:&forwardingValuesLocal]) {
+        if([_relationshipProperty object:object withObservance:observance willChangeValueForKeyOrKeys:keyOrKeys recurse:recurse forwardingValues:&forwardingValuesLocal]) {
             forwardingValues->p2 = forwardingValuesLocal.p2;
         }
         return YES;
@@ -156,6 +158,7 @@
     if(_isAllowedToResultInForwarding) {
         DSKeyValueObservingOptions option = 0;
         void *context = NULL;
+        
         if (observance.property == self) {
             option = observance.options;
             context = NULL;
@@ -211,27 +214,23 @@
     [_relationshipProperty _givenPropertiesBeingInitialized:propertiesBeingInitialized getAffectingProperties:affectingProperties];
 }
 
-- (void)_addDependentValueKey:(id)valueKey {
-    id valueKeyCopy = [valueKey copy];
+- (void)_addDependentValueKey:(id)key {
+    id copied = [key copy];
+    
     if(_dependentValueKeyOrKeys) {
         if(_dependentValueKeyOrKeysIsASet) {
-            _dependentValueKeyOrKeys = [_dependentValueKeyOrKeys setByAddingObject:valueKeyCopy];
-            //loc_C90F5
+            _dependentValueKeyOrKeys = [_dependentValueKeyOrKeys setByAddingObject:copied];
         }
         else {
-            //loc_C9090
-            _dependentValueKeyOrKeys = [[NSSet alloc] initWithObjects:_dependentValueKeyOrKeys,valueKeyCopy, nil];
+            _dependentValueKeyOrKeys = [[NSSet alloc] initWithObjects:_dependentValueKeyOrKeys,copied, nil];
             _dependentValueKeyOrKeysIsASet = YES;
-            //loc_C90F5
         }
     }
     else {
-        //loc_C906C
-        _dependentValueKeyOrKeys = valueKeyCopy;
-        //loc_C90F5
+        _dependentValueKeyOrKeys = copied;
     }
-    //loc_C90F5
-    [valueKeyCopy release];
+    
+    [copied release];
 }
 
 - (id)dependentValueKeyOrKeysIsASet:(BOOL *)isASet {
