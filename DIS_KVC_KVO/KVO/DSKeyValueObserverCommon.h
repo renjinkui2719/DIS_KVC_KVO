@@ -12,6 +12,7 @@
 #import <objc/objc.h>
 #import <objc/message.h>
 #import <pthread.h>
+#import "Log.h"
 
 extern void _CF_forwarding_prep_0(void *);
 //extern void os_lock_lock(void *);

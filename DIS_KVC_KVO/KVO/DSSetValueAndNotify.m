@@ -13,40 +13,6 @@
 #import "NSObject+DSKeyValueObserverNotification.h"
 #import "DSKeyValueObserverCommon.h"
 
-#define SetPrimitiveValue_NiceBreakPoint 1
-
-#if !SetPrimitiveValue_NiceBreakPoint
-
-#define __DSSetPrimitiveValueAndNotify(object, selector, value) do {\
-    DSKeyValueNotifyingInfo *info = object_getIndexedIvars(object_getClass(object));\
-\
-    pthread_mutex_lock(&info->mutex);\
-\
-    NSString *key = CFDictionaryGetValue(info->selKeyMap, selector);\
-    key = [key copyWithZone:nil];\
-\
-    pthread_mutex_unlock(&info->mutex);\
-\
-    if(info->flag) {\
-        [object d_willChangeValueForKey:key];\
-        \
-        IMP imp = class_getMethodImplementation(info->originalClass, selector);\
-        ((void (*)(id ,SEL , ... ))imp)(object, selector, value);\
-        \
-        [object d_didChangeValueForKey:key];\
-    }\
-    else {\
-        [object _d_changeValueForKey:key key:nil key:nil usingBlock:^{\
-            IMP imp = class_getMethodImplementation(info->originalClass, selector);\
-            ((void (*)(id ,SEL , ... ))imp)(object, selector, value);\
-        }];\
-    }\
-\
-    [key release];\
-}while(0)
-
-#else
-
 static inline void __DSSetPrimitiveValueAndNotify(id object,SEL selector, void (^setWithImpBlock)(IMP imp)) {
     DSKeyValueNotifyingInfo *info = object_getIndexedIvars(object_getClass(object));
     
@@ -75,69 +41,56 @@ static inline void __DSSetPrimitiveValueAndNotify(id object,SEL selector, void (
     [key release];
 }
 
-#endif
 
 void _DSSetCharValueAndNotify(id object,SEL selector, char value) {
-#if !SetPrimitiveValue_NiceBreakPoint
-    __DSSetPrimitiveValueAndNotify(object, selector, value);
-#else
+    LOG_KVO(@"set Char value and notify with %c, of object: %@, selector: %s", value, simple_desc(object),sel_getName(selector));
+
     __DSSetPrimitiveValueAndNotify(object, selector, ^(IMP imp) {
         ((void (*)(id ,SEL , ... ))imp)(object, selector, value);
     });
-#endif
 }
 
 void _DSSetDoubleValueAndNotify(id object,SEL selector, double value) {
-#if !SetPrimitiveValue_NiceBreakPoint
-    __DSSetPrimitiveValueAndNotify(object, selector, value);
-#else
+    LOG_KVO(@"set Double value and notify with %f, of object: %@, selector: %s", value, simple_desc(object),sel_getName(selector));
+
     __DSSetPrimitiveValueAndNotify(object, selector, ^(IMP imp) {
         ((void (*)(id ,SEL , ... ))imp)(object, selector, value);
     });
-#endif
 }
 
 void _DSSetFloatValueAndNotify(id object,SEL selector, float value) {
-#if !SetPrimitiveValue_NiceBreakPoint
-    __DSSetPrimitiveValueAndNotify(object, selector, value);
-#else
+    LOG_KVO(@"set Float value and notify with %f, of object: %@, selector: %s", value, simple_desc(object),sel_getName(selector));
+
     __DSSetPrimitiveValueAndNotify(object, selector, ^(IMP imp) {
         ((void (*)(id ,SEL , ... ))imp)(object, selector, value);
     });
-#endif
 }
 
 void _DSSetIntValueAndNotify(id object,SEL selector, int value) {
-#if !SetPrimitiveValue_NiceBreakPoint
-    __DSSetPrimitiveValueAndNotify(object, selector, value);
-#else
+    LOG_KVO(@"set Int value and notify with %d, of object: %@, selector: %s", value, simple_desc(object),sel_getName(selector));
+
     __DSSetPrimitiveValueAndNotify(object, selector, ^(IMP imp) {
         ((void (*)(id ,SEL , ... ))imp)(object, selector, value);
     });
-#endif
 }
 
 void _DSSetLongValueAndNotify(id object,SEL selector, long value) {
-#if !SetPrimitiveValue_NiceBreakPoint
-    __DSSetPrimitiveValueAndNotify(object, selector, value);
-#else
+    LOG_KVO(@"set Long value and notify with %ld, of object: %@, selector: %s", value, simple_desc(object),sel_getName(selector));
+
     __DSSetPrimitiveValueAndNotify(object, selector, ^(IMP imp) {
         ((void (*)(id ,SEL , ... ))imp)(object, selector, value);
     });
-#endif
 }
 
 void _DSSetLongLongValueAndNotify(id object,SEL selector, long long value) {
-#if !SetPrimitiveValue_NiceBreakPoint
-    __DSSetPrimitiveValueAndNotify(object, selector, value);
-#else
+    LOG_KVO(@"set LongLong value and notify with %lld, of object: %@, selector: %s", value, simple_desc(object),sel_getName(selector));
     __DSSetPrimitiveValueAndNotify(object, selector, ^(IMP imp) {
         ((void (*)(id ,SEL , ... ))imp)(object, selector, value);
     });
-#endif
 }
 
 void _DSSetShortValueAndNotify(id object,SEL selector, short value) {
+    LOG_KVO(@"set Short value and notify with %d, of object: %@, selector: %s", value, simple_desc(object),sel_getName(selector));
 #if !SetPrimitiveValue_NiceBreakPoint
     __DSSetPrimitiveValueAndNotify(object, selector, value);
 #else
@@ -148,6 +101,7 @@ void _DSSetShortValueAndNotify(id object,SEL selector, short value) {
 }
 
 void _DSSetUnsignedShortValueAndNotify(id object,SEL selector, unsigned short value) {
+    LOG_KVO(@"set UnsignedShort value and notify with %u, of object: %@, selector: %s", value, simple_desc(object),sel_getName(selector));
 #if !SetPrimitiveValue_NiceBreakPoint
     __DSSetPrimitiveValueAndNotify(object, selector, value);
 #else
@@ -158,6 +112,7 @@ void _DSSetUnsignedShortValueAndNotify(id object,SEL selector, unsigned short va
 }
 
 void _DSSetPointValueAndNotify(id object,SEL selector, NSPoint value) {
+    LOG_KVO(@"set Point value and notify with %@, of object: %@, selector: %s", value, simple_desc(object),sel_getName(selector));
 #if !SetPrimitiveValue_NiceBreakPoint
     __DSSetPrimitiveValueAndNotify(object, selector, value);
 #else
@@ -168,6 +123,7 @@ void _DSSetPointValueAndNotify(id object,SEL selector, NSPoint value) {
 }
 
 void _DSSetRangeValueAndNotify(id object,SEL selector, NSRange value) {
+    LOG_KVO(@"set Range value and notify with %@, of object: %@, selector: %s", value, simple_desc(object),sel_getName(selector));
 #if !SetPrimitiveValue_NiceBreakPoint
     __DSSetPrimitiveValueAndNotify(object, selector, value);
 #else
@@ -178,6 +134,7 @@ void _DSSetRangeValueAndNotify(id object,SEL selector, NSRange value) {
 }
 
 void _DSSetRectValueAndNotify(id object,SEL selector, NSRect value) {
+    LOG_KVO(@"set Rect value and notify with %@, of object: %@, selector: %s", value, simple_desc(object),sel_getName(selector));
 #if !SetPrimitiveValue_NiceBreakPoint
     __DSSetPrimitiveValueAndNotify(object, selector, value);
 #else
@@ -188,6 +145,7 @@ void _DSSetRectValueAndNotify(id object,SEL selector, NSRect value) {
 }
 
 void _DSSetSizeValueAndNotify(id object,SEL selector, NSSize value) {
+    LOG_KVO(@"set Size value and notify with %@, of object: %@, selector: %s", value, simple_desc(object),sel_getName(selector));
 #if !SetPrimitiveValue_NiceBreakPoint
     __DSSetPrimitiveValueAndNotify(object, selector, value);
 #else
@@ -198,6 +156,7 @@ void _DSSetSizeValueAndNotify(id object,SEL selector, NSSize value) {
 }
 
 void _DSSetBoolValueAndNotify(id object,SEL selector, BOOL value) {
+    LOG_KVO(@"set Bool value and notify with %s, of object: %@, selector: %s", value ? "YES" : "NO", simple_desc(object),sel_getName(selector));
 #if !SetPrimitiveValue_NiceBreakPoint
     __DSSetPrimitiveValueAndNotify(object, selector, value);
 #else
@@ -208,6 +167,7 @@ void _DSSetBoolValueAndNotify(id object,SEL selector, BOOL value) {
 }
 
 void _DSSetUnsignedCharValueAndNotify(id object,SEL selector, unsigned char value) {
+    LOG_KVO(@"set UnsignedChar value and notify with %u, of object: %@, selector: %s", value, simple_desc(object),sel_getName(selector));
 #if !SetPrimitiveValue_NiceBreakPoint
     __DSSetPrimitiveValueAndNotify(object, selector, value);
 #else
@@ -218,6 +178,7 @@ void _DSSetUnsignedCharValueAndNotify(id object,SEL selector, unsigned char valu
 }
 
 void _DSSetUnsignedIntValueAndNotify(id object,SEL selector, unsigned int value) {
+    LOG_KVO(@"set UnsignedInt value and notify with %u, of object: %@, selector: %s", value, simple_desc(object),sel_getName(selector));
 #if !SetPrimitiveValue_NiceBreakPoint
     __DSSetPrimitiveValueAndNotify(object, selector, value);
 #else
@@ -228,6 +189,7 @@ void _DSSetUnsignedIntValueAndNotify(id object,SEL selector, unsigned int value)
 }
 
 void _DSSetUnsignedLongValueAndNotify(id object,SEL selector, unsigned long value) {
+    LOG_KVO(@"set UnsignedLong value and notify with %lu, of object: %@, selector: %s", value, simple_desc(object),sel_getName(selector));
 #if !SetPrimitiveValue_NiceBreakPoint
     __DSSetPrimitiveValueAndNotify(object, selector, value);
 #else
@@ -238,6 +200,7 @@ void _DSSetUnsignedLongValueAndNotify(id object,SEL selector, unsigned long valu
 }
 
 void _DSSetUnsignedLongLongValueAndNotify(id object,SEL selector, unsigned long long value) {
+    LOG_KVO(@"set UnsignedLongLong value and notify with %llu, of object: %@, selector: %s", value, simple_desc(object),sel_getName(selector));
 #if !SetPrimitiveValue_NiceBreakPoint
     __DSSetPrimitiveValueAndNotify(object, selector, value);
 #else
@@ -248,6 +211,7 @@ void _DSSetUnsignedLongLongValueAndNotify(id object,SEL selector, unsigned long 
 }
 
 void _DSSetObjectValueAndNotify(id object,SEL selector, id value) {
+    LOG_KVO(@"set Object value and notify with %@, of object: %@, selector: %s", simple_desc(value), simple_desc(object),sel_getName(selector));
 #if !SetPrimitiveValue_NiceBreakPoint
     __DSSetPrimitiveValueAndNotify(object, selector, value);
 #else

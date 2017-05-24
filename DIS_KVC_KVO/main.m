@@ -13,6 +13,7 @@
 #import "DSKeyValueObserverCommon.h"
 #import <limits.h>
 #import <objc/runtime.h>
+#import "Log.h"
 
 #define TEST_1(condition) {\
     printf("%s [%s:%d] => %s\n",(condition) ? "✅" : "❌", __FUNCTION__, __LINE__, #condition);\
@@ -26,6 +27,8 @@
 
 #define NEW_LINE printf("\n");
 #define SEP_LINE printf("==========================================================================================================\n");
+
+
 
 @interface NSString(Random)
 + (NSString *)random:(NSUInteger)len;
@@ -232,7 +235,7 @@ void TestKVC();
 @implementation Observer
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
-    NSLog(@"observer:%@,observeValueForKeyPath: %@, object: %@, change:%@, context:%s",self, keyPath, object, change, (char *)context);
+    LOG(@"observer:%@,observeValueForKeyPath: %@, object: %@, change:%@, context:%s",self, keyPath, object, change, (char *)context);
 }
 @end
 
@@ -265,8 +268,12 @@ extern void *_os_lock_handoff_lock;
 
 //extern pthread_mutex_t __NSKeyValueObserverRegistrationLock;
 
+
+extern void CFLog(int32_t lev, CFStringRef format, ...);
+extern void _CFLogSimple(int32_t lev, char *format, ...);
+
+
 int main(int argc, const char * argv[]) {
-    
     Observer *observer_a = [ObserverA new];
     Observer *observer_b = [ObserverB new];
     Observer *observer_c = [ObserverC new];
@@ -278,14 +285,14 @@ int main(int argc, const char * argv[]) {
     int options = DSKeyValueObservingOptionNew/*|DSKeyValueObservingOptionPrior|NSKeyValueObservingOptionOld|NSKeyValueObservingOptionInitial*/;
     
     void *context = "this is context for observer_a";
-    [a d_addObserver:observer_a forKeyPath:@"B_field"/*@"B_field.C_field.D_field.char_field"*/ options:options context: context];
-    [a release];
+    [a d_addObserver:observer_a forKeyPath:@"B_field.C_field.D_field.char_field" options:options context: context];
+    //[a release];
     //[a d_addObserver:observer_a forKeyPath:@"B_field.C_field.D_field.char_field" options:options context: context];
     //[a d_addObserver:observer_a forKeyPath:@"B_field.C_field.D_field.char_field" options:options context: context];
 //    [a d_addObserver:observer_a forKeyPath:@"char_field" options:options context:"this is context for observer_a"];
 //    [a d_addObserver:observer_b forKeyPath:@"char_field" options:options context:"this is context for observer_b"];
 //    [a d_addObserver:observer_c forKeyPath:@"char_field" options:options context:"this is context for observer_c"];
-    a.B_field = B.random;
+    //a.B_field = B.random;
     //a.B_field.C_field.D_field = D.random;
     //a.B_field.C_field.D_field.char_field = '3';
     //[a d_removeObserver:observer_a forKeyPath:@"B_field" context:context];

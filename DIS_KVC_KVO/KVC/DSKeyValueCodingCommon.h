@@ -10,7 +10,7 @@
 #import <objc/runtime.h>
 #import <objc/message.h>
 #import <pthread.h>
-
+#import "Log.h"
 
 extern NSString * _NSMethodExceptionProem(id object,SEL selector);
 

@@ -33,3 +33,18 @@ typedef struct {
 - (void)retainObjects;
 
 @end
+
+static inline NSString * NSStringFromKeyValueChangeDetails(const DSKeyValueChangeDetails *details) {
+    return [NSString stringWithFormat:
+            @"{\n\t\tkind:0X%02X,"\
+            @"\t\toldValue:<%@, %p>,"\
+            @"\t\tnewValue:<%@, %p>,"\
+            @"\t\tindexes:%@,"\
+            @"\t\textraData:<%@, %p>\n\t}",
+            (uint8_t)details->kind,
+            [details->oldValue class], details->oldValue,
+            [details->newValue class], details->newValue,
+            details->indexes,
+            [details->extraData class], details->extraData
+            ];
+}

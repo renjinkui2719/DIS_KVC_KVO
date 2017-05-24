@@ -242,6 +242,7 @@
 		917788751E6FBC7B00715DA8 /* NSArray+DSKeyValueCoding.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSArray+DSKeyValueCoding.m"; sourceTree = "<group>"; };
 		917788771E6FBC8C00715DA8 /* NSArray+DSKeyValueCodingPrivate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSArray+DSKeyValueCodingPrivate.h"; sourceTree = "<group>"; };
 		917788781E6FBC8C00715DA8 /* NSArray+DSKeyValueCodingPrivate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSArray+DSKeyValueCodingPrivate.m"; sourceTree = "<group>"; };
+		9189F4B51ED575A200E3B724 /* Log.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Log.h; sourceTree = "<group>"; };
 		91958A621E778530004A7000 /* NSOrderedSet+DSKeyValueCodingPrivate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSOrderedSet+DSKeyValueCodingPrivate.h"; sourceTree = "<group>"; };
 		91958A631E778530004A7000 /* NSOrderedSet+DSKeyValueCodingPrivate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSOrderedSet+DSKeyValueCodingPrivate.m"; sourceTree = "<group>"; };
 		91958A651E77886A004A7000 /* NSMutableDictionary+DSKeyValueCoding.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSMutableDictionary+DSKeyValueCoding.h"; sourceTree = "<group>"; };
@@ -299,6 +300,7 @@
 		916EC4E11E6674FE001E7595 /* DIS_KVC_KVO */ = {
 			isa = PBXGroup;
 			children = (
+				9189F4B51ED575A200E3B724 /* Log.h */,
 				916EC4E91E667511001E7595 /* KVC */,
 				916EC54D1E667511001E7595 /* KVO */,
 				916EC4E21E6674FE001E7595 /* main.m */,
