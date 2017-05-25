@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VariablesViewState
+   version = "1.0">
+   <ContextStates>
+      <ContextState
+         contextName = "-[DSKeyValueShareableObservationInfoKey setAddingNotRemoving:]:DSKeyValueObservationInfo.h">
+      </ContextState>
+      <ContextState
+         contextName = "-[NSObject(NSKeyValueObserverNotification) didChangeValueForKey:]:(null)">
+      </ContextState>
+      <ContextState
+         contextName = "-[NSObject(NSKeyValueObserverRegistration) _addObserver:forProperty:options:context:]:(null)">
+         <PersistentStrings>
+            <PersistentString
+               value = "(unsigned int)$r0">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+   </ContextStates>
+</VariablesViewState>
