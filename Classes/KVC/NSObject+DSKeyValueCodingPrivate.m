@@ -59,6 +59,7 @@ extern void DSKeyValueObservingAssertRegistrationLockNotHeld();
 
 id _DSGetUsingKeyValueGetter(id object, DSKeyValueGetter *getter) {
     DSKeyValueObservingAssertRegistrationLockNotHeld();
+    
     switch (getter.extraArgumentCount) {
         case 0: {
             return ( (id (*)(id,SEL))getter.implementation )(object,getter.selector);
@@ -110,7 +111,6 @@ Method DSKeyValueMethodForPattern(Class class, const char *pattern,const char *p
     size_t patternLen = strlen(pattern);
     char selName[patternLen + paramLen * 2 + 1];
     snprintf(selName, (patternLen + paramLen * 2 + 1), pattern,param,param);
-    //NSLog(@"DSKeyValueMethodForPattern, selName: %s",selName);
     return class_getInstanceMethod(class, sel_registerName(selName));
 }
 
@@ -231,6 +231,32 @@ DSKeyValueGetter * _DSKeyValuePrimitiveGetterForClassAndKey(Class containerClass
     return getter;
 }
 
+DSKeyValueGetter * _DSKeyValueMutableArrayGetterForIsaAndKey(Class containerClassID, NSString *key) {
+    OSSpinLockLock(&DSKeyValueCachedAccessorSpinLock);
+    if(!DSKeyValueCachedMutableArrayGetters) {
+        CFSetCallBacks callbacks = {0};
+        callbacks.version = kCFTypeSetCallBacks.version;
+        callbacks.retain = kCFTypeSetCallBacks.retain;
+        callbacks.release = kCFTypeSetCallBacks.release;
+        callbacks.copyDescription = kCFTypeSetCallBacks.copyDescription;
+        callbacks.equal = (CFSetEqualCallBack)DSKeyValueAccessorIsEqual;
+        callbacks.hash = (CFSetHashCallBack)DSKeyValueAccessorHash;
+        DSKeyValueCachedMutableArrayGetters = CFSetCreateMutable(NULL,0,&callbacks);
+    }
+    DSKeyValueSetter *finder = [DSKeyValueSetter new];
+    finder.containerClassID = containerClassID;
+    finder.key = key;
+    finder.hashValue = (key ? CFHash(key) : 0) ^ (NSUInteger)containerClassID;
+    DSKeyValueGetter *getter =  CFSetGetValue(DSKeyValueCachedMutableArrayGetters, finder);
+    if (!getter) {
+        getter = [containerClassID _d_createMutableArrayValueGetterWithContainerClassID:containerClassID key:key];
+        CFSetAddValue(DSKeyValueCachedMutableArrayGetters, getter);
+        [getter release];
+    }
+    OSSpinLockUnlock(&DSKeyValueCachedAccessorSpinLock);
+    return getter;
+}
+
 
 DSKeyValueGetter * _DSKeyValueMutableSetGetterForClassAndKey(Class containerClassID, NSString *key, Class class) {
     OSSpinLockLock(&DSKeyValueCachedAccessorSpinLock);
@@ -280,32 +306,6 @@ DSKeyValueGetter * _DSKeyValueMutableOrderedSetGetterForIsaAndKey(Class containe
     if (!getter) {
         getter = [containerClassID _d_createMutableOrderedSetValueGetterWithContainerClassID:containerClassID key:key];
         CFSetAddValue(DSKeyValueCachedMutableOrderedSetGetters, getter);
-        [getter release];
-    }
-    OSSpinLockUnlock(&DSKeyValueCachedAccessorSpinLock);
-    return getter;
-}
-
-DSKeyValueGetter * _DSKeyValueMutableArrayGetterForIsaAndKey(Class containerClassID, NSString *key) {
-    OSSpinLockLock(&DSKeyValueCachedAccessorSpinLock);
-    if(!DSKeyValueCachedMutableArrayGetters) {
-        CFSetCallBacks callbacks = {0};
-        callbacks.version = kCFTypeSetCallBacks.version;
-        callbacks.retain = kCFTypeSetCallBacks.retain;
-        callbacks.release = kCFTypeSetCallBacks.release;
-        callbacks.copyDescription = kCFTypeSetCallBacks.copyDescription;
-        callbacks.equal = (CFSetEqualCallBack)DSKeyValueAccessorIsEqual;
-        callbacks.hash = (CFSetHashCallBack)DSKeyValueAccessorHash;
-        DSKeyValueCachedMutableArrayGetters = CFSetCreateMutable(NULL,0,&callbacks);
-    }
-    DSKeyValueSetter *finder = [DSKeyValueSetter new];
-    finder.containerClassID = containerClassID;
-    finder.key = key;
-    finder.hashValue = (key ? CFHash(key) : 0) ^ (NSUInteger)containerClassID;
-    DSKeyValueGetter *getter =  CFSetGetValue(DSKeyValueCachedMutableArrayGetters, finder);
-    if (!getter) {
-        getter = [containerClassID _d_createMutableArrayValueGetterWithContainerClassID:containerClassID key:key];
-        CFSetAddValue(DSKeyValueCachedMutableArrayGetters, getter);
         [getter release];
     }
     OSSpinLockUnlock(&DSKeyValueCachedAccessorSpinLock);

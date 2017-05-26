@@ -50,12 +50,12 @@ NSString *const NSUnknownUserInfoKey = @"NSTargetObjectUserInfoKey";
         }
         
         DSKeyValueGetter *finder = [DSKeyValueGetter new];
-        finder.containerClassID = self.class;
+        finder.containerClassID = object_getClass(self);
         finder.key = key;
-        finder.hashValue = CFHash(key) ^ (NSUInteger)(self.class);
+        finder.hashValue = CFHash(key) ^ (NSUInteger)(object_getClass(self));
         DSKeyValueGetter *getter =  CFSetGetValue(DSKeyValueCachedGetters, finder);
         if (!getter) {
-            getter = [self.class _d_createValueGetterWithContainerClassID:self.class key:key];
+            getter = [object_getClass(self) _d_createValueGetterWithContainerClassID:object_getClass(self) key:key];
             CFSetAddValue(DSKeyValueCachedGetters, getter);
         }
         OSSpinLockUnlock(&DSKeyValueCachedAccessorSpinLock);
@@ -127,12 +127,12 @@ NSString *const NSUnknownUserInfoKey = @"NSTargetObjectUserInfoKey";
         }
         
         DSKeyValueSetter *finder = [DSKeyValueSetter new];
-        finder.containerClassID = self.class;
+        finder.containerClassID = object_getClass(self);
         finder.key = key;
-        finder.hashValue = CFHash((CFTypeRef)key) ^ (NSUInteger)(self.class);
+        finder.hashValue = CFHash((CFTypeRef)key) ^ (NSUInteger)(object_getClass(self));
         DSKeyValueSetter *setter =  CFSetGetValue(DSKeyValueCachedSetters, (void *)finder);
         if (!setter) {
-            setter = [self.class _d_createValueSetterWithContainerClassID:self.class key:key];
+            setter = [object_getClass(self) _d_createValueSetterWithContainerClassID:object_getClass(self) key:key];
             CFSetAddValue(DSKeyValueCachedSetters, (void*)setter);
         }
 
@@ -294,13 +294,12 @@ NSString *const NSUnknownUserInfoKey = @"NSTargetObjectUserInfoKey";
 }
 
 
-
 + (BOOL)d_accessInstanceVariablesDirectly {
     return YES;
 }
 
 
-- (id)_d_mutableColelctionValueForKey:(NSString *)key cache: (CFMutableSetRef *)cache getterCrateBlock:(DSKeyValueGetter * (^)(Class containerClassID, NSString *key))getterCrateBlock {
+- (id)_d_mutableColelctionValueForKey:(NSString *)key cache:(CFMutableSetRef *)cache getterCrator:(DSKeyValueGetter * (^)(Class containerClassID, NSString *key))getterCrator {
     OSSpinLockLock(&DSKeyValueCachedAccessorSpinLock);
     if (!*cache) {
         CFSetCallBacks callbacks = {0};
@@ -317,16 +316,16 @@ NSString *const NSUnknownUserInfoKey = @"NSTargetObjectUserInfoKey";
     if(key) {
         hashValue = CFHash((CFTypeRef)key);
     }
-    hashValue ^= (NSUInteger)self.class;
+    hashValue ^= (NSUInteger)object_getClass(self);
     
     DSKeyValueGetter *finder = [DSKeyValueGetter new];
-    finder.containerClassID = self.class;
+    finder.containerClassID = object_getClass(self);
     finder.key = key;
     finder.hashValue = hashValue;
     
     DSKeyValueGetter *getter = CFSetGetValue(*cache, finder);
     if(!getter) {
-        getter = getterCrateBlock(self.class, key);
+        getter = getterCrator(object_getClass(self), key);
         CFSetAddValue(*cache, getter);
         [getter release];
     }
@@ -336,7 +335,7 @@ NSString *const NSUnknownUserInfoKey = @"NSTargetObjectUserInfoKey";
     return _DSGetUsingKeyValueGetter(self, getter);
 }
 
-- (id)_d_mutableColelctionValueForKeyPath:(NSString *)keyPath valueForKeyGetBlock:(id  (^)(id object, NSString *key))valueForKeyGetBlock {
+- (id)_d_mutableColelctionValueForKeyPath:(NSString *)keyPath valueForKeyGettor:(id  (^)(id object, NSString *key))valueForKeyGettor {
     if(keyPath) {
         CFStringEncoding encoding = __CFDefaultEightBitStringEncoding;
         if(encoding == kCFStringEncodingInvalidId) {
@@ -346,71 +345,65 @@ NSString *const NSUnknownUserInfoKey = @"NSTargetObjectUserInfoKey";
         if(cStr) {
             const char *firstDotPointer = memchr(cStr, '.', keyPath.length);
             if(firstDotPointer) {
-                NSString *subKey =  [[keyPath substringWithRange:NSMakeRange(0, firstDotPointer - cStr)] retain];
-                NSString *subKeyPathLeft =  [[keyPath substringWithRange:NSMakeRange(firstDotPointer - cStr + 1, keyPath.length -  (firstDotPointer - cStr + 1))] retain];
+                NSString *keyBeforeDot =  [keyPath substringWithRange:NSMakeRange(0, firstDotPointer - cStr)];
+                NSString *keyPathAfterDot =  [keyPath substringWithRange:NSMakeRange(firstDotPointer - cStr + 1, keyPath.length -  (firstDotPointer - cStr + 1))];
                 
-                id value = [[self d_valueForKey:subKey] _d_mutableColelctionValueForKeyPath:subKeyPathLeft valueForKeyGetBlock: valueForKeyGetBlock];
-                
-                [subKey release];
-                [subKeyPathLeft release];
+                id value = [[self d_valueForKey:keyBeforeDot] _d_mutableColelctionValueForKeyPath:keyPathAfterDot valueForKeyGettor: valueForKeyGettor];
                 
                 return value;
             }
             else {
-                return valueForKeyGetBlock(self, keyPath);
+                return valueForKeyGettor(self, keyPath);
             }
         }
     }
     
-    NSRange range = [keyPath rangeOfString:@"." options:NSLiteralSearch range:NSMakeRange(0, keyPath.length)];
-    if(range.length) {
-        NSString *subKey =  [[keyPath substringWithRange:NSMakeRange(0, range.location)] retain];
-        NSString *subKeyPathLeft =  [[keyPath substringWithRange:NSMakeRange(range.location + 1, keyPath.length -  (range.location + 1))] retain];
+    NSRange dotRange = [keyPath rangeOfString:@"." options:NSLiteralSearch range:NSMakeRange(0, keyPath.length)];
+    if(dotRange.length) {
+        NSString *keyBeforeDot =  [keyPath substringWithRange:NSMakeRange(0, dotRange.location)];
+        NSString *keyPathAfterDot =  [keyPath substringWithRange:NSMakeRange(dotRange.location + 1, keyPath.length -  (dotRange.location + 1))];
         
-        id value = [[self d_valueForKey:subKey] _d_mutableColelctionValueForKeyPath:subKeyPathLeft valueForKeyGetBlock: valueForKeyGetBlock];
-        
-        [subKey release];
-        [subKeyPathLeft release];
+        id value = [[self d_valueForKey:keyBeforeDot] _d_mutableColelctionValueForKeyPath:keyPathAfterDot valueForKeyGettor:valueForKeyGettor];
         
         return  value;
     }
     else {
-        return valueForKeyGetBlock(self, keyPath);
+        return valueForKeyGettor(self, keyPath);
     }
 }
 
 - (NSMutableArray *)d_mutableArrayValueForKey:(NSString *)key {
-    return [self _d_mutableColelctionValueForKey:key cache:&DSKeyValueCachedMutableArrayGetters getterCrateBlock:^DSKeyValueGetter *(Class containerClassID, NSString *key) {
-        return [self.class _d_createMutableArrayValueGetterWithContainerClassID:containerClassID key:key];
+    return [self _d_mutableColelctionValueForKey:key cache:&DSKeyValueCachedMutableArrayGetters getterCrator:^DSKeyValueGetter *(Class containerClassID, NSString *key) {
+        return [object_getClass(self) _d_createMutableArrayValueGetterWithContainerClassID:containerClassID key:key];
     }];
 }
 
 - (NSMutableArray *)d_mutableArrayValueForKeyPath:(NSString *)keyPath {
-    return [self _d_mutableColelctionValueForKeyPath:keyPath valueForKeyGetBlock:^id(id object, NSString *key) {
+    return [self _d_mutableColelctionValueForKeyPath:keyPath valueForKeyGettor:^id(id object, NSString *key) {
         return [object mutableArrayValueForKey: key];
     }];
 }
 
 - (NSMutableOrderedSet *)d_mutableOrderedSetValueForKey:(NSString *)key {
-    return [self _d_mutableColelctionValueForKey:key cache:&DSKeyValueCachedMutableOrderedSetGetters getterCrateBlock:^DSKeyValueGetter *(Class containerClassID, NSString *key) {
-        return [self.class _d_createMutableOrderedSetValueGetterWithContainerClassID:containerClassID key:key];
+    return [self _d_mutableColelctionValueForKey:key cache:&DSKeyValueCachedMutableOrderedSetGetters getterCrator:^DSKeyValueGetter *(Class containerClassID, NSString *key) {
+        return [object_getClass(self) _d_createMutableOrderedSetValueGetterWithContainerClassID:containerClassID key:key];
     }];
 }
 
 - (NSMutableOrderedSet *)d_mutableOrderedSetValueForKeyPath:(NSString *)keyPath {
-    return [self _d_mutableColelctionValueForKeyPath:keyPath valueForKeyGetBlock:^id(id object, NSString *key) {
+    return [self _d_mutableColelctionValueForKeyPath:keyPath valueForKeyGettor:^id(id object, NSString *key) {
         return [object mutableOrderedSetValueForKey: key];
     }];
 }
 
 - (NSMutableSet *)d_mutableSetValueForKey:(NSString *)key {
-    return [self _d_mutableColelctionValueForKey:key cache:&DSKeyValueCachedMutableSetGetters getterCrateBlock:^DSKeyValueGetter *(Class containerClassID, NSString *key) {
-        return [self.class _d_createMutableSetValueGetterWithContainerClassID:containerClassID key:key];
+    return [self _d_mutableColelctionValueForKey:key cache:&DSKeyValueCachedMutableSetGetters getterCrator:^DSKeyValueGetter *(Class containerClassID, NSString *key) {
+        return [object_getClass(self) _d_createMutableSetValueGetterWithContainerClassID:containerClassID key:key];
     }];
 }
 
 - (NSMutableSet *)d_mutableSetValueForKeyPath:(NSString *)keyPath {
-    return [self _d_mutableColelctionValueForKeyPath:keyPath valueForKeyGetBlock:^id(id object, NSString *key) {
+    return [self _d_mutableColelctionValueForKeyPath:keyPath valueForKeyGettor:^id(id object, NSString *key) {
         return [object mutableSetValueForKey: key];
     }];
 }

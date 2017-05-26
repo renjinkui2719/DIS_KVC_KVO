@@ -148,7 +148,7 @@
     if (observationInfo || implicitObservationInfo) {
         DSKVOPushInfoPerThread pushInfo = {0};
         pushInfo.pendingArray = [self _d_pendingChangeNotificationsArrayForKey:key create:YES];
-        pushInfo.pushAsLastPop = YES;
+        pushInfo.beginningOfChange = YES;
         pushInfo.observationInfo = observationInfo;
         
         DSKVOArrayOrSetWillChangeInfo changeInfo = {changeKind, indexes};
@@ -229,7 +229,7 @@
     if (observationInfo || implicitObservationInfo) {
         DSKVOPushInfoPerThread pushInfo = {0};
         pushInfo.pendingArray = [self _d_pendingChangeNotificationsArrayForKey:key create:YES];
-        pushInfo.pushAsLastPop = YES;
+        pushInfo.beginningOfChange = YES;
         pushInfo.observationInfo = observationInfo;
         if (observationInfo) {
             DSKeyValueWillChange(self, key, NO, observationInfo, DSKeyValueWillChangeBySetMutation, &mutationKind, DSKeyValuePushPendingNotificationPerThread, &pushInfo, nil);
@@ -284,18 +284,18 @@ void DSKeyValueNotifyObserver(id observer,NSString * keyPath, id object, void *c
     }
 }
 
-void DSKeyValueWillChangeForObservance(id originalObservable, id dependentValueKeyOrKeys, BOOL isASet, DSKeyValueObservance * observance) {
+void DSKeyValueWillChangeForObservance(id object, id keyOrKeys, BOOL keyOrKeysIsASet, DSKeyValueObservance * observance) {
     pthread_mutex_lock(&_DSKeyValueObserverRegistrationLock);
    
     _DSKeyValueObserverRegistrationLockOwner = pthread_self();
     os_lock_lock(&DSKeyValueObservationInfoSpinLock);
     
-    DSKeyValueObservationInfo *observationInfo = [originalObservable observationInfo];
+    DSKeyValueObservationInfo *observationInfo = [object d_observationInfo];
     [observationInfo retain];
     
-    os_lock_lock(&DSKeyValueObservationInfoSpinLock);
+    os_lock_unlock(&DSKeyValueObservationInfoSpinLock);
     
-    DSKeyValueObservationInfo *implicitObservationInfo = [originalObservable _d_implicitObservationInfo];
+    DSKeyValueObservationInfo *implicitObservationInfo = [object _d_implicitObservationInfo];
     
     NSUInteger observationInfoObservanceCount = 0;
     NSUInteger implicitObservationInfoObservanceCount = 0;
@@ -317,25 +317,23 @@ void DSKeyValueWillChangeForObservance(id originalObservable, id dependentValueK
     if(implicitObservationInfo) {
         _DSKeyValueObservationInfoGetObservances(observationInfo, observance_objs + observationInfoObservanceCount, implicitObservationInfoObservanceCount);
     }
-    if(totalObservanceCount) {
-        NSUInteger i = 0;
-        do {
-            if(!object_isClass(observance_objs[i].observer)) {
-                observance_objs[i] = [observance_objs[i].observer retain];
-            }
-            else {
-                observance_objs[i] = nil;
-            }
-        }while(++i != totalObservanceCount);
+    
+    for (NSUInteger i = 0; i < totalObservanceCount; ++i) {
+        if(!object_isClass(observance_objs[i].observer)) {
+            observance_objs[i] = [observance_objs[i].observer retain];
+        }
+        else {
+            observance_objs[i] = nil;
+        }
     }
     
     _DSKeyValueObserverRegistrationLockOwner = NULL;
     
     pthread_mutex_unlock(&_DSKeyValueObserverRegistrationLock);
     
-    if(observationInfo && implicitObservationInfo) {
+    if(observationInfo || implicitObservationInfo) {
         DSKVOPushInfoPerThread pushInfo;
-        if(isASet) {
+        if(keyOrKeysIsASet) {
             DSKeyValueObservingTSD *TSD = _CFGetTSD(DSKeyValueObservingTSDKey);
             if(!TSD) {
                 TSD = NSAllocateScannedUncollectable(sizeof(DSKeyValueObservingTSD));
@@ -347,60 +345,45 @@ void DSKeyValueWillChangeForObservance(id originalObservable, id dependentValueK
             pushInfo.pendingArray = TSD->pendingArray;
         }
         else {
-           //loc_CB341
-            pushInfo.pendingArray = [originalObservable _d_pendingChangeNotificationsArrayForKey:dependentValueKeyOrKeys create:YES];
+            pushInfo.pendingArray = [object _d_pendingChangeNotificationsArrayForKey:keyOrKeys create:YES];
         }
-        //loc_CB357
-        pushInfo.pushAsLastPop = YES;
+        pushInfo.beginningOfChange = YES;
         pushInfo.observationInfo = observationInfo;
         if(observationInfo) {
-            DSKeyValueWillChange(originalObservable,dependentValueKeyOrKeys,isASet,observationInfo,DSKeyValueWillChangeBySetting,nil,(DSKeyValuePushPendingNotificationCallback)DSKeyValuePushPendingNotificationPerThread,&pushInfo, observance);
+            DSKeyValueWillChange(object,keyOrKeys,keyOrKeysIsASet,observationInfo,DSKeyValueWillChangeBySetting,nil,(DSKeyValuePushPendingNotificationCallback)DSKeyValuePushPendingNotificationPerThread,&pushInfo, observance);
         }
-        //loc_CB3A0
         if(implicitObservationInfo) {
-            DSKeyValueWillChange(originalObservable,dependentValueKeyOrKeys,isASet,implicitObservationInfo,DSKeyValueWillChangeBySetting,nil,(DSKeyValuePushPendingNotificationCallback)DSKeyValuePushPendingNotificationPerThread,&pushInfo, observance);
+            DSKeyValueWillChange(object,keyOrKeys,keyOrKeysIsASet,implicitObservationInfo,DSKeyValueWillChangeBySetting,nil,(DSKeyValuePushPendingNotificationCallback)DSKeyValuePushPendingNotificationPerThread,&pushInfo, observance);
         }
-        //loc_CB3EC
     }
-    //loc_CB3EC
+    
     [observationInfo release];
-    if(totalObservanceCount) {
-        NSUInteger i = 0 ;
-        do {
-            [observance_objs[i] release];
-        }while(++i != totalObservanceCount);
+    
+    for (NSUInteger i = 0; i < totalObservanceCount; ++i) {
+        [observance_objs[i] release];
     }
-    //loc_CB427
 }
 
-void DSKeyValueDidChangeForObservance(id originalObservable, id dependentValueKeyOrKeys, BOOL isASet, DSKeyValueObservance * observance) {
+void DSKeyValueDidChangeForObservance(id object, id keyOrKeys, BOOL keyOrKeysIsASet, DSKeyValueObservance * observance) {
     CFMutableArrayRef pendingArray = NULL;
-    if(isASet) {
+    if(keyOrKeysIsASet) {
         DSKeyValueObservingTSD *TSD = _CFGetTSD(DSKeyValueObservingTSDKey);
-        if(TSD) {
-            pendingArray = TSD->pendingArray;
+        if (!TSD) {
+            return;
         }
-        return;
+        pendingArray = TSD->pendingArray;
     }
     else {
-        pendingArray = [originalObservable _d_pendingChangeNotificationsArrayForKey:dependentValueKeyOrKeys create:NO];
+        pendingArray = [object _d_pendingChangeNotificationsArrayForKey:keyOrKeys create:NO];
     }
     
     if(pendingArray) {
         NSUInteger pendingCount = CFArrayGetCount(pendingArray);
         if(pendingCount > 0) {
-            DSKVOPopInfoPerThread popInfo = {
-                pendingArray,
-                pendingCount,
-                nil,
-                -1,
-                observance
-            };
-            DSKeyValueDidChange(originalObservable, dependentValueKeyOrKeys, isASet, DSKeyValueDidChangeBySetting, (DSKeyValuePopPendingNotificationCallback)DSKeyValuePopPendingNotificationPerThread, &popInfo);
+            DSKVOPopInfoPerThread popInfo = {pendingArray,pendingCount,nil,-1,observance};
+            DSKeyValueDidChange(object, keyOrKeys, keyOrKeysIsASet, DSKeyValueDidChangeBySetting, (DSKeyValuePopPendingNotificationCallback)DSKeyValuePopPendingNotificationPerThread, &popInfo);
         }
-        //loc_CB4D5
     }
-    //loc_CB4D5
 }
 
 #pragma mark - Will change callbacks
@@ -747,8 +730,9 @@ void DSKeyValueWillChangeBySetting(DSKeyValueChangeDetails *changeDetails, id ob
 
 void DSKeyValuePushPendingNotificationPerThread(id object, id keyOrKeys, DSKeyValueObservance *observance, DSKeyValueChangeDetails changeDetails , DSKeyValuePropertyForwardingValues forwardingValues, DSKVOPushInfoPerThread *pushInfo) {
     DSKVOPendingChangeNotificationPerThread *pendingNotification = NSAllocateScannedUncollectable(sizeof(DSKVOPendingChangeNotificationPerThread));
-    pendingNotification->retainCount = 1;
-    pendingNotification->pushAsLastPop = pushInfo->pushAsLastPop;
+    
+    pendingNotification->retainCount = 1;//引用计数初始化为1
+    pendingNotification->beginningOfChange = pushInfo->beginningOfChange;
     pendingNotification->object = [object retain];
     pendingNotification->keyOrKeys = [keyOrKeys copy];
     pendingNotification->observationInfo = [pushInfo->observationInfo retain];
@@ -758,14 +742,17 @@ void DSKeyValuePushPendingNotificationPerThread(id object, id keyOrKeys, DSKeyVa
     pendingNotification->newValue = [changeDetails.newValue retain];
     pendingNotification->indexes = [changeDetails.indexes retain];
     pendingNotification->extraData = [changeDetails.extraData retain];
-    pendingNotification->forwardingValues_p1 = [forwardingValues.changingRelationshipObject retain];
-    pendingNotification->forwardingValues_p2 = [forwardingValues.p2 retain];
+    pendingNotification->changingValue = [forwardingValues.changingValue retain];
+    pendingNotification->affectingValuesMap = [forwardingValues.affectingValuesMap retain];
     
     [pendingNotification->observance.observer retain];
     
+    //追加Notification 到 pendingArray， 会使Notification引用计数+1 => 2
     CFArrayAppendValue(pushInfo->pendingArray, pendingNotification);
-  
+    //引用计数减1 => 1,便于后续正确释放
     DSKVOPendingNotificationRelease(NULL,pendingNotification);
+    //在一次will change中，下一个push进来的Notification不再是 "起始"
+    pushInfo->beginningOfChange = NO;
     
     LOG_KVO(@"object: %@, keyOrKeys: %@, observance:%@, changeDetails: %@, forwardingValues: %@, pushInfo:%@, pushed notification: %@, pending count after push: %zd",simple_desc(object), keyOrKeys, simple_desc(observance), NSStringFromKeyValueChangeDetails(&changeDetails), NSStringFromPropertyForwardingValues(&forwardingValues), NSStringFromPushInfoPerThread(pushInfo), NSStringFromPendingChangeNotificationPerThread(pendingNotification), CFArrayGetCount(pushInfo->pendingArray));
 }
@@ -803,13 +790,13 @@ void DSKeyValuePushPendingNotificationLocal(id object, id keyOrKeys, DSKeyValueO
     detail->newValue = changeDetails.newValue;
     detail->indexes = changeDetails.indexes;
     detail->extraData = changeDetails.extraData;
-    detail->forwardingValues_p1 = forwardingValues.changingRelationshipObject;
-    detail->forwardingValues_p2 = forwardingValues.p2;
+    detail->changingValue = forwardingValues.changingValue;
+    detail->affectingValuesMap = forwardingValues.affectingValuesMap;
     detail->p5 = pendingInfo->p5;
     detail->keyOrKeys = keyOrKeys;
     
     [changeDetails.oldValue retain];
-    [forwardingValues.changingRelationshipObject retain];
+    [forwardingValues.changingValue retain];
     [observance.observer retain];
 }
 
@@ -828,7 +815,7 @@ BOOL DSKeyValuePopPendingNotificationLocal(id object,id keyOrKeys, DSKeyValueObs
             if(!_DSKeyValueCheckObservationInfoForPendingNotification(object, detail->observance, pendingInfo->observationInfo)) {
                 [detail->observance.observer release];
                 [detail->oldValue release];
-                [detail->forwardingValues_p1 release];
+                [detail->changingValue release];
                 continue;
             }
         }
@@ -841,14 +828,14 @@ BOOL DSKeyValuePopPendingNotificationLocal(id object,id keyOrKeys, DSKeyValueObs
         popedChangeDetails->indexes = detail->indexes;
         popedChangeDetails->extraData = detail->extraData;
         
-        popedForwardValues->changingRelationshipObject = detail->forwardingValues_p1;
-        popedForwardValues->p2 = detail->forwardingValues_p1;
+        popedForwardValues->changingValue = detail->changingValue;
+        popedForwardValues->affectingValuesMap = detail->affectingValuesMap;
         
         *popedKeyOrKeys = detail->keyOrKeys;
         
         pendingInfo->observer = detail->observance.observer;
         pendingInfo->oldValue = detail->oldValue;
-        pendingInfo->forwardValues_p1 = detail->forwardingValues_p1;
+        pendingInfo->forwardValues_p1 = detail->changingValue;
         
         return YES;
     }
@@ -908,12 +895,16 @@ void DSKeyValueDidChangeBySetting(DSKeyValueChangeDetails *resultChangeDetails, 
 
 BOOL DSKeyValuePopPendingNotificationPerThread(id object,id keyOrKeys, DSKeyValueObservance **popedObservance, DSKeyValueChangeDetails *popedChangeDetails,DSKeyValuePropertyForwardingValues *popedForwardValues,id *popedKeyOrKeys, DSKVOPopInfoPerThread* popInfo) {
     if(popInfo->lastPopedNotification) {
+        //上一次正确地pop，删除上一次pop掉的notification
         CFArrayRemoveValueAtIndex(popInfo->pendingArray, popInfo->lastPopdIndex);
-        if(popInfo->lastPopedNotification->pushAsLastPop) {
-            //return NO;
+        //上一次pop的是一次change的"起始"
+        if(popInfo->lastPopedNotification->beginningOfChange) {
+            //结束pop
+            return NO;
         }
     }
     else {
+        //总是从pendingArray 的末端开始pop，保证后入先出
         popInfo->lastPopdIndex = popInfo->pendingCount;
     }
     
@@ -921,6 +912,7 @@ BOOL DSKeyValuePopPendingNotificationPerThread(id object,id keyOrKeys, DSKeyValu
         DSKVOPendingChangeNotificationPerThread *changeNotification = (DSKVOPendingChangeNotificationPerThread *)CFArrayGetValueAtIndex(popInfo->pendingArray, i);
         if (changeNotification->object == object && [changeNotification->keyOrKeys isEqual:keyOrKeys] && (!popInfo->observance || changeNotification->observance == popInfo->observance)) {
             if (!changeNotification->observationInfo || _DSKeyValueCheckObservationInfoForPendingNotification(changeNotification->object,changeNotification->observance, changeNotification->observationInfo)) {
+                //找到期望的notification
                 *popedObservance = changeNotification->observance;
                 
                 popedChangeDetails->kind = changeNotification->kind;
@@ -929,8 +921,8 @@ BOOL DSKeyValuePopPendingNotificationPerThread(id object,id keyOrKeys, DSKeyValu
                 popedChangeDetails->indexes = changeNotification->indexes;
                 popedChangeDetails->extraData = changeNotification->extraData;
                 
-                popedForwardValues->changingRelationshipObject = changeNotification->forwardingValues_p1;
-                popedForwardValues->p2 = changeNotification->forwardingValues_p2;
+                popedForwardValues->changingValue = changeNotification->changingValue;
+                popedForwardValues->affectingValuesMap = changeNotification->affectingValuesMap;
                 
                 *popedKeyOrKeys = keyOrKeys;
                 
@@ -941,11 +933,12 @@ BOOL DSKeyValuePopPendingNotificationPerThread(id object,id keyOrKeys, DSKeyValu
                 
                 return YES;
             }
-            
+            //这是一个无人认领的Notification，删除之
             CFArrayRemoveValueAtIndex(popInfo->pendingArray, i);
-            
-            if (changeNotification->pushAsLastPop) {
-                //return NO;
+            //不是期望的Notification，并且已经是一次change的起始
+            if (changeNotification->beginningOfChange) {
+                //结束pop循环
+                return NO;
             }
         }
     }

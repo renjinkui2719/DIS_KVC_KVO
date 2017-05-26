@@ -21,12 +21,10 @@ typedef struct {
 }DSKeyValueChangeDetails;
 
 @interface DSKeyValueChangeDictionary : NSDictionary
-
 @property (nonatomic, assign) DSKeyValueChangeDetails details;
 @property (nonatomic, strong) id originalObservable;
 @property (nonatomic, assign) BOOL isPriorNotification;
 @property (nonatomic, assign) BOOL isRetainingObjects;
-
 
 - (id)initWithDetailsNoCopy:(DSKeyValueChangeDetails)details originalObservable:(id)originalObservable isPriorNotification:(BOOL)isPriorNotification;
 - (void)setDetailsNoCopy:(DSKeyValueChangeDetails)details originalObservable:(id)originalObservable;

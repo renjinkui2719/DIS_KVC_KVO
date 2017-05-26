@@ -96,12 +96,11 @@ void DSKeyValueObservingAssertRegistrationLockNotHeld() {
     DSKeyValueObservance *addedObservance = nil;
     id originalObservable = nil;
     
-    DSKeyValueObservingTSD *TSD = NULL;
-    if(options & DSKeyValueObservingOptionNew) {
-        TSD = _CFGetTSD(DSKeyValueObservingTSDKey);
-    }
-    if (TSD) {
-        originalObservable = TSD->implicitObservanceAdditionInfo.object;
+    if((options >> 8) & 0x01) {
+        DSKeyValueObservingTSD *TSD = _CFGetTSD(DSKeyValueObservingTSDKey);
+        if (TSD) {
+            originalObservable = TSD->implicitObservanceAdditionInfo.object;
+        }
     }
     
     DSKeyValueObservationInfo *newObservationInfo = _DSKeyValueObservationInfoCreateByAdding(oldObservationInfo, observer, property, options, context, originalObservable,&cacheHit,&addedObservance);

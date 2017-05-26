@@ -8,10 +8,8 @@
 
 #import <Foundation/Foundation.h>
 
+extern int kvc_kvo_test_main(int argc, const char * argv[]);
+
 int main(int argc, const char * argv[]) {
-    @autoreleasepool {
-        // insert code here...
-        NSLog(@"Hello, World!");
-    }
-    return 0;
+    return kvc_kvo_test_main(argc, argv);
 }

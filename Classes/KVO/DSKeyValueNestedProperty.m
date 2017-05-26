@@ -61,11 +61,11 @@
         int options = 0;
         void *context = NULL;
         if(self == observance.property) {
-            options = observance.options;
+            options = observance.options | 0x0100;
             context = NULL;
         }
         else {
-            options = DSKeyValueObservingOptionPrior;
+            options = DSKeyValueObservingOptionPrior | 0x0100;
             context = self;
         }
         
@@ -134,22 +134,20 @@
 - (BOOL)object:(id)object withObservance:(DSKeyValueObservance *)observance willChangeValueForKeyOrKeys:(id)keyOrKeys recurse:(BOOL)recurse forwardingValues:(DSKeyValuePropertyForwardingValues *)forwardingValues {
     ImplicitObservanceAdditionInfo *info = DSKeyValueGetImplicitObservanceAdditionInfo();
     if(info->object != object || info->observance !=  observance) {
-        //loc_6F448
-        forwardingValues->changingRelationshipObject = nil;
-        forwardingValues->p2 = nil;
+        forwardingValues->changingValue = nil;
+        forwardingValues->affectingValuesMap = nil;
         
         if(_isAllowedToResultInForwarding) {
             id relationshipObject = [object valueForKey:self.relationshipKey];
-            forwardingValues->changingRelationshipObject = relationshipObject;
+            forwardingValues->changingValue = relationshipObject;
             if(!relationshipObject) {
-                forwardingValues->changingRelationshipObject = [NSNull null];
+                forwardingValues->changingValue = [NSNull null];
             }
-            //loc_6F4A6
         }
-        //loc_6F4A6
-        DSKeyValuePropertyForwardingValues forwardingValuesLocal = {0};
-        if([_relationshipProperty object:object withObservance:observance willChangeValueForKeyOrKeys:keyOrKeys recurse:recurse forwardingValues:&forwardingValuesLocal]) {
-            forwardingValues->p2 = forwardingValuesLocal.p2;
+        
+        DSKeyValuePropertyForwardingValues forwarding = {0};
+        if([_relationshipProperty object:object withObservance:observance willChangeValueForKeyOrKeys:keyOrKeys recurse:recurse forwardingValues:&forwarding]) {
+            forwardingValues->affectingValuesMap = forwarding.affectingValuesMap;
         }
         return YES;
     }
@@ -162,18 +160,18 @@
         void *context = NULL;
         
         if (observance.property == self) {
-            option = observance.options;
+            option = observance.options | 0x0100;
             context = NULL;
         }
         else {
-            option = DSKeyValueObservingOptionPrior;
+            option = DSKeyValueObservingOptionPrior | 0x0100;
             context = self;
         }
         
         ImplicitObservanceRemovalInfo *removalinfo =  DSKeyValueGetImplicitObservanceRemovalInfo();
         ImplicitObservanceRemovalInfo backRemovalinfo = *removalinfo;
         
-        id changingRelationshipObject = (forwardingValues.changingRelationshipObject != [NSNull null] ? forwardingValues.changingRelationshipObject : nil);
+        id changingRelationshipObject = (forwardingValues.changingValue != [NSNull null] ? forwardingValues.changingValue : nil);
         
         removalinfo->relationshipObject = changingRelationshipObject;
         removalinfo->observer = observance;
@@ -200,8 +198,8 @@
         
         *additionInfo = backAdditionInfo;
     }
-    //loc_6F6A1
-    if(forwardingValues.p2) {
+
+    if(forwardingValues.affectingValuesMap) {
         [_relationshipProperty object:object withObservance:observance didChangeValueForKeyOrKeys:observance recurse:recurse forwardingValues:forwardingValues];
     }
 }

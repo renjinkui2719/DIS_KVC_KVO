@@ -87,8 +87,8 @@
 	NSString *option_if_new = (_options & DSKeyValueObservingOptionNew ? @"YES": @"NO");
 	NSString *option_if_old = (_options & DSKeyValueObservingOptionOld ? @"YES": @"NO");
 	NSString *option_if_prior = (_options & DSKeyValueObservingOptionPrior ? @"YES" : @"NO");
-	return [NSString stringWithFormat:@"<%@ %p: Observer: %p, Key path: %@, Options: <New: %@, Old: %@, Prior: %@> Context: %p, Property: %p>", 
-		self.class, self, _observer, _property.keyPath, option_if_new, option_if_old, option_if_prior, _context, _property];
+	return [NSString stringWithFormat:@"<%@ %p: Observer: %p, Key path: %@, Options: <New: %@, Old: %@, Prior: %@> Context: %p, Property: %p, originalObservable: %@>",
+		self.class, self, _observer, _property.keyPath, option_if_new, option_if_old, option_if_prior, _context, _property, _originalObservable];
 }
 
 @end

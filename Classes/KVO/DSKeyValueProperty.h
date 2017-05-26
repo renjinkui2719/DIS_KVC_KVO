@@ -13,8 +13,8 @@
 @class DSKeyValueObservance;
 
 typedef struct {
-    id changingRelationshipObject;
-    NSMutableDictionary *p2;
+    id changingValue;
+    NSMutableDictionary *affectingValuesMap;
 }DSKeyValuePropertyForwardingValues;
 
 static inline NSString * NSStringFromPropertyForwardingValues(const DSKeyValuePropertyForwardingValues *fwd) {
@@ -23,11 +23,11 @@ static inline NSString * NSStringFromPropertyForwardingValues(const DSKeyValuePr
     }
     return [NSString stringWithFormat:
             BRACE(
-                  LINE(@"changingRelationshipObject: %@,")\
-                  LINE(@"p2: %@")\
+                  LINE(@"changingValue: %@,")\
+                  LINE(@"affectingValuesMap: %@")\
                   ),
-            simple_desc(fwd->changingRelationshipObject),
-            fwd->p2
+            simple_desc(fwd->changingValue),
+            fwd->affectingValuesMap
             ];
 }
 
