@@ -493,25 +493,16 @@
 		9127A3A71ED6F7030069CD54 /* KVO */ = {
 			isa = PBXGroup;
 			children = (
+				91EF5AF01ED7DB5900CB4F07 /* Property */,
 				9127A3A81ED6F7030069CD54 /* DSKeyValueChangeDictionary.h */,
 				9127A3A91ED6F7030069CD54 /* DSKeyValueChangeDictionary.m */,
-				9127A3AA1ED6F7030069CD54 /* DSKeyValueComputedProperty.h */,
-				9127A3AB1ED6F7030069CD54 /* DSKeyValueComputedProperty.m */,
 				9127A3AC1ED6F7030069CD54 /* DSKeyValueContainerClass.h */,
 				9127A3AD1ED6F7030069CD54 /* DSKeyValueContainerClass.m */,
-				9127A3AE1ED6F7030069CD54 /* DSKeyValueNestedProperty.h */,
-				9127A3AF1ED6F7030069CD54 /* DSKeyValueNestedProperty.m */,
 				9127A3B01ED6F7030069CD54 /* DSKeyValueObservance.h */,
 				9127A3B11ED6F7030069CD54 /* DSKeyValueObservance.m */,
 				9127A3B21ED6F7030069CD54 /* DSKeyValueObservationInfo.h */,
 				9127A3B31ED6F7030069CD54 /* DSKeyValueObservationInfo.m */,
 				9127A3B41ED6F7030069CD54 /* DSKeyValueObserverCommon.h */,
-				9127A3B51ED6F7030069CD54 /* DSKeyValueProperty.h */,
-				9127A3B61ED6F7030069CD54 /* DSKeyValueProperty.m */,
-				9127A3B71ED6F7030069CD54 /* DSKeyValuePropertyCreate.h */,
-				9127A3B81ED6F7030069CD54 /* DSKeyValuePropertyCreate.m */,
-				9127A3B91ED6F7030069CD54 /* DSKeyValueUnnestedProperty.h */,
-				9127A3BA1ED6F7030069CD54 /* DSKeyValueUnnestedProperty.m */,
 				9127A3BB1ED6F7030069CD54 /* DSSetValueAndNotify.h */,
 				9127A3BC1ED6F7030069CD54 /* DSSetValueAndNotify.m */,
 				9127A3C11ED6F7030069CD54 /* NSObject+DSKeyValueObserverRegistration.h */,
@@ -532,6 +523,23 @@
 				9127A3CC1ED6F7030069CD54 /* NSURL+DSKeyValueObservingCustomization.m */,
 			);
 			path = KVO;
+			sourceTree = "<group>";
+		};
+		91EF5AF01ED7DB5900CB4F07 /* Property */ = {
+			isa = PBXGroup;
+			children = (
+				9127A3B51ED6F7030069CD54 /* DSKeyValueProperty.h */,
+				9127A3B61ED6F7030069CD54 /* DSKeyValueProperty.m */,
+				9127A3B91ED6F7030069CD54 /* DSKeyValueUnnestedProperty.h */,
+				9127A3BA1ED6F7030069CD54 /* DSKeyValueUnnestedProperty.m */,
+				9127A3AE1ED6F7030069CD54 /* DSKeyValueNestedProperty.h */,
+				9127A3AF1ED6F7030069CD54 /* DSKeyValueNestedProperty.m */,
+				9127A3AA1ED6F7030069CD54 /* DSKeyValueComputedProperty.h */,
+				9127A3AB1ED6F7030069CD54 /* DSKeyValueComputedProperty.m */,
+				9127A3B71ED6F7030069CD54 /* DSKeyValuePropertyCreate.h */,
+				9127A3B81ED6F7030069CD54 /* DSKeyValuePropertyCreate.m */,
+			);
+			name = Property;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -786,8 +794,8 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_OBJC_ARC = NO;
-				CODE_SIGN_IDENTITY = "iPhone Developer: JinKui Ren (MHR5XEJ2E4)";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer: JinKui Ren (MHR5XEJ2E4)";
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				DEVELOPMENT_TEAM = B5VVHWEWBM;
 				INFOPLIST_FILE = RunTestsOnIOS/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
@@ -795,7 +803,7 @@
 				ONLY_ACTIVE_ARCH = NO;
 				PRODUCT_BUNDLE_IDENTIFIER = com.seeme.RunTestsOnIOS;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE = "ce81f513-f733-446a-b29b-a2fc0d96121d";
+				PROVISIONING_PROFILE = "";
 				VALID_ARCHS = "armv7 armv7s";
 			};
 			name = Debug;
@@ -805,15 +813,15 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_OBJC_ARC = NO;
-				CODE_SIGN_IDENTITY = "iPhone Developer: JinKui Ren (MHR5XEJ2E4)";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer: JinKui Ren (MHR5XEJ2E4)";
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				DEVELOPMENT_TEAM = B5VVHWEWBM;
 				INFOPLIST_FILE = RunTestsOnIOS/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.seeme.RunTestsOnIOS;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE = "ce81f513-f733-446a-b29b-a2fc0d96121d";
+				PROVISIONING_PROFILE = "";
 				VALID_ARCHS = "armv7 armv7s";
 			};
 			name = Release;

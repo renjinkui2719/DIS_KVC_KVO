@@ -17,7 +17,9 @@
 @property (nonatomic, strong) DSKeyValueUnnestedProperty *relationshipProperty;
 @property (nonatomic, copy) NSString *keyPathWithoutOperatorComponents;
 @property (nonatomic, assign) BOOL isAllowedToResultInForwarding;
+//依赖我的其他keyPath
 @property (nonatomic, strong) id dependentValueKeyOrKeys;
+//dependentValueKeyOrKeys 字段是否是集合
 @property (nonatomic, assign) BOOL dependentValueKeyOrKeysIsASet;
 
 - (DSKeyValueNestedProperty *)_initWithContainerClass:(DSKeyValueContainerClass *)containerClass keyPath:(NSString *)keyPath firstDotIndex:(NSUInteger)firstDotIndex propertiesBeingInitialized:(CFMutableSetRef)propertiesBeingInitialized;

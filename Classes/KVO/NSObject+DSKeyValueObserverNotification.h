@@ -194,8 +194,8 @@ void DSKeyValueWillChangeBySetMutation(DSKeyValueChangeDetails *changeDetails, i
 void DSKeyValueDidChangeByOrderedToManyMutation(DSKeyValueChangeDetails *resultChangeDetails, id object, NSString *keyPath, BOOL exactMatch, int options, DSKeyValueChangeDetails changeDetails);
 void DSKeyValueDidChangeBySetMutation(DSKeyValueChangeDetails *resultChangeDetails, id object, NSString *keyPath, BOOL keyPathExactMatch, int options, DSKeyValueChangeDetails changeDetails);
 
-void DSKeyValueWillChangeForObservance(id originalObservable, id dependentValueKeyOrKeys, BOOL isASet, DSKeyValueObservance * observance);
-void DSKeyValueDidChangeForObservance(id originalObservable, id dependentValueKeyOrKeys, BOOL isASet, DSKeyValueObservance * observance);
+void DSKeyValueWillChangeForObservance(id object, id keyOrKeys, BOOL keyOrKeysIsASet, DSKeyValueObservance * observance);
+void DSKeyValueDidChangeForObservance(id object, id keyOrKeys, BOOL keyOrKeysIsASet, DSKeyValueObservance * observance);
 
 @interface NSObject (DSKeyValueObserverNotification)
 

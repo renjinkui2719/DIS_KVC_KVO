@@ -26,8 +26,8 @@
 - (void)object:(id)object withObservance:(DSKeyValueObservance *)observance didChangeValueForKeyOrKeys:(id)keyOrKeys recurse:(BOOL)recurse forwardingValues:(DSKeyValuePropertyForwardingValues)forwardingValues { }
 
 - (BOOL)object:(id)object withObservance:(DSKeyValueObservance *)observance willChangeValueForKeyOrKeys:(id)keyOrKeys recurse:(BOOL)recurse forwardingValues:(DSKeyValuePropertyForwardingValues *)forwardingValues {
-    forwardingValues->changingRelationshipObject = nil;
-    forwardingValues->p2 = nil;
+    forwardingValues->changingValue = nil;
+    forwardingValues->affectingValuesMap = nil;
     return YES;
 }
 
