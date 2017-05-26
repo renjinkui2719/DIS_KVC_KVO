@@ -12,9 +12,11 @@
 #import "DSKeyValueGetter.h"
 #import "DSKeyValueSetter.h"
 #import "DSKeyValueMethodSetter.h"
-#import "DSKeyValueMutatingArrayMethodSet.h"
-#import "DSKeyValueMutatingOrderedSetMethodSet.h"
+#import "DSKeyValueFastMutableCollection1Getter.h"
+#import "DSKeyValueFastMutableCollection2Getter.h"
 #import "DSKeyValueMutatingSetMethodSet.h"
+#import "DSKeyValueMutatingOrderedSetMethodSet.h"
+#import "DSKeyValueMutatingArrayMethodSet.h"
 #import "DSKeyValueObserverCommon.h"
 
 
@@ -193,7 +195,6 @@ Class _DSKVONotifyingOriginalClassForIsa(Class isa) {
     return isa;
 }
 
-
 BOOL _DSKVONotifyingMutatorsShouldNotifyForIsaAndKey(Class isa, NSString *key) {
     if(class_getMethodImplementation(isa, ISKVOA_SELECTOR) == (IMP)DSKVOIsAutonotifying) {
         DSKeyValueNotifyingInfo *info = (DSKeyValueNotifyingInfo *)object_getIndexedIvars(isa);
@@ -236,8 +237,6 @@ DSKeyValueContainerClass * _DSKeyValueContainerClassForIsa(Class isa) {
 void DSKVOForwardInvocation(id object, SEL selector, void *param) {
     
 }
-
-const char *DSKVOOriginalImplementationSelectorForSelector_originalImplementationMethodNamePrefix = "_original_";
 
 void _DSKVONotifyingEnableForInfoAndKey(DSKeyValueNotifyingInfo *info, NSString *key) {
     pthread_mutex_lock(&info->mutex);
@@ -344,9 +343,7 @@ void _DSKVONotifyingEnableForInfoAndKey(DSKeyValueNotifyingInfo *info, NSString 
                     const char *setMethodSelectorName = sel_getName(setMethodSelector);
                     size_t setMethodSelectorNameLen = strlen(setMethodSelectorName);
                     char prefixedName[setMethodSelectorNameLen + 11];
-                    strlcpy(prefixedName,
-                            DSKVOOriginalImplementationSelectorForSelector_originalImplementationMethodNamePrefix,
-                            setMethodSelectorNameLen + 11);
+                    strlcpy(prefixedName, "_original_", setMethodSelectorNameLen + 11);
                     strlcat(prefixedName, setMethodSelectorName, setMethodSelectorNameLen + 11);
                     
                     class_addMethod(info->newSubClass, sel_registerName(prefixedName), method_getImplementation(setMethod), method_getTypeEncoding(setMethod));
@@ -370,7 +367,7 @@ void _DSKVONotifyingEnableForInfoAndKey(DSKeyValueNotifyingInfo *info, NSString 
     
     DSKeyValueGetter* getter = _DSKeyValueMutableArrayGetterForIsaAndKey(info->originalClass, key);
     if([getter respondsToSelector:@selector(mutatingMethods)]) {
-        DSKeyValueMutatingArrayMethodSet *mutatingMethods = [getter mutatingMethods];
+        DSKeyValueMutatingArrayMethodSet *mutatingMethods = (DSKeyValueMutatingArrayMethodSet *)[(DSKeyValueFastMutableCollection1Getter/*或者 DSKeyValueFastMutableCollection1Getter,强转仅仅为了消除警告*/ *)getter mutatingMethods];
         if(mutatingMethods) {
             if(mutatingMethods.insertObjectAtIndex) {
                 DSKVONotifyingSetMethodImplementation(info,method_getName(mutatingMethods.insertObjectAtIndex),(IMP)DSKVOInsertObjectAtIndexAndNotify,key);
@@ -392,10 +389,10 @@ void _DSKVONotifyingEnableForInfoAndKey(DSKeyValueNotifyingInfo *info, NSString 
             }
         }
     }
-    
+
     getter = _DSKeyValueMutableOrderedSetGetterForIsaAndKey(info->originalClass, key);
     if([getter respondsToSelector:@selector(mutatingMethods)]) {
-        DSKeyValueMutatingOrderedSetMethodSet *mutatingMethods = [getter mutatingMethods];
+        DSKeyValueMutatingOrderedSetMethodSet *mutatingMethods = (DSKeyValueMutatingOrderedSetMethodSet *)[(DSKeyValueFastMutableCollection1Getter *)getter mutatingMethods];
         if(mutatingMethods) {
             if(mutatingMethods.insertObjectAtIndex) {
                 DSKVONotifyingSetMethodImplementation(info,method_getName(mutatingMethods.insertObjectAtIndex),(IMP)DSKVOInsertObjectAtIndexAndNotify,key);
@@ -420,7 +417,7 @@ void _DSKVONotifyingEnableForInfoAndKey(DSKeyValueNotifyingInfo *info, NSString 
     
     getter = _DSKeyValueMutableSetGetterForClassAndKey(info->originalClass, key, info->originalClass);
     if([getter respondsToSelector:@selector(mutatingMethods)]) {
-        DSKeyValueMutatingSetMethodSet *mutatingMethods = [getter mutatingMethods];
+        DSKeyValueMutatingSetMethodSet *mutatingMethods = (DSKeyValueMutatingSetMethodSet *)[(DSKeyValueFastMutableCollection1Getter *)getter mutatingMethods];
         if(mutatingMethods) {
             if(mutatingMethods.addObject) {
                 DSKVONotifyingSetMethodImplementation(info,method_getName(mutatingMethods.addObject),(IMP)DSKVOAddObjectAndNotify,key);

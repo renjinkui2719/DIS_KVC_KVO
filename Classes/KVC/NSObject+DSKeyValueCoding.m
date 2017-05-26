@@ -50,12 +50,12 @@ NSString *const NSUnknownUserInfoKey = @"NSTargetObjectUserInfoKey";
         }
         
         DSKeyValueGetter *finder = [DSKeyValueGetter new];
-        finder.containerClassID = self.class;
+        finder.containerClassID = object_getClass(self);
         finder.key = key;
-        finder.hashValue = CFHash(key) ^ (NSUInteger)(self.class);
+        finder.hashValue = CFHash(key) ^ (NSUInteger)(object_getClass(self));
         DSKeyValueGetter *getter =  CFSetGetValue(DSKeyValueCachedGetters, finder);
         if (!getter) {
-            getter = [self.class _d_createValueGetterWithContainerClassID:self.class key:key];
+            getter = [object_getClass(self) _d_createValueGetterWithContainerClassID:object_getClass(self) key:key];
             CFSetAddValue(DSKeyValueCachedGetters, getter);
         }
         OSSpinLockUnlock(&DSKeyValueCachedAccessorSpinLock);
@@ -127,12 +127,12 @@ NSString *const NSUnknownUserInfoKey = @"NSTargetObjectUserInfoKey";
         }
         
         DSKeyValueSetter *finder = [DSKeyValueSetter new];
-        finder.containerClassID = self.class;
+        finder.containerClassID = object_getClass(self);
         finder.key = key;
-        finder.hashValue = CFHash((CFTypeRef)key) ^ (NSUInteger)(self.class);
+        finder.hashValue = CFHash((CFTypeRef)key) ^ (NSUInteger)(object_getClass(self));
         DSKeyValueSetter *setter =  CFSetGetValue(DSKeyValueCachedSetters, (void *)finder);
         if (!setter) {
-            setter = [self.class _d_createValueSetterWithContainerClassID:self.class key:key];
+            setter = [object_getClass(self) _d_createValueSetterWithContainerClassID:object_getClass(self) key:key];
             CFSetAddValue(DSKeyValueCachedSetters, (void*)setter);
         }
 
@@ -317,16 +317,16 @@ NSString *const NSUnknownUserInfoKey = @"NSTargetObjectUserInfoKey";
     if(key) {
         hashValue = CFHash((CFTypeRef)key);
     }
-    hashValue ^= (NSUInteger)self.class;
+    hashValue ^= (NSUInteger)object_getClass(self);
     
     DSKeyValueGetter *finder = [DSKeyValueGetter new];
-    finder.containerClassID = self.class;
+    finder.containerClassID = object_getClass(self);
     finder.key = key;
     finder.hashValue = hashValue;
     
     DSKeyValueGetter *getter = CFSetGetValue(*cache, finder);
     if(!getter) {
-        getter = getterCrateBlock(self.class, key);
+        getter = getterCrateBlock(object_getClass(self), key);
         CFSetAddValue(*cache, getter);
         [getter release];
     }
@@ -381,7 +381,7 @@ NSString *const NSUnknownUserInfoKey = @"NSTargetObjectUserInfoKey";
 
 - (NSMutableArray *)d_mutableArrayValueForKey:(NSString *)key {
     return [self _d_mutableColelctionValueForKey:key cache:&DSKeyValueCachedMutableArrayGetters getterCrateBlock:^DSKeyValueGetter *(Class containerClassID, NSString *key) {
-        return [self.class _d_createMutableArrayValueGetterWithContainerClassID:containerClassID key:key];
+        return [object_getClass(self) _d_createMutableArrayValueGetterWithContainerClassID:containerClassID key:key];
     }];
 }
 
@@ -393,7 +393,7 @@ NSString *const NSUnknownUserInfoKey = @"NSTargetObjectUserInfoKey";
 
 - (NSMutableOrderedSet *)d_mutableOrderedSetValueForKey:(NSString *)key {
     return [self _d_mutableColelctionValueForKey:key cache:&DSKeyValueCachedMutableOrderedSetGetters getterCrateBlock:^DSKeyValueGetter *(Class containerClassID, NSString *key) {
-        return [self.class _d_createMutableOrderedSetValueGetterWithContainerClassID:containerClassID key:key];
+        return [object_getClass(self) _d_createMutableOrderedSetValueGetterWithContainerClassID:containerClassID key:key];
     }];
 }
 
@@ -405,7 +405,7 @@ NSString *const NSUnknownUserInfoKey = @"NSTargetObjectUserInfoKey";
 
 - (NSMutableSet *)d_mutableSetValueForKey:(NSString *)key {
     return [self _d_mutableColelctionValueForKey:key cache:&DSKeyValueCachedMutableSetGetters getterCrateBlock:^DSKeyValueGetter *(Class containerClassID, NSString *key) {
-        return [self.class _d_createMutableSetValueGetterWithContainerClassID:containerClassID key:key];
+        return [object_getClass(self) _d_createMutableSetValueGetterWithContainerClassID:containerClassID key:key];
     }];
 }
 
