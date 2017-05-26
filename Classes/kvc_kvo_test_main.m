@@ -128,12 +128,12 @@
 //}
 
 + (NSSet<NSString *> *)keyPathsForValuesAffectingValueForKey:(NSString *)key {
-    if ([key isEqualToString:@"B_field"]) {
-        return [NSSet setWithObjects:@"C_field.char_field", nil];
-    }
-    else if ([key isEqualToString:@"C_field"]) {
-        return [NSSet setWithObjects:@"D_field.int_field", nil];
-    }
+//    if ([key isEqualToString:@"B_field"]) {
+//        return [NSSet setWithObjects:@"C_field.char_field", nil];
+//    }
+//    else if ([key isEqualToString:@"C_field"]) {
+//        return [NSSet setWithObjects:@"D_field.int_field", nil];
+//    }
     /*else if ([key isEqualToString:@"int_field"]) {
         return [NSSet setWithObjects:@"C_field", nil];
     }*/
@@ -294,19 +294,6 @@ void TestKVC();
 @implementation ObserverC
 @end
 
-/*
- _const:0000712C __os_lock_type_handoff dd offset aHandoff ; "handoff"
- __const:00007130                 dd offset __os_lock_handoff_lock
- __const:00007134                 dd offset __os_lock_handoff_trylock
- __const:00007138                 dd offset __os_lock_handoff_unlock
- */
-
-extern void *_os_lock_type_handoff;
-extern void *_os_lock_handoff_trylock;
-extern void *_os_lock_handoff_lock;
-//extern OSSpinLock NSKeyValueObservationInfoSpinLock;
-
-//extern pthread_mutex_t __NSKeyValueObserverRegistrationLock;
 int kvc_kvo_test_main(int argc, const char * argv[]) {
     
     Observer *observer_a = [ObserverA new];
@@ -324,6 +311,7 @@ int kvc_kvo_test_main(int argc, const char * argv[]) {
     
     void *context = "this is context for observer_a";
     [a d_addObserver:observer_a forKeyPath:@"B_field"/*@"B_field.C_field.D_field.char_field"*/ options:options context: context];
+    [a d_addObserver:observer_a forKeyPath:@"B_field"/*@"B_field.C_field.D_field.char_field"*/ options:options context: context];
    // [a d_addObserver:observer_a forKeyPath:@"int_field"/*@"B_field.C_field.D_field.char_field"*/ options:options context: context];
     //[a release];
     //[a d_addObserver:observer_a forKeyPath:@"B_field.C_field.D_field.char_field" options:options context: context];
@@ -331,8 +319,8 @@ int kvc_kvo_test_main(int argc, const char * argv[]) {
 //    [a d_addObserver:observer_a forKeyPath:@"char_field" options:options context:"this is context for observer_a"];
 //    [a d_addObserver:observer_b forKeyPath:@"char_field" options:options context:"this is context for observer_b"];
 //    [a d_addObserver:observer_c forKeyPath:@"char_field" options:options context:"this is context for observer_c"];
-    a.D_field.int_field = 10;
-    //a.B_field = B.random;
+    //a.D_field.int_field = 10;
+    a.B_field = B.random;
     //a.B_field.C_field.D_field = D.random;
     //a.B_field.C_field.D_field.char_field = '3';
     //[a d_removeObserver:observer_a forKeyPath:@"B_field.C_field.D_field.char_field" context:context];

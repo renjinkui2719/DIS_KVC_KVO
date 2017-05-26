@@ -197,54 +197,51 @@
 }
 
 - (BOOL)object:(id)object withObservance:(DSKeyValueObservance *)observance willChangeValueForKeyOrKeys:(id)keyOrKeys recurse:(BOOL)recurse forwardingValues:(DSKeyValuePropertyForwardingValues *)forwardingValues {
-    
-    NSMutableDictionary *var_8C = nil;
-    DSKeyValuePropertyForwardingValues forwardingValuesLocal;
+    NSMutableDictionary *affectingMap = nil;
+    DSKeyValuePropertyForwardingValues forwarding = {0x00};
     
     if(recurse && self.affectingProperties) {
         for(DSKeyValueUnnestedProperty *property in self.affectingProperties) {
-            NSString *keyPath = nil;
+            NSString *affectedKeyPath = nil;
             if([keyOrKeys isKindOfClass:NSSet.self]) {
-                keyPath = [property keyPathIfAffectedByValueForMemberOfKeys:keyOrKeys];
+                affectedKeyPath = [property keyPathIfAffectedByValueForMemberOfKeys:keyOrKeys];
             }
             else {
-                keyPath = [property keyPathIfAffectedByValueForKey:keyOrKeys exactMatch:NULL];
+                affectedKeyPath = [property keyPathIfAffectedByValueForKey:keyOrKeys exactMatch:NULL];
             }
-            if(keyPath) {
-                if([property object:object withObservance:observance willChangeValueForKeyOrKeys:keyOrKeys recurse:NO forwardingValues:&forwardingValuesLocal]) {
-                    if(forwardingValuesLocal.changingRelationshipObject) {
-                        if(var_8C) {
-                            [var_8C setObject:forwardingValuesLocal.changingRelationshipObject forKey:property];
+            if(affectedKeyPath) {
+                if([property object:object withObservance:observance willChangeValueForKeyOrKeys:keyOrKeys recurse:NO forwardingValues:&forwarding]) {
+                    if(forwarding.changingValue) {
+                        if(affectingMap) {
+                            [affectingMap setObject:forwarding.changingValue forKey:property];
                         }
                         else {
-                            var_8C = [NSMutableDictionary dictionaryWithObject:forwardingValuesLocal.changingRelationshipObject forKey:property];
+                            affectingMap = [NSMutableDictionary dictionaryWithObject:forwarding.changingValue forKey:property];
                         }
-                        //loc_41FEB
                     }
-                    //loc_41FEB
-                    if(forwardingValuesLocal.p2) {
-                        if(var_8C) {
-                            [var_8C addEntriesFromDictionary:forwardingValuesLocal.p2];
+                    if(forwarding.affectingValuesMap) {
+                        if(affectingMap) {
+                            [affectingMap addEntriesFromDictionary:forwarding.affectingValuesMap];
                         }
                         else {
-                            var_8C = forwardingValuesLocal.p2;
+                            affectingMap = forwarding.affectingValuesMap;
                         }
                     }
                 }
             }
         }
     }
-    //loc_4205D
-    forwardingValues->changingRelationshipObject = 0;
-    forwardingValues->p2 = var_8C;
+
+    forwardingValues->changingValue = nil;
+    forwardingValues->affectingValuesMap = affectingMap;
     
     return YES;
 }
 
 - (void)object:(id)object withObservance:(DSKeyValueObservance *)observance didChangeValueForKeyOrKeys:(id)keyOrKeys recurse:(BOOL)recurse forwardingValues:(DSKeyValuePropertyForwardingValues)forwardingValues {
-    for(DSKeyValueProperty *property in forwardingValues.p2) {
-        DSKeyValuePropertyForwardingValues forwardingValuesLocal = {property, nil};
-        [property object:object withObservance:observance didChangeValueForKeyOrKeys:keyOrKeys recurse:NO forwardingValues:forwardingValuesLocal];
+    for(DSKeyValueProperty *property in forwardingValues.affectingValuesMap) {
+        DSKeyValuePropertyForwardingValues forwarding = {forwardingValues.affectingValuesMap[property], nil};
+        [property object:object withObservance:observance didChangeValueForKeyOrKeys:keyOrKeys recurse:NO forwardingValues:forwarding];
     }
 }
 

@@ -17,8 +17,11 @@
 @class DSKeyValueObservance;
 
 typedef struct {
+    //引用计数
     uint16_t retainCount;
-    BOOL pushAsLastPop;
+    //是否是一次change的起始
+    BOOL beginningOfChange;
+    
     id object;//4
     id keyOrKeys;//8
     DSKeyValueObservationInfo *observationInfo;//c
@@ -28,8 +31,8 @@ typedef struct {
     id newValue;//1c
     NSIndexSet *indexes;//20
     NSMutableData * extraData;//24
-    id forwardingValues_p1;//28
-    id forwardingValues_p2;//2c
+    id changingValue;//28
+    NSMutableDictionary *affectingValuesMap;//2c
 }DSKVOPendingChangeNotificationPerThread;
 
 static inline NSString * NSStringFromPendingChangeNotificationPerThread(const DSKVOPendingChangeNotificationPerThread *notification) {
@@ -39,7 +42,7 @@ static inline NSString * NSStringFromPendingChangeNotificationPerThread(const DS
     return [NSString stringWithFormat:
             BRACE(
                  LINE(@"retainCount: %u,")\
-                 LINE(@"pushAsLastPop: %@,")\
+                 LINE(@"beginningOfChange: %@,")\
                  LINE(@"object: %@,")\
                  LINE(@"keyOrKeys: %@,")\
                  LINE(@"observationInfo: %@,")\
@@ -49,11 +52,11 @@ static inline NSString * NSStringFromPendingChangeNotificationPerThread(const DS
                  LINE(@"newValue: %@,")\
                  LINE(@"indexes: %@,")\
                  LINE(@"extraData: %@,")\
-                 LINE(@"forwardingValues_p1: %@,")\
-                 LINE(@"forwardingValues_p2: %@")\
+                 LINE(@"changingValue: %@,")\
+                 LINE(@"affectingValuesMap: %@")\
                  ),
             notification->retainCount,
-            bool_desc(notification->pushAsLastPop),
+            bool_desc(notification->beginningOfChange),
             simple_desc(notification->object),
             notification->keyOrKeys,
             simple_desc(notification->observationInfo),
@@ -63,14 +66,14 @@ static inline NSString * NSStringFromPendingChangeNotificationPerThread(const DS
             simple_desc(notification->newValue),
             notification->indexes,
             simple_desc(notification->extraData),
-            simple_desc(notification->forwardingValues_p1),
-            simple_desc(notification->forwardingValues_p2)
+            simple_desc(notification->changingValue),
+            simple_desc(notification->affectingValuesMap)
         ];
 }
 
 typedef struct {
     CFMutableArrayRef pendingArray;//0
-    BOOL pushAsLastPop;//4
+    BOOL beginningOfChange;//4
     DSKeyValueObservationInfo *observationInfo;//8
 }DSKVOPushInfoPerThread;
 
@@ -81,11 +84,11 @@ static inline NSString * NSStringFromPushInfoPerThread(const DSKVOPushInfoPerThr
     return [NSString stringWithFormat:
             BRACE(
                   LINE(@"pendingArray: (%zd) elems,")\
-                  LINE(@"pushAsLastPop: %@,")\
+                  LINE(@"beginningOfChange: %@,")\
                   LINE(@"observationInfo: %@")\
                   ),
             CFArrayGetCount(info->pendingArray),
-            bool_desc(info->pushAsLastPop),
+            bool_desc(info->beginningOfChange),
             simple_desc(info->observationInfo)
             ];
 }
@@ -139,8 +142,8 @@ typedef struct {
     id newValue;//c
     NSIndexSet *indexes;//10
     NSMutableData * extraData;//14
-    id forwardingValues_p1;//18
-    id forwardingValues_p2;//1c
+    id changingValue;//18
+    NSMutableDictionary * affectingValuesMap;//1c
     BOOL p5;//20
     NSString *keyOrKeys;//24
 }DSKVOPendingInfoLocalDetail;

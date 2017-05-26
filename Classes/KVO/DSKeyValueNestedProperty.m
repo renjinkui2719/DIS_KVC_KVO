@@ -160,11 +160,11 @@
         void *context = NULL;
         
         if (observance.property == self) {
-            option = observance.options;
+            option = observance.options | 0x0100;
             context = NULL;
         }
         else {
-            option = DSKeyValueObservingOptionPrior;
+            option = DSKeyValueObservingOptionPrior | 0x0100;
             context = self;
         }
         

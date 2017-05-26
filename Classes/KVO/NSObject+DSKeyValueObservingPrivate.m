@@ -27,8 +27,8 @@ void DSKVOPendingNotificationRelease(CFAllocatorRef allocator, const void *value
     notification->retainCount --;
     if (notification->retainCount <= 0) {
         [notification->observance.observer release];
-        [notification->forwardingValues_p2 release];
-        [notification->forwardingValues_p1 release];
+        [notification->affectingValuesMap release];
+        [notification->changingValue release];
         [notification->extraData release];
         [notification->indexes release];
         [notification->newValue release];
