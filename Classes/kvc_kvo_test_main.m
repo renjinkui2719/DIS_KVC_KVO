@@ -121,6 +121,10 @@ static inline NSString *random_string(size_t len) {
     return [NSString stringWithFormat:@"<%@:%p>, identifier: %@", self.class,self, _identifier];
 }
 
+- (NSUInteger)integer_sum {
+    return 10 * _int_field;
+}
+
 //- (void)d_willChangeValueForKey:(NSString *)key {
 //    [super d_willChangeValueForKey:key];
 //}
@@ -141,9 +145,9 @@ static inline NSString *random_string(size_t len) {
 //    else if ([key isEqualToString:@"C_field"]) {
 //        return [NSSet setWithObjects:@"D_field.int_field", nil];
 //    }
-    /*else if ([key isEqualToString:@"int_field"]) {
-        return [NSSet setWithObjects:@"C_field", nil];
-    }*/
+    if ([key isEqualToString:@"integer_sum"]) {
+        return [NSSet setWithObjects:@"int_field", nil];
+    }
     return [super keyPathsForValuesAffectingValueForKey:key];
 }
 
@@ -291,7 +295,11 @@ int kvc_kvo_test_main(int argc, const char * argv[]) {
 }
 
 void test_kvo() {
-    
+    A *a = A.random;
+    a.NSArray_field = [NSMutableArray arrayWithArray:@[A.random, A.random, A.random, A.random]];
+    [a d_addObserver:[ObserverA new] forKeyPath:@"@integer_sum.int_field" options:NSKeyValueObservingOptionNew context:NULL];
+    a.int_field = 20;
+    //[a.NSArray_field removeLastObject];
 }
 
 

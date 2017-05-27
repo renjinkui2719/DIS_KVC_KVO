@@ -65,5 +65,6 @@ void DSKVOPendingNotificationRelease(CFAllocatorRef allocator, const void *value
 - (void)_d_changeValueForKeys:(NSString * *)keys count:(NSUInteger)count maybeOldValuesDict:(id)oldValuesDict usingBlock:(void (^)(void))block;
 - (id)_d_implicitObservationInfo;
 - (CFMutableArrayRef)_d_pendingChangeNotificationsArrayForKey:(NSString *)key create:(BOOL)create;
++ (BOOL)_d_shouldAddObservationForwardersForKey:(NSString *)key;
 
 @end
