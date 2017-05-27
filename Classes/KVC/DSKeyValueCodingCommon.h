@@ -15,24 +15,9 @@
 
 extern NSString * _NSMethodExceptionProem(id object,SEL selector);
 
-
 extern int NSFreeObjectArray(void *ptr);
 
-
 extern void* NSAllocateObjectArray(NSUInteger count);
-
-
-static inline void *object_getIvarAddress(id object, Ivar ivar) {
-    return (void *)((uint8_t *)object + ivar_getOffset(ivar));
-}
-
-static inline id object_getIvarDirectly(id object, Ivar ivar) {
-    return *(id *)object_getIvarAddress(object, ivar);
-}
-
-static inline void object_setIvarDirectly(id object, Ivar ivar, id value) {
-    *(id *)object_getIvarAddress(object, ivar) = value;
-}
 
 extern id   objc_retain(id obj);
 extern void objc_release(id obj);
@@ -46,3 +31,16 @@ CF_EXPORT CFStringEncoding __CFStringComputeEightBitStringEncoding(void);
 extern NSString *const NSUnknownKeyException;
 extern NSString *const NSTargetObjectUserInfoKey;
 extern NSString *const NSUnknownUserInfoKey;
+
+
+static inline void *object_getIvarAddress(id object, Ivar ivar) {
+    return (void *)((uint8_t *)object + ivar_getOffset(ivar));
+}
+
+static inline id object_getIvarDirectly(id object, Ivar ivar) {
+    return *(id *)object_getIvarAddress(object, ivar);
+}
+
+static inline void object_setIvarDirectly(id object, Ivar ivar, id value) {
+    *(id *)object_getIvarAddress(object, ivar) = value;
+}

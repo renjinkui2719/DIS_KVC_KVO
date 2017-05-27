@@ -8,34 +8,9 @@
 
 #import <Foundation/Foundation.h>
 
-typedef NS_OPTIONS(NSUInteger, DSKeyValueObservingOptions) {
-    DSKeyValueObservingOptionNew = 0x01,
-    DSKeyValueObservingOptionOld = 0x02,
-    DSKeyValueObservingOptionInitial = 0x04,
-    DSKeyValueObservingOptionPrior = 0x08
-};
-
-typedef NS_ENUM(NSUInteger, DSKeyValueChange) {
-    DSKeyValueChangeSetting = 1,
-    DSKeyValueChangeInsertion = 2,
-    DSKeyValueChangeRemoval = 3,
-    DSKeyValueChangeReplacement = 4,
-};
-
-typedef NS_ENUM(NSUInteger, DSKeyValueSetMutationKind) {
-    DSKeyValueUnionSetMutation = 1,
-    DSKeyValueMinusSetMutation = 2,
-    DSKeyValueIntersectSetMutation = 3,
-    DSKeyValueSetSetMutation = 4
-};
-
-extern NSString *const DSKeyValueChangeKindKey;
-extern NSString *const DSKeyValueChangeNewKey;
-extern NSString *const DSKeyValueChangeOldKey;
-extern NSString *const DSKeyValueChangeIndexesKey;
-extern NSString *const DSKeyValueChangeNotificationIsPriorKey;
-extern NSString *const DSKeyValueChangeOriginalObservableKey;
-
+extern pthread_mutex_t _DSKeyValueObserverRegistrationLock;
+extern pthread_t _DSKeyValueObserverRegistrationLockOwner;
+extern BOOL _DSKeyValueObserverRegistrationEnableLockingAssertions;
 
 void DSKeyValueObserverRegistrationLockUnlock();
 void DSKeyValueObserverRegistrationLockLock();
@@ -45,7 +20,7 @@ void DSKeyValueObservingAssertRegistrationLockNotHeld();
 
 @interface NSObject (DSKeyValueObserverRegistration)
 
-- (void)d_addObserver:(NSObject *)observer forKeyPath:(NSString *)keyPath options:(DSKeyValueObservingOptions)options context:(void *)context;
+- (void)d_addObserver:(NSObject *)observer forKeyPath:(NSString *)keyPath options:(NSKeyValueObservingOptions)options context:(void *)context;
 - (void)d_removeObserver:(NSObject *)observer forKeyPath:(NSString *)keyPath context:(void *)context;
 - (void)d_removeObserver:(NSObject *)observer forKeyPath:(NSString *)keyPath;
 

@@ -65,7 +65,7 @@
             context = NULL;
         }
         else {
-            options = DSKeyValueObservingOptionPrior | 0x0100;
+            options = NSKeyValueObservingOptionPrior | 0x0100;
             context = self;
         }
         
@@ -156,7 +156,7 @@
 
 - (void)object:(id)object withObservance:(DSKeyValueObservance *)observance didChangeValueForKeyOrKeys:(id)keyOrKeys recurse:(BOOL)recurse forwardingValues:(DSKeyValuePropertyForwardingValues)forwardingValues {
     if(_isAllowedToResultInForwarding) {
-        DSKeyValueObservingOptions option = 0;
+        NSKeyValueObservingOptions option = 0;
         void *context = NULL;
         
         if (observance.property == self) {
@@ -164,7 +164,7 @@
             context = NULL;
         }
         else {
-            option = DSKeyValueObservingOptionPrior | 0x0100;
+            option = NSKeyValueObservingOptionPrior | 0x0100;
             context = self;
         }
         

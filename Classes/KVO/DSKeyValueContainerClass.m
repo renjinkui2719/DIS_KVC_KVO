@@ -364,7 +364,7 @@ void _DSKVONotifyingEnableForInfoAndKey(DSKeyValueNotifyingInfo *info, NSString 
                   class_getName(info->originalClass), sel_getName(method_getName(setMethod)));
         }
     }
-    
+
     DSKeyValueGetter* getter = _DSKeyValueMutableArrayGetterForIsaAndKey(info->originalClass, key);
     if([getter respondsToSelector:@selector(mutatingMethods)]) {
         DSKeyValueMutatingArrayMethodSet *mutatingMethods = (DSKeyValueMutatingArrayMethodSet *)[(DSKeyValueFastMutableCollection1Getter/*或者 DSKeyValueFastMutableCollection1Getter,强转仅仅为了消除警告*/ *)getter mutatingMethods];

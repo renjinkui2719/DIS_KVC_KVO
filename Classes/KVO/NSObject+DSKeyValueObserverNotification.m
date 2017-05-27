@@ -16,6 +16,8 @@
 #import "NSObject+DSKeyValueObservingPrivate.h"
 #import "NSObject+DSKeyValueObservingCustomization.h"
 #import "NSObject+DSKeyValueObserverRegistration.h"
+#import "NSObject+DSKeyValueCoding.h"
+
 
 @implementation NSObject (DSKeyValueObserverNotification)
 
@@ -71,12 +73,12 @@
         if(observationInfo) {
             DSKVOPushInfoPerThread pushInfo = {pendingArray, YES, observationInfo};
             LOG_KVO(@"object: %@, will change value for key: %@, observationInfo: %@, pushInfo: %@",simple_desc(self), key, simple_desc(observationInfo), NSStringFromPushInfoPerThread(&pushInfo));
-            DSKeyValueWillChange(self,key,NO,observationInfo,DSKeyValueWillChangeBySetting,nil,(DSKeyValuePushPendingNotificationCallback)DSKeyValuePushPendingNotificationPerThread,&pushInfo,nil);
+            DSKeyValueWillChange(self,key,NO,observationInfo,(DSKVOWillChangeDetailSetupFunc)DSKeyValueWillChangeBySetting,nil,(DSKVOWillChangeNotificationPushFunc)DSKeyValuePushPendingNotificationPerThread,&pushInfo,nil);
         }
         if(implicitObservationInfo) {
             DSKVOPushInfoPerThread pushInfo = {pendingArray, YES, NULL};
             LOG_KVO(@"object: %@, will change value for key: %@, implicitObservationInfo: %@, pushInfo: %@",simple_desc(self), key, simple_desc(implicitObservationInfo), NSStringFromPushInfoPerThread(&pushInfo));
-            DSKeyValueWillChange(self,key,NO,implicitObservationInfo,DSKeyValueWillChangeBySetting,nil,(DSKeyValuePushPendingNotificationCallback)DSKeyValuePushPendingNotificationPerThread,&pushInfo,nil);
+            DSKeyValueWillChange(self,key,NO,implicitObservationInfo,(DSKVOWillChangeDetailSetupFunc)DSKeyValueWillChangeBySetting,nil,(DSKVOWillChangeNotificationPushFunc)DSKeyValuePushPendingNotificationPerThread,&pushInfo,nil);
         }
     }
     
@@ -94,12 +96,12 @@
         if(pendingCount) {
             DSKVOPopInfoPerThread popInfo = {pendingArray, pendingCount, nil, -1, nil};
             LOG_KVO(@"object: %@, did change value for key: %@, popInfo: %@",simple_desc(self), key, NSStringFromPopInfoPerThread(&popInfo));
-            DSKeyValueDidChange(self,key,0,DSKeyValueDidChangeBySetting,(DSKeyValuePopPendingNotificationCallback)DSKeyValuePopPendingNotificationPerThread,&popInfo);
+            DSKeyValueDidChange(self,key,0,DSKeyValueDidChangeBySetting,(DSKVODidChangeNotificationPopFunc)DSKeyValuePopPendingNotificationPerThread,&popInfo);
         }
     }
 }
 
-- (void)d_willChange:(DSKeyValueChange)changeKind valuesAtIndexes:(NSIndexSet *)indexes forKey:(NSString *)key {
+- (void)d_willChange:(NSKeyValueChange)changeKind valuesAtIndexes:(NSIndexSet *)indexes forKey:(NSString *)key {
     pthread_mutex_lock(&_DSKeyValueObserverRegistrationLock);
     _DSKeyValueObserverRegistrationLockOwner = pthread_self();
     
@@ -151,14 +153,14 @@
         pushInfo.beginningOfChange = YES;
         pushInfo.observationInfo = observationInfo;
         
-        DSKVOArrayOrSetWillChangeInfo changeInfo = {changeKind, indexes};
+        DSKVOCollectionWillChangeInfo changeInfo = {.changeKind = changeKind, .indexes = indexes};
         
         if (observationInfo) {
-            DSKeyValueWillChange(self, key, NO, observationInfo, DSKeyValueWillChangeByOrderedToManyMutation, &changeInfo, DSKeyValuePushPendingNotificationPerThread, &pushInfo, nil);
+            DSKeyValueWillChange(self, key, NO, observationInfo, (DSKVOWillChangeDetailSetupFunc)DSKeyValueWillChangeByOrderedToManyMutation, &changeInfo, (DSKVOWillChangeNotificationPushFunc)DSKeyValuePushPendingNotificationPerThread, &pushInfo, nil);
         }
         if (implicitObservationInfo) {
             pushInfo.observationInfo = NULL;
-            DSKeyValueWillChange(self, key, NO, implicitObservationInfo, DSKeyValueWillChangeByOrderedToManyMutation, &changeInfo, DSKeyValuePushPendingNotificationPerThread, &pushInfo, nil);
+            DSKeyValueWillChange(self, key, NO, implicitObservationInfo, (DSKVOWillChangeDetailSetupFunc)DSKeyValueWillChangeByOrderedToManyMutation, &changeInfo, (DSKVOWillChangeNotificationPushFunc)DSKeyValuePushPendingNotificationPerThread, &pushInfo, nil);
         }
     }
     
@@ -169,18 +171,18 @@
     }
 }
 
-- (void)d_didChange:(DSKeyValueChange)changeKind valuesAtIndexes:(NSIndexSet *)indexes forKey:(NSString *)key {
+- (void)d_didChange:(NSKeyValueChange)changeKind valuesAtIndexes:(NSIndexSet *)indexes forKey:(NSString *)key {
     CFMutableArrayRef pendingArray = [self _d_pendingChangeNotificationsArrayForKey:key create:NO];
     if(pendingArray) {
         NSUInteger pendingCount = CFArrayGetCount(pendingArray);
         if(pendingCount > 0) {
             DSKVOPopInfoPerThread popInfo = {pendingArray, pendingCount, nil, -1, nil};
-            DSKeyValueDidChange(self,key,NO,DSKeyValueDidChangeByOrderedToManyMutation,(DSKeyValuePopPendingNotificationCallback)DSKeyValuePopPendingNotificationPerThread,&popInfo);
+            DSKeyValueDidChange(self,key,NO,(DSKVODidChangeDetailSetupFunc)DSKeyValueDidChangeByOrderedToManyMutation,(DSKVODidChangeNotificationPopFunc)DSKeyValuePopPendingNotificationPerThread,&popInfo);
         }
     }
 }
 
-- (void)d_willChangeValueForKey:(NSString *)key withSetMutation:(DSKeyValueSetMutationKind)mutationKind usingObjects:(NSSet *)objects {
+- (void)d_willChangeValueForKey:(NSString *)key withSetMutation:(NSKeyValueSetMutationKind)mutationKind usingObjects:(NSSet *)objects {
     pthread_mutex_lock(&_DSKeyValueObserverRegistrationLock);
     _DSKeyValueObserverRegistrationLockOwner = pthread_self();
     
@@ -227,62 +229,69 @@
     pthread_mutex_unlock(&_DSKeyValueObserverRegistrationLock);
     
     if (observationInfo || implicitObservationInfo) {
+        DSKVOCollectionWillChangeInfo changeInfo = {.mutationKind = mutationKind, .objects = objects};
+        
         DSKVOPushInfoPerThread pushInfo = {0};
         pushInfo.pendingArray = [self _d_pendingChangeNotificationsArrayForKey:key create:YES];
         pushInfo.beginningOfChange = YES;
         pushInfo.observationInfo = observationInfo;
         if (observationInfo) {
-            DSKeyValueWillChange(self, key, NO, observationInfo, DSKeyValueWillChangeBySetMutation, &mutationKind, DSKeyValuePushPendingNotificationPerThread, &pushInfo, nil);
+            DSKeyValueWillChange(self, key, NO, observationInfo, (DSKVOWillChangeDetailSetupFunc)DSKeyValueWillChangeBySetMutation, &changeInfo, (DSKVOWillChangeNotificationPushFunc)DSKeyValuePushPendingNotificationPerThread, &pushInfo, nil);
         }
         if (implicitObservationInfo) {
             pushInfo.observationInfo = NULL;
-            DSKeyValueWillChange(self, key, NO, implicitObservationInfo, DSKeyValueWillChangeBySetMutation, &mutationKind, DSKeyValuePushPendingNotificationPerThread, &pushInfo, nil);
+            DSKeyValueWillChange(self, key, NO, implicitObservationInfo, (DSKVOWillChangeDetailSetupFunc)DSKeyValueWillChangeBySetMutation, &changeInfo, (DSKVOWillChangeNotificationPushFunc)DSKeyValuePushPendingNotificationPerThread, &pushInfo, nil);
         }
     }
+    
     [observationInfo release];
+    
     for (NSUInteger i = 0; i < totalObservanceCount; ++i) {
         [observance_objs[i] release];
     }
 }
 
-- (void)d_didChangeValueForKey:(NSString *)key withSetMutation:(DSKeyValueSetMutationKind)mutationKind usingObjects:(NSSet *)objects {
+- (void)d_didChangeValueForKey:(NSString *)key withSetMutation:(NSKeyValueSetMutationKind)mutationKind usingObjects:(NSSet *)objects {
     CFMutableArrayRef pendingArray = [self _d_pendingChangeNotificationsArrayForKey:key create:NO];
     if(pendingArray) {
         NSUInteger pendingCount = CFArrayGetCount(pendingArray);
         if(pendingCount > 0) {
             DSKVOPopInfoPerThread popInfo = {pendingArray, pendingCount, NULL, -1, 0};
-            DSKeyValueDidChange(self,key,NO,DSKeyValueDidChangeBySetMutation,(DSKeyValuePopPendingNotificationCallback)DSKeyValuePopPendingNotificationPerThread,&popInfo);
+            DSKeyValueDidChange(self,key,NO, (DSKVODidChangeDetailSetupFunc)DSKeyValueDidChangeBySetMutation,(DSKVODidChangeNotificationPopFunc)DSKeyValuePopPendingNotificationPerThread,&popInfo);
         }
     }
 }
 
 @end
 
-
-void DSKVONotify(id observer, NSString *keyPath, id object, NSDictionary *changeDictionary, void *context) {
-    DSKeyValueObservingAssertRegistrationLockNotHeld();
-    LOG_KVO("value for keyPath: %@ of object: %@ changed, notify observer: %@, with changeDictionary: %@, context: %p",keyPath, simple_desc(object), simple_desc(observer), changeDictionary, context);
-    [observer observeValueForKeyPath:keyPath ofObject:object change:changeDictionary context:context];
-}
-
-void DSKeyValueNotifyObserver(id observer,NSString * keyPath, id object, void *context, id originalObservable, BOOL isPriorNotification, DSKeyValueChangeDetails changeDetails, DSKeyValueChangeDictionary **changeDictionary) {
-    if([observer respondsToSelector:@selector(_observeValueForKeyPath:ofObject:changeKind:oldValue:newValue:indexes:context:)]) {
-        
+BOOL _DSKeyValueCheckObservationInfoForPendingNotification(id object, DSKeyValueObservance *observance, DSKeyValueObservationInfo * observationInfo) {
+    os_lock_lock(&DSKeyValueObservationInfoSpinLock);
+    
+    DSKeyValueObservationInfo *info = nil;
+    if(observance.property.containerClass) {
+        info = observance.property.containerClass.cachedObservationInfoImplementation(object, @selector(observationInfo));
     }
     else {
-        if(*changeDictionary) {
-            [*changeDictionary setDetailsNoCopy:changeDetails originalObservable:originalObservable];
-        }
-        else {
-            *changeDictionary =  [[DSKeyValueChangeDictionary alloc] initWithDetailsNoCopy:changeDetails originalObservable:originalObservable isPriorNotification:isPriorNotification];
-        }
-        NSUInteger retainCountBefore = [*changeDictionary retainCount];
-        DSKVONotify(observer, keyPath, object, *changeDictionary, context);
-        if(retainCountBefore != (NSUInteger)INTMAX_MAX && retainCountBefore != [*changeDictionary retainCount]) {
-            [*changeDictionary retainObjects];
-        }
+        info = [object observationInfo];
     }
+    
+    if(!info) {
+        os_lock_unlock(&DSKeyValueObservationInfoSpinLock);
+        return NO;
+    }
+    
+    if(info == observationInfo) {
+        os_lock_unlock(&DSKeyValueObservationInfoSpinLock);
+        return YES;
+    }
+    
+    BOOL contains = _DSKeyValueObservationInfoContainsObservance(info, observance);
+    
+    os_lock_unlock(&DSKeyValueObservationInfoSpinLock);
+    
+    return contains;
 }
+
 
 void DSKeyValueWillChangeForObservance(id object, id keyOrKeys, BOOL keyOrKeysIsASet, DSKeyValueObservance * observance) {
     pthread_mutex_lock(&_DSKeyValueObserverRegistrationLock);
@@ -350,10 +359,10 @@ void DSKeyValueWillChangeForObservance(id object, id keyOrKeys, BOOL keyOrKeysIs
         pushInfo.beginningOfChange = YES;
         pushInfo.observationInfo = observationInfo;
         if(observationInfo) {
-            DSKeyValueWillChange(object,keyOrKeys,keyOrKeysIsASet,observationInfo,DSKeyValueWillChangeBySetting,nil,(DSKeyValuePushPendingNotificationCallback)DSKeyValuePushPendingNotificationPerThread,&pushInfo, observance);
+            DSKeyValueWillChange(object,keyOrKeys,keyOrKeysIsASet,observationInfo,(DSKVOWillChangeDetailSetupFunc)DSKeyValueWillChangeBySetting,nil,(DSKVOWillChangeNotificationPushFunc)DSKeyValuePushPendingNotificationPerThread,&pushInfo, observance);
         }
         if(implicitObservationInfo) {
-            DSKeyValueWillChange(object,keyOrKeys,keyOrKeysIsASet,implicitObservationInfo,DSKeyValueWillChangeBySetting,nil,(DSKeyValuePushPendingNotificationCallback)DSKeyValuePushPendingNotificationPerThread,&pushInfo, observance);
+            DSKeyValueWillChange(object,keyOrKeys,keyOrKeysIsASet,implicitObservationInfo,(DSKVOWillChangeDetailSetupFunc)DSKeyValueWillChangeBySetting,nil,(DSKVOWillChangeNotificationPushFunc)DSKeyValuePushPendingNotificationPerThread,&pushInfo, observance);
         }
     }
     
@@ -381,14 +390,58 @@ void DSKeyValueDidChangeForObservance(id object, id keyOrKeys, BOOL keyOrKeysIsA
         NSUInteger pendingCount = CFArrayGetCount(pendingArray);
         if(pendingCount > 0) {
             DSKVOPopInfoPerThread popInfo = {pendingArray,pendingCount,nil,-1,observance};
-            DSKeyValueDidChange(object, keyOrKeys, keyOrKeysIsASet, DSKeyValueDidChangeBySetting, (DSKeyValuePopPendingNotificationCallback)DSKeyValuePopPendingNotificationPerThread, &popInfo);
+            DSKeyValueDidChange(object, keyOrKeys, keyOrKeysIsASet, (DSKVODidChangeDetailSetupFunc)DSKeyValueDidChangeBySetting, (DSKVODidChangeNotificationPopFunc)DSKeyValuePopPendingNotificationPerThread, &popInfo);
         }
     }
 }
 
-#pragma mark - Will change callbacks
+void DSKeyValueWillChangeBySetting(DSKeyValueChangeDetails *changeDetails, id object, NSString *keyPath, BOOL keyPathExactMatch, int options, NSDictionary *oldValueDict, BOOL *detailsRetained) {
+    id oldValue = nil;
+    if(options & NSKeyValueObservingOptionOld) {
+        if(oldValueDict) {
+            oldValue = [oldValueDict objectForKey:keyPath];
+        }
+        else {
+            oldValue = [object d_valueForKeyPath:keyPath];
+        }
+        
+        if(!oldValue) {
+            oldValue = [NSNull null];
+        }
+    }
+    
+    *detailsRetained = NO;
+    
+    changeDetails->kind = NSKeyValueChangeSetting;
+    changeDetails->oldValue = oldValue;
+    changeDetails->newValue = nil;
+    changeDetails->indexes = nil;
+    changeDetails->extraData = nil;
+    
+    LOG_KVO(@"object: %@, keyPath: %@, keyPathExactMatch:%@, options: 0X%02X, oldValueDict: %@, detailsRetained:%s, result changeDetails: %@",simple_desc(object), keyPath, bool_desc(keyPathExactMatch), options, oldValueDict, bool_desc(*detailsRetained), NSStringFromKeyValueChangeDetails(changeDetails));
+}
 
-void DSKeyValueWillChangeByOrderedToManyMutation(DSKeyValueChangeDetails *changeDetails, id object, NSString *keyPath, BOOL keyPathExactMatch, int options, DSKVOArrayOrSetWillChangeInfo *changeInfo, BOOL *detailsRetained) {
+void DSKeyValueDidChangeBySetting(DSKeyValueChangeDetails *resultChangeDetails, id object, NSString *keyPath, BOOL keyPathExactMatch, int options, DSKeyValueChangeDetails changeDetails) {
+    id newValue = nil;
+    if(options & NSKeyValueObservingOptionNew) {
+        newValue = [object d_valueForKeyPath:keyPath];
+        if(!newValue) {
+            newValue = [NSNull null];
+        }
+    }
+    else {
+        newValue = changeDetails.newValue;
+    }
+    resultChangeDetails->kind = changeDetails.kind;
+    resultChangeDetails->oldValue = changeDetails.oldValue;
+    resultChangeDetails->newValue = newValue;
+    resultChangeDetails->indexes = changeDetails.indexes;
+    resultChangeDetails->extraData = changeDetails.extraData;
+    
+    LOG_KVO(@"object: %@, keyPath: %@, keyPathExactMatch:%@, options: 0X%02X, passed changeDetails: %@,   result changeDetails: %@",simple_desc(object), keyPath, bool_desc(keyPathExactMatch), options, NSStringFromKeyValueChangeDetails(&changeDetails), NSStringFromKeyValueChangeDetails(resultChangeDetails));
+}
+
+void DSKeyValueWillChangeByOrderedToManyMutation(DSKeyValueChangeDetails *changeDetails, id object, NSString *keyPath, BOOL keyPathExactMatch, int options, DSKVOCollectionWillChangeInfo *changeInfo, BOOL *detailsRetained) {
     if (keyPathExactMatch) {
         id oldValue = nil;
         NSArray *oldObjects = nil;
@@ -400,14 +453,14 @@ void DSKeyValueWillChangeByOrderedToManyMutation(DSKeyValueChangeDetails *change
             _CFSetTSD(DSKeyValueObservingObjectTSDKey, object, NULL);
             _CFSetTSD(DSKeyValueObservingKeyPathTSDKey, keyPath, NULL);
             
-            oldValue = [object valueForKey:keyPath];
+            oldValue = [object d_valueForKey:keyPath];
             
             _CFSetTSD(DSKeyValueObservingObjectTSDKey, NULL, NULL);
             _CFSetTSD(DSKeyValueObservingKeyPathTSDKey, NULL, NULL);
             
             if (oldValue) {
                 if ([oldValue isKindOfClass:NSOrderedSet.self]) {
-                    if (changeInfo->changeKind == DSKeyValueChangeReplacement || changeInfo->changeKind == DSKeyValueChangeInsertion) {
+                    if (changeInfo->changeKind == NSKeyValueChangeReplacement || changeInfo->changeKind == NSKeyValueChangeInsertion) {
                         oldObjectsData = [[NSMutableData alloc] initWithLength:[oldValue count] * sizeof(id)];
                         void *bytes = oldObjectsData.mutableBytes;
                         [oldValue getObjects:bytes range:NSMakeRange(0, [oldValue count])];
@@ -415,9 +468,9 @@ void DSKeyValueWillChangeByOrderedToManyMutation(DSKeyValueChangeDetails *change
                 }
             }
         }
-        if (options & DSKeyValueObservingOptionOld && changeInfo->changeKind != DSKeyValueChangeInsertion) {
+        if (options & NSKeyValueObservingOptionOld && changeInfo->changeKind != NSKeyValueChangeInsertion) {
             if (!oldValue) {
-                oldValue = [object valueForKey:keyPath];
+                oldValue = [object d_valueForKey:keyPath];
             }
             oldObjects = [oldValue objectsAtIndexes:changeInfo->indexes];
         }
@@ -437,8 +490,8 @@ void DSKeyValueWillChangeByOrderedToManyMutation(DSKeyValueChangeDetails *change
     }
     else {
         id oldValue = nil;
-        if (options & DSKeyValueObservingOptionOld) {
-            oldValue = [object valueForKeyPath:keyPath];
+        if (options & NSKeyValueObservingOptionOld) {
+            oldValue = [object d_valueForKeyPath:keyPath];
             if (!oldValue) {
                 oldValue = [NSNull null];
             }
@@ -446,7 +499,7 @@ void DSKeyValueWillChangeByOrderedToManyMutation(DSKeyValueChangeDetails *change
         
         *detailsRetained = NO;
         
-        changeDetails->kind = DSKeyValueChangeSetting;
+        changeDetails->kind = NSKeyValueChangeSetting;
         changeDetails->oldValue = oldValue;
         changeDetails->newValue = nil;
         changeDetails->indexes = nil;
@@ -454,8 +507,8 @@ void DSKeyValueWillChangeByOrderedToManyMutation(DSKeyValueChangeDetails *change
     }
 }
 
-void DSKeyValueDidChangeByOrderedToManyMutation(DSKeyValueChangeDetails *resultChangeDetails, id object, NSString *keyPath, BOOL exactMatch, int options, DSKeyValueChangeDetails changeDetails) {
-    if (exactMatch) {
+void DSKeyValueDidChangeByOrderedToManyMutation(DSKeyValueChangeDetails *resultChangeDetails, id object, NSString *keyPath, BOOL keyPathExactMatch, int options, DSKeyValueChangeDetails changeDetails) {
+    if (keyPathExactMatch) {
         id newValue = nil;
         
         NSIndexSet *indexes = changeDetails.indexes;
@@ -466,14 +519,14 @@ void DSKeyValueDidChangeByOrderedToManyMutation(DSKeyValueChangeDetails *resultC
             _CFSetTSD(DSKeyValueObservingObjectTSDKey, object, NULL);
             _CFSetTSD(DSKeyValueObservingKeyPathTSDKey, keyPath, NULL);
             
-            newValue = [object valueForKey:keyPath];
+            newValue = [object d_valueForKey:keyPath];
             
             _CFSetTSD(DSKeyValueObservingObjectTSDKey, NULL, NULL);
             _CFSetTSD(DSKeyValueObservingKeyPathTSDKey, NULL, NULL);
             
             if (newValue) {
                 if ([newValue isKindOfClass:NSOrderedSet.self]) {
-                    if (changeDetails.kind == DSKeyValueChangeReplacement) {
+                    if (changeDetails.kind == NSKeyValueChangeReplacement) {
                         id *oldObjs = (id *)[changeDetails.extraData bytes];
                         __block NSMutableIndexSet *copiedIndexes = nil;
                         [changeDetails.indexes enumerateIndexesUsingBlock:^(NSUInteger idx, BOOL * stop) {
@@ -492,7 +545,7 @@ void DSKeyValueDidChangeByOrderedToManyMutation(DSKeyValueChangeDetails *resultC
                         [changeDetails.extraData release];
                         changeDetails.extraData = nil;
                     }
-                    if (changeDetails.kind == DSKeyValueChangeInsertion) {
+                    if (changeDetails.kind == NSKeyValueChangeInsertion) {
                         __block NSUInteger offset = 0;
                         __block NSMutableIndexSet *copiedIndexes = nil;
                         id *oldObjs = (id *)[changeDetails.extraData bytes];
@@ -532,9 +585,9 @@ void DSKeyValueDidChangeByOrderedToManyMutation(DSKeyValueChangeDetails *resultC
         }
         
         NSArray *newObjects = nil;
-        if ((options & DSKeyValueObservingOptionNew) && changeDetails.kind != DSKeyValueChangeRemoval) {
+        if ((options & NSKeyValueObservingOptionNew) && changeDetails.kind != NSKeyValueChangeRemoval) {
             if (!newValue) {
-                newValue = [object valueForKey:keyPath];
+                newValue = [object d_valueForKey:keyPath];
             }
             
             newObjects = [newValue objectsAtIndexes:indexes];
@@ -548,8 +601,8 @@ void DSKeyValueDidChangeByOrderedToManyMutation(DSKeyValueChangeDetails *resultC
     }
     else {
         id newValue = nil;
-        if (options & DSKeyValueObservingOptionNew) {
-            newValue = [object valueForKeyPath:keyPath];
+        if (options & NSKeyValueObservingOptionNew) {
+            newValue = [object d_valueForKeyPath:keyPath];
             if (!newValue) {
                 newValue = [NSNull null];
             }
@@ -565,20 +618,20 @@ void DSKeyValueDidChangeByOrderedToManyMutation(DSKeyValueChangeDetails *resultC
     }
 }
 
-void DSKeyValueWillChangeBySetMutation(DSKeyValueChangeDetails *changeDetails, id object, NSString *keyPath, BOOL keyPathExactMatch, int options, DSKVOArrayOrSetWillChangeInfo *changeInfo, BOOL *detailsRetained) {
+void DSKeyValueWillChangeBySetMutation(DSKeyValueChangeDetails *changeDetails, id object, NSString *keyPath, BOOL keyPathExactMatch, int options, DSKVOCollectionWillChangeInfo *changeInfo, BOOL *detailsRetained) {
     if (keyPathExactMatch) {
-        DSKeyValueChange kind = 0;
+        NSKeyValueChange kind = 0;
         id oldValue = nil;
         id newValue = nil;
         NSIndexSet *indexes = nil;
         NSMutableData *oldObjectsData = nil;
         
         switch (changeInfo->mutationKind) {
-            case DSKeyValueUnionSetMutation: {
-                kind = DSKeyValueChangeInsertion;
+            case NSKeyValueUnionSetMutation: {
+                kind = NSKeyValueChangeInsertion;
                 
-                if (options & DSKeyValueObservingOptionNew) {
-                    id currentValue = [object valueForKey:keyPath];
+                if (options & NSKeyValueObservingOptionNew) {
+                    id currentValue = [object d_valueForKey:keyPath];
                     if ([changeInfo->objects intersectsSet:currentValue]) {
                         newValue = [changeInfo->objects mutableCopy];
                         if (currentValue) {
@@ -592,11 +645,11 @@ void DSKeyValueWillChangeBySetMutation(DSKeyValueChangeDetails *changeDetails, i
                 }
             }
                 break;
-            case DSKeyValueMinusSetMutation: {
-                kind = DSKeyValueChangeRemoval;
+            case NSKeyValueMinusSetMutation: {
+                kind = NSKeyValueChangeRemoval;
                 
-                if (options & DSKeyValueObservingOptionOld) {
-                    id currentValue = [object valueForKey:keyPath];
+                if (options & NSKeyValueObservingOptionOld) {
+                    id currentValue = [object d_valueForKey:keyPath];
                     if ([changeInfo->objects isSubsetOfSet:currentValue]) {
                         oldValue = [changeInfo->objects copy];
                     }
@@ -610,33 +663,33 @@ void DSKeyValueWillChangeBySetMutation(DSKeyValueChangeDetails *changeDetails, i
                 }
             }
                 break;
-            case DSKeyValueIntersectSetMutation: {
-                kind = DSKeyValueChangeRemoval;
+            case NSKeyValueIntersectSetMutation: {
+                kind = NSKeyValueChangeRemoval;
                 
-                if (options & DSKeyValueObservingOptionOld) {
+                if (options & NSKeyValueObservingOptionOld) {
                     //loc_D0F6F
-                    oldValue = [[object valueForKey:keyPath] mutableCopy];
+                    oldValue = [[object d_valueForKey:keyPath] mutableCopy];
                     if (changeInfo->objects) {
                         [oldValue minusSet:changeInfo->objects];
                     }
                 }
             }
                 break;
-            case DSKeyValueSetSetMutation: {
-                kind = DSKeyValueChangeReplacement;
+            case NSKeyValueSetSetMutation: {
+                kind = NSKeyValueChangeReplacement;
                 
                 id currentValue = nil;
-                if (options & DSKeyValueObservingOptionOld) {
-                    currentValue = [object valueForKey:keyPath];
+                if (options & NSKeyValueObservingOptionOld) {
+                    currentValue = [object d_valueForKey:keyPath];
                     oldValue = [currentValue mutableCopy];
                     if (changeInfo->objects) {
                         [oldValue minusSet:changeInfo->objects];
                     }
                 }
                 
-                if (options & DSKeyValueObservingOptionNew) {
+                if (options & NSKeyValueObservingOptionNew) {
                     if (!currentValue) {
-                        currentValue = [object valueForKey:keyPath];
+                        currentValue = [object d_valueForKey:keyPath];
                     }
                     newValue =  [changeInfo->objects mutableCopy];
                     if (currentValue) {
@@ -660,8 +713,8 @@ void DSKeyValueWillChangeBySetMutation(DSKeyValueChangeDetails *changeDetails, i
     else {
         //loc_D0E23
         id oldValue = nil;
-        if (options & DSKeyValueObservingOptionOld) {
-            oldValue = [object valueForKeyPath:keyPath];
+        if (options & NSKeyValueObservingOptionOld) {
+            oldValue = [object d_valueForKeyPath:keyPath];
             if (!oldValue) {
                 oldValue = [NSNull null];
             }
@@ -669,7 +722,7 @@ void DSKeyValueWillChangeBySetMutation(DSKeyValueChangeDetails *changeDetails, i
         
         *detailsRetained = NO;
         
-        changeDetails->kind = DSKeyValueChangeSetting;
+        changeDetails->kind = NSKeyValueChangeSetting;
         changeDetails->oldValue = oldValue;
         changeDetails->newValue = nil;
         changeDetails->indexes = nil;
@@ -683,7 +736,7 @@ void DSKeyValueDidChangeBySetMutation(DSKeyValueChangeDetails *resultChangeDetai
     }
     else {
         id newValue = nil;
-        if (options & DSKeyValueObservingOptionNew) {
+        if (options & NSKeyValueObservingOptionNew) {
             //loc_D116D
             newValue = [object valueForKeyPath:keyPath];
             if (!newValue) {
@@ -702,31 +755,6 @@ void DSKeyValueDidChangeBySetMutation(DSKeyValueChangeDetails *resultChangeDetai
     }
 }
 
-void DSKeyValueWillChangeBySetting(DSKeyValueChangeDetails *changeDetails, id object, NSString *keyPath, BOOL keyPathExactMatch, int options, NSDictionary *oldValueDict, BOOL *detailsRetained) {
-    id oldValue = nil;
-    if(options & DSKeyValueObservingOptionOld) {
-        if(oldValueDict) {
-            oldValue = [oldValueDict objectForKey:keyPath];
-        }
-        else {
-            oldValue = [object valueForKeyPath:keyPath];
-        }
-        
-        if(!oldValue) {
-            oldValue = [NSNull null];
-        }
-    }
-    
-    *detailsRetained = NO;
-    
-    changeDetails->kind = DSKeyValueChangeSetting;
-    changeDetails->oldValue = oldValue;
-    changeDetails->newValue = nil;
-    changeDetails->indexes = nil;
-    changeDetails->extraData = nil;
-    
-    LOG_KVO(@"object: %@, keyPath: %@, keyPathExactMatch:%@, options: 0X%02X, oldValueDict: %@, detailsRetained:%s, result changeDetails: %@",simple_desc(object), keyPath, bool_desc(keyPathExactMatch), options, oldValueDict, bool_desc(*detailsRetained), NSStringFromKeyValueChangeDetails(changeDetails));
-}
 
 void DSKeyValuePushPendingNotificationPerThread(id object, id keyOrKeys, DSKeyValueObservance *observance, DSKeyValueChangeDetails changeDetails , DSKeyValuePropertyForwardingValues forwardingValues, DSKVOPushInfoPerThread *pushInfo) {
     DSKVOPendingChangeNotificationPerThread *pendingNotification = NSAllocateScannedUncollectable(sizeof(DSKVOPendingChangeNotificationPerThread));
@@ -756,142 +784,6 @@ void DSKeyValuePushPendingNotificationPerThread(id object, id keyOrKeys, DSKeyVa
     
     LOG_KVO(@"object: %@, keyOrKeys: %@, observance:%@, changeDetails: %@, forwardingValues: %@, pushInfo:%@, pushed notification: %@, pending count after push: %zd",simple_desc(object), keyOrKeys, simple_desc(observance), NSStringFromKeyValueChangeDetails(&changeDetails), NSStringFromPropertyForwardingValues(&forwardingValues), NSStringFromPushInfoPerThread(pushInfo), NSStringFromPendingChangeNotificationPerThread(pendingNotification), CFArrayGetCount(pushInfo->pendingArray));
 }
-
-void DSKeyValuePushPendingNotificationLocal(id object, id keyOrKeys, DSKeyValueObservance *observance, DSKeyValueChangeDetails changeDetails , DSKeyValuePropertyForwardingValues forwardingValues, DSKVOPendingInfoLocalPush *pendingInfo) {
-    //count 已经增长到 capacity
-    if(pendingInfo->detailsCount == pendingInfo->capacity) {
-        //扩容两倍
-        pendingInfo->capacity = pendingInfo->detailsCount * 2;
-        //detailsBuff来自栈(局部变量)
-        if(pendingInfo->isStackBuff) {
-            //分配新的内存
-            void *detailsBuff = NSAllocateScannedUncollectable(pendingInfo->capacity * sizeof(DSKVOPendingInfoLocalDetail));
-            //将旧的detailsBuff拷贝到新buff
-            memmove(detailsBuff, pendingInfo->detailsBuff,pendingInfo->detailsCount * sizeof(DSKVOPendingInfoLocalDetail));
-            pendingInfo->detailsBuff = detailsBuff;
-            pendingInfo->isStackBuff = NO;
-        }
-        //detailsBuff来自堆
-        else {
-            //直接realloc内存
-            void *detailsBuff = NSReallocateScannedUncollectable(pendingInfo->detailsBuff,pendingInfo->capacity * sizeof(DSKVOPendingInfoLocalDetail));
-            pendingInfo->detailsBuff = detailsBuff;
-        }
-    }
-    
-    //新detail指针
-    DSKVOPendingInfoLocalDetail *detail = pendingInfo->detailsBuff + pendingInfo->detailsCount;
-    //插入新detail后， count加一
-    pendingInfo->detailsCount += 1;
-
-    detail->observance = observance;
-    detail->kind = changeDetails.kind;
-    detail->oldValue = changeDetails.oldValue;
-    detail->newValue = changeDetails.newValue;
-    detail->indexes = changeDetails.indexes;
-    detail->extraData = changeDetails.extraData;
-    detail->changingValue = forwardingValues.changingValue;
-    detail->affectingValuesMap = forwardingValues.affectingValuesMap;
-    detail->p5 = pendingInfo->p5;
-    detail->keyOrKeys = keyOrKeys;
-    
-    [changeDetails.oldValue retain];
-    [forwardingValues.changingValue retain];
-    [observance.observer retain];
-}
-
-BOOL DSKeyValuePopPendingNotificationLocal(id object,id keyOrKeys, DSKeyValueObservance **popedObservance, DSKeyValueChangeDetails *popedChangeDetails,DSKeyValuePropertyForwardingValues *popedForwardValues,id *popedKeyOrKeys, DSKVOPendingInfoLocalPop* pendingInfo) {
-    
-    [pendingInfo->observer release];
-    [pendingInfo->oldValue release];
-    [pendingInfo->forwardValues_p1 release];
-    
-    while(pendingInfo->detailsCount > 0) {
-        pendingInfo->detailsCount --;
-        
-        DSKVOPendingInfoLocalDetail *detail = pendingInfo->detailsBuff + pendingInfo->detailsCount;
-        
-        if (detail->observance) {
-            if(!_DSKeyValueCheckObservationInfoForPendingNotification(object, detail->observance, pendingInfo->observationInfo)) {
-                [detail->observance.observer release];
-                [detail->oldValue release];
-                [detail->changingValue release];
-                continue;
-            }
-        }
-        
-        *popedObservance = detail->observance;
-        
-        popedChangeDetails->kind = detail->kind;
-        popedChangeDetails->oldValue = detail->oldValue;
-        popedChangeDetails->newValue = detail->newValue;
-        popedChangeDetails->indexes = detail->indexes;
-        popedChangeDetails->extraData = detail->extraData;
-        
-        popedForwardValues->changingValue = detail->changingValue;
-        popedForwardValues->affectingValuesMap = detail->affectingValuesMap;
-        
-        *popedKeyOrKeys = detail->keyOrKeys;
-        
-        pendingInfo->observer = detail->observance.observer;
-        pendingInfo->oldValue = detail->oldValue;
-        pendingInfo->forwardValues_p1 = detail->changingValue;
-        
-        return YES;
-    }
-    
-    return NO;
-}
-
-
-BOOL _DSKeyValueCheckObservationInfoForPendingNotification(id object, DSKeyValueObservance *observance, DSKeyValueObservationInfo * observationInfo) {
-    os_lock_lock(&DSKeyValueObservationInfoSpinLock);
-    
-    DSKeyValueObservationInfo *info = nil;
-    if(observance.property.containerClass) {
-        info = observance.property.containerClass.cachedObservationInfoImplementation(object, @selector(observationInfo));
-    }
-    else {
-        info = [object observationInfo];
-    }
-    
-    if(!info) {
-        os_lock_unlock(&DSKeyValueObservationInfoSpinLock);
-        return NO;
-    }
-    
-    if(info == observationInfo) {
-        os_lock_unlock(&DSKeyValueObservationInfoSpinLock);
-        return YES;
-    }
-    
-    BOOL contains = _DSKeyValueObservationInfoContainsObservance(info, observance);
-    
-    os_lock_unlock(&DSKeyValueObservationInfoSpinLock);
-    
-    return contains;
-}
-
-void DSKeyValueDidChangeBySetting(DSKeyValueChangeDetails *resultChangeDetails, id object, NSString *keyPath, BOOL keyPathExactMatch, int options, DSKeyValueChangeDetails changeDetails) {
-    id newValue = nil;
-    if(options & DSKeyValueObservingOptionNew) {
-        newValue = [object valueForKeyPath:keyPath];
-        if(!newValue) {
-            newValue = [NSNull null];
-        }
-    }
-    else {
-        newValue = changeDetails.newValue;
-    }
-    resultChangeDetails->kind = changeDetails.kind;
-    resultChangeDetails->oldValue = changeDetails.oldValue;
-    resultChangeDetails->newValue = newValue;
-    resultChangeDetails->indexes = changeDetails.indexes;
-    resultChangeDetails->extraData = changeDetails.extraData;
-    
-    LOG_KVO(@"object: %@, keyPath: %@, keyPathExactMatch:%@, options: 0X%02X, passed changeDetails: %@,   result changeDetails: %@",simple_desc(object), keyPath, bool_desc(keyPathExactMatch), options, NSStringFromKeyValueChangeDetails(&changeDetails), NSStringFromKeyValueChangeDetails(resultChangeDetails));
-}
-
 
 BOOL DSKeyValuePopPendingNotificationPerThread(id object,id keyOrKeys, DSKeyValueObservance **popedObservance, DSKeyValueChangeDetails *popedChangeDetails,DSKeyValuePropertyForwardingValues *popedForwardValues,id *popedKeyOrKeys, DSKVOPopInfoPerThread* popInfo) {
     if(popInfo->lastPopedNotification) {
@@ -945,7 +837,93 @@ BOOL DSKeyValuePopPendingNotificationPerThread(id object,id keyOrKeys, DSKeyValu
     return NO;
 }
 
-void DSKeyValueWillChange(id object, id keyOrKeys, BOOL isASet, DSKeyValueObservationInfo *observationInfo, DSKeyValueWillChangeByCallback willChangeByCallback, void *changeInfo, DSKeyValuePushPendingNotificationCallback pushPendingNotificationCallback, void *pushInfo, DSKeyValueObservance *observance) {
+void DSKeyValuePushPendingNotificationLocal(id object, id keyOrKeys, DSKeyValueObservance *observance, DSKeyValueChangeDetails changeDetails , DSKeyValuePropertyForwardingValues forwardingValues, DSKVOPushInfoLocal *pushInfo) {
+    //count 已经增长到 capacity
+    if(pushInfo->notificationCount == pushInfo->capacity) {
+        //扩容两倍
+        pushInfo->capacity = pushInfo->notificationCount * 2;
+        //notifications来自栈
+        if(pushInfo->notificationsInStack) {
+            //分配新的内存
+            DSKVOPendingChangeNotificationLocal *notifications = NSAllocateScannedUncollectable(pushInfo->capacity * sizeof(DSKVOPendingChangeNotificationLocal));
+            //将旧的notifications拷贝到新notifications
+            memmove(notifications, pushInfo->notifications,pushInfo->notificationCount * sizeof(DSKVOPendingChangeNotificationLocal));
+            pushInfo->notifications = notifications;
+            pushInfo->notificationsInStack = NO;
+        }
+        //notifications来自堆
+        else {
+            //直接realloc内存
+            DSKVOPendingChangeNotificationLocal *notifications = NSReallocateScannedUncollectable(pushInfo->notifications,pushInfo->capacity * sizeof(DSKVOPendingChangeNotificationLocal));
+            pushInfo->notifications = notifications;
+        }
+    }
+    
+    //新最后一个可用的notification指针
+    DSKVOPendingChangeNotificationLocal *notification = pushInfo->notifications + pushInfo->notificationCount;
+    //插入新notification后， count加一
+    pushInfo->notificationCount += 1;
+
+    notification->observance = observance;
+    notification->kind = changeDetails.kind;
+    notification->oldValue = changeDetails.oldValue;
+    notification->newValue = changeDetails.newValue;
+    notification->indexes = changeDetails.indexes;
+    notification->extraData = changeDetails.extraData;
+    notification->changingValue = forwardingValues.changingValue;
+    notification->affectingValuesMap = forwardingValues.affectingValuesMap;
+    notification->unknow_1 = pushInfo->unknow_1;
+    notification->keyOrKeys = keyOrKeys;
+    
+    [changeDetails.oldValue retain];
+    [forwardingValues.changingValue retain];
+    [observance.observer retain];
+}
+
+BOOL DSKeyValuePopPendingNotificationLocal(id object,id keyOrKeys, DSKeyValueObservance **popedObservance, DSKeyValueChangeDetails *popedChangeDetails,DSKeyValuePropertyForwardingValues *popedForwardValues,id *popedKeyOrKeys, DSKVOPopInfoLocal* popInfo) {
+    [popInfo->observer release];
+    [popInfo->oldValue release];
+    [popInfo->lastChangingValue release];
+    
+    while(popInfo->notificationCount > 0) {
+        popInfo->notificationCount --;
+        
+        DSKVOPendingChangeNotificationLocal *notification = popInfo->notifications + popInfo->notificationCount;
+        
+        if (notification->observance) {
+            if(!_DSKeyValueCheckObservationInfoForPendingNotification(object, notification->observance, popInfo->observationInfo)) {
+                [notification->observance.observer release];
+                [notification->oldValue release];
+                [notification->changingValue release];
+                continue;
+            }
+        }
+        
+        *popedObservance = notification->observance;
+        
+        popedChangeDetails->kind = notification->kind;
+        popedChangeDetails->oldValue = notification->oldValue;
+        popedChangeDetails->newValue = notification->newValue;
+        popedChangeDetails->indexes = notification->indexes;
+        popedChangeDetails->extraData = notification->extraData;
+        
+        popedForwardValues->changingValue = notification->changingValue;
+        popedForwardValues->affectingValuesMap = notification->affectingValuesMap;
+        
+        *popedKeyOrKeys = notification->keyOrKeys;
+        
+        popInfo->observer = notification->observance.observer;
+        popInfo->oldValue = notification->oldValue;
+        popInfo->lastChangingValue = notification->changingValue;
+        
+        return YES;
+    }
+    
+    return NO;
+}
+
+
+void DSKeyValueWillChange(id object, id keyOrKeys, BOOL isASet, DSKeyValueObservationInfo *observationInfo, DSKVOWillChangeDetailSetupFunc willChangeDetailSetupFunc, void *changeInfo, DSKVOWillChangeNotificationPushFunc willChangeNotificationPushFunc, void *pushInfo, DSKeyValueObservance *observance) {
     NSUInteger observanceCount = _DSKeyValueObservationInfoGetObservanceCount(observationInfo);
     DSKeyValueObservance *observanceBuff[observanceCount];
     
@@ -973,11 +951,11 @@ void DSKeyValueWillChange(id object, id keyOrKeys, BOOL isASet, DSKeyValueObserv
                     BOOL detailsRetained;
                     DSKeyValueChangeDictionary *changeDictionary = nil;
                     
-                    willChangeByCallback(&changeDetails, object, affectedKeyPath,keyPathExactMatch,eachObservance.options, changeInfo, &detailsRetained);
+                    willChangeDetailSetupFunc(&changeDetails, object, affectedKeyPath,keyPathExactMatch,eachObservance.options, changeInfo, &detailsRetained);
                     
-                    pushPendingNotificationCallback(object, keyOrKeys, eachObservance, changeDetails , forwardingValues, pushInfo);
+                    willChangeNotificationPushFunc(object, keyOrKeys, eachObservance, changeDetails , forwardingValues, pushInfo);
                     
-                    if(eachObservance.options & DSKeyValueObservingOptionPrior) {
+                    if(eachObservance.options & NSKeyValueObservingOptionPrior) {
                         DSKeyValueNotifyObserver(eachObservance.observer, affectedKeyPath,  object, eachObservance.context, eachObservance.originalObservable, YES,changeDetails, &changeDictionary);
                     }
                     
@@ -995,7 +973,7 @@ void DSKeyValueWillChange(id object, id keyOrKeys, BOOL isASet, DSKeyValueObserv
     }
 }
 
-void DSKeyValueDidChange(id object, id keyOrKeys, BOOL isASet,DSKeyValueDidChangeByCallback didChangeByCallback, DSKeyValuePopPendingNotificationCallback popPendingNotificationCallback, void *popInfo) {
+void DSKeyValueDidChange(id object, id keyOrKeys, BOOL isASet,DSKVODidChangeDetailSetupFunc didChangeDetailSetupFunc, DSKVODidChangeNotificationPopFunc didChangeNotificationPopFunc, void *popInfo) {
     LOG_KVO(@"object: %@, keyOrKeys: %@, isASet: %@, popInfo: %p", simple_desc(object), keyOrKeys, bool_desc(isASet), popInfo);
     DSKeyValueObservance *popedObservance = nil;
     DSKeyValueChangeDetails popedChangeDetails = {0};
@@ -1003,7 +981,7 @@ void DSKeyValueDidChange(id object, id keyOrKeys, BOOL isASet,DSKeyValueDidChang
     id popedKeyOrKeys = nil;
     DSKeyValueChangeDictionary *changeDictionary = nil;
     
-    while(popPendingNotificationCallback(object, keyOrKeys, &popedObservance, &popedChangeDetails, &popedForwardValues, &popedKeyOrKeys, popInfo)) {
+    while(didChangeNotificationPopFunc(object, keyOrKeys, &popedObservance, &popedChangeDetails, &popedForwardValues, &popedKeyOrKeys, popInfo)) {
         [popedObservance.property object:object withObservance:popedObservance didChangeValueForKeyOrKeys:popedKeyOrKeys recurse:YES forwardingValues:popedForwardValues];
         BOOL exactMatch = NO;
         if(!isASet) {
@@ -1012,7 +990,7 @@ void DSKeyValueDidChange(id object, id keyOrKeys, BOOL isASet,DSKeyValueDidChang
         
         DSKeyValueChangeDetails resultDetails = {0};
         
-        didChangeByCallback(&resultDetails, object, popedObservance.property.keyPath, exactMatch, popedObservance.options, popedChangeDetails);
+        didChangeDetailSetupFunc(&resultDetails, object, popedObservance.property.keyPath, exactMatch, popedObservance.options, popedChangeDetails);
         
         popedChangeDetails = resultDetails;
         
@@ -1022,4 +1000,26 @@ void DSKeyValueDidChange(id object, id keyOrKeys, BOOL isASet,DSKeyValueDidChang
     [changeDictionary release];
 }
 
+void DSKVONotify(id observer, NSString *keyPath, id object, NSDictionary *changeDictionary, void *context) {
+    DSKeyValueObservingAssertRegistrationLockNotHeld();
+    LOG_KVO("value for keyPath: %@ of object: %@ changed, notify observer: %@, with changeDictionary: %@, context: %p",keyPath, simple_desc(object), simple_desc(observer), changeDictionary, context);
+    [observer observeValueForKeyPath:keyPath ofObject:object change:changeDictionary context:context];
+}
+
+void DSKeyValueNotifyObserver(id observer,NSString * keyPath, id object, void *context, id originalObservable, BOOL isPriorNotification, DSKeyValueChangeDetails changeDetails, DSKeyValueChangeDictionary **changeDictionary) {
+    if(*changeDictionary) {
+        [*changeDictionary setDetailsNoCopy:changeDetails originalObservable:originalObservable];
+    }
+    else {
+        *changeDictionary =  [[DSKeyValueChangeDictionary alloc] initWithDetailsNoCopy:changeDetails originalObservable:originalObservable isPriorNotification:isPriorNotification];
+    }
+    
+    NSUInteger retainCountBefore = [*changeDictionary retainCount];
+    
+    DSKVONotify(observer, keyPath, object, *changeDictionary, context);
+    
+    if(retainCountBefore != (NSUInteger)INTMAX_MAX && retainCountBefore != [*changeDictionary retainCount]) {
+        [*changeDictionary retainObjects];
+    }
+}
 

@@ -14,7 +14,7 @@
 - (id)initWithContainerClassID:(id)containerClassID key:(NSString *)key containerIsa:(Class)containerIsa {
     void *arguments[3] = {0};
     arguments[0] = key;
-    return [super initWithContainerClassID:containerClassID key:key implementation:method_getImplementation(class_getInstanceMethod(containerIsa,@selector(d_valueForUndefinedKey:))) selector:@selector(valueForUndefinedKey:) extraArguments:arguments count:1];
+    return [super initWithContainerClassID:containerClassID key:key implementation:method_getImplementation(class_getInstanceMethod(containerIsa,@selector(d_valueForUndefinedKey:))) selector:@selector(d_valueForUndefinedKey:) extraArguments:arguments count:1];
 }
 
 @end

@@ -53,77 +53,77 @@
 
 - (void)addObject:(id)object {
     NSSet *objSet = [[NSSet alloc] initWithObjects:&object count:1];
-    [self.container d_willChangeValueForKey:self.key withSetMutation:DSKeyValueUnionSetMutation usingObjects:objSet];
+    [self.container d_willChangeValueForKey:self.key withSetMutation:NSKeyValueUnionSetMutation usingObjects:objSet];
     
     [_mutableSet addObject:object];
     
-    [self.container d_didChangeValueForKey:self.key withSetMutation:DSKeyValueUnionSetMutation usingObjects:objSet];
+    [self.container d_didChangeValueForKey:self.key withSetMutation:NSKeyValueUnionSetMutation usingObjects:objSet];
     
     [objSet release];
 }
 
 - (void)addObjectsFromArray:(NSArray *)array {
     NSSet *objSet = [[NSSet alloc] initWithArray:array];
-    [self.container d_willChangeValueForKey:self.key withSetMutation:DSKeyValueUnionSetMutation usingObjects:objSet];
+    [self.container d_willChangeValueForKey:self.key withSetMutation:NSKeyValueUnionSetMutation usingObjects:objSet];
     
     [_mutableSet addObjectsFromArray:array];
     
-    [self.container d_didChangeValueForKey:self.key withSetMutation:DSKeyValueUnionSetMutation usingObjects:objSet];
+    [self.container d_didChangeValueForKey:self.key withSetMutation:NSKeyValueUnionSetMutation usingObjects:objSet];
     [objSet release];
 }
 
 
 - (void)intersectSet:(NSSet *)otherSet {
-    [self.container d_willChangeValueForKey:self.key withSetMutation:DSKeyValueIntersectSetMutation usingObjects:otherSet];
+    [self.container d_willChangeValueForKey:self.key withSetMutation:NSKeyValueIntersectSetMutation usingObjects:otherSet];
     
     [_mutableSet intersectSet:otherSet];
     
-    [self.container d_didChangeValueForKey:self.key withSetMutation:DSKeyValueIntersectSetMutation usingObjects:otherSet];
+    [self.container d_didChangeValueForKey:self.key withSetMutation:NSKeyValueIntersectSetMutation usingObjects:otherSet];
 }
 
 - (void)minusSet:(NSSet *)otherSet {
-    [self.container d_willChangeValueForKey:self.key withSetMutation:DSKeyValueMinusSetMutation usingObjects:otherSet];
+    [self.container d_willChangeValueForKey:self.key withSetMutation:NSKeyValueMinusSetMutation usingObjects:otherSet];
     
     [_mutableSet minusSet:otherSet];
     
-    [self.container d_didChangeValueForKey:self.key withSetMutation:DSKeyValueMinusSetMutation usingObjects:otherSet];
+    [self.container d_didChangeValueForKey:self.key withSetMutation:NSKeyValueMinusSetMutation usingObjects:otherSet];
 }
 
 - (void)removeAllObjects {
     NSSet *objSet = [NSSet set];
-    [self.container d_willChangeValueForKey:self.key withSetMutation:DSKeyValueIntersectSetMutation usingObjects:objSet];
+    [self.container d_willChangeValueForKey:self.key withSetMutation:NSKeyValueIntersectSetMutation usingObjects:objSet];
     
     [_mutableSet removeAllObjects];
     
-    [self.container d_didChangeValueForKey:self.key withSetMutation:DSKeyValueIntersectSetMutation usingObjects:objSet];
+    [self.container d_didChangeValueForKey:self.key withSetMutation:NSKeyValueIntersectSetMutation usingObjects:objSet];
     
 }
 
 - (void)removeObject:(id)object {
     NSSet *objSet = [[NSSet alloc] initWithObjects:&object count:1];
-    [self.container d_willChangeValueForKey:self.key withSetMutation:DSKeyValueMinusSetMutation usingObjects:objSet];
+    [self.container d_willChangeValueForKey:self.key withSetMutation:NSKeyValueMinusSetMutation usingObjects:objSet];
     
     [_mutableSet removeObject:object];
     
-    [self.container d_didChangeValueForKey:self.key withSetMutation:DSKeyValueMinusSetMutation usingObjects:objSet];
+    [self.container d_didChangeValueForKey:self.key withSetMutation:NSKeyValueMinusSetMutation usingObjects:objSet];
     [objSet release];
 
 }
 
 - (void)setSet:(NSSet *)otherSet {
-    [self.container d_willChangeValueForKey:self.key withSetMutation:DSKeyValueSetSetMutation usingObjects:otherSet];
+    [self.container d_willChangeValueForKey:self.key withSetMutation:NSKeyValueSetSetMutation usingObjects:otherSet];
     
     [_mutableSet setSet:otherSet];
     
-    [self.container d_didChangeValueForKey:self.key withSetMutation:DSKeyValueSetSetMutation usingObjects:otherSet];
+    [self.container d_didChangeValueForKey:self.key withSetMutation:NSKeyValueSetSetMutation usingObjects:otherSet];
 }
 
 - (void)unionSet:(NSSet *)otherSet {
-    [self.container d_willChangeValueForKey:self.key withSetMutation:DSKeyValueUnionSetMutation usingObjects:otherSet];
+    [self.container d_willChangeValueForKey:self.key withSetMutation:NSKeyValueUnionSetMutation usingObjects:otherSet];
     
     [_mutableSet unionSet:otherSet];
     
-    [self.container d_didChangeValueForKey:self.key withSetMutation:DSKeyValueUnionSetMutation usingObjects:otherSet];
+    [self.container d_didChangeValueForKey:self.key withSetMutation:NSKeyValueUnionSetMutation usingObjects:otherSet];
 }
 
 @end

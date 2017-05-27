@@ -18,15 +18,11 @@
 #import "NSObject+DSKeyValueObserverNotification.h"
 
 pthread_mutex_t _DSKeyValueObserverRegistrationLock = PTHREAD_RECURSIVE_MUTEX_INITIALIZER;
+
 pthread_t _DSKeyValueObserverRegistrationLockOwner = NULL;
+
 BOOL _DSKeyValueObserverRegistrationEnableLockingAssertions;
 
-NSString *const DSKeyValueChangeOriginalObservableKey = @"originalObservable";
-NSString *const DSKeyValueChangeKindKey = @"kind";
-NSString *const DSKeyValueChangeNewKey = @"new";
-NSString *const DSKeyValueChangeOldKey = @"old";
-NSString *const DSKeyValueChangeIndexesKey = @"indexes";
-NSString *const DSKeyValueChangeNotificationIsPriorKey = @"notificationIsPrior";
 
 void DSKeyValueObserverRegistrationLockUnlock() {
     _DSKeyValueObserverRegistrationLockOwner = NULL;
@@ -46,12 +42,12 @@ void DSKeyValueObservingAssertRegistrationLockNotHeld() {
 
 @implementation NSObject (DSKeyValueObserverRegistration)
 
-- (void)d_addObserver:(NSObject *)observer forKeyPath:(NSString *)keyPath options:(DSKeyValueObservingOptions)options context:(void *)context {
+- (void)d_addObserver:(NSObject *)observer forKeyPath:(NSString *)keyPath options:(NSKeyValueObservingOptions)options context:(void *)context {
     LOG_KVO(@"object:%@, add observer:%@, for keyPath: %@, options:0X%02X, context: %p", simple_desc(self), simple_desc(observer), keyPath, (uint8_t)options, context);
     pthread_mutex_lock(&_DSKeyValueObserverRegistrationLock);
     _DSKeyValueObserverRegistrationLockOwner = pthread_self();
     
-    DSKeyValueProperty * property = DSKeyValuePropertyForIsaAndKeyPath(self.class,keyPath);
+    DSKeyValueProperty * property = DSKeyValuePropertyForIsaAndKeyPath(object_getClass(self),keyPath);
     
     [self _d_addObserver:observer forProperty:property options:options context:context];
     
@@ -60,13 +56,13 @@ void DSKeyValueObservingAssertRegistrationLockNotHeld() {
 
 - (void)_d_addObserver:(id)observer forProperty:(DSKeyValueProperty *)property options:(int)options context:(void *)context {
     LOG_KVO(@"object:%@, add observer:%@, for property:%@, options:0X%02X, context: %p",simple_desc(self), simple_desc(observer), simple_desc(property), (uint8_t)options, context);
-    if(options & DSKeyValueObservingOptionInitial) {
+    if(options & NSKeyValueObservingOptionInitial) {
         NSString *keyPath = [property keyPath];
         _DSKeyValueObserverRegistrationLockOwner = NULL;
         pthread_mutex_unlock(&_DSKeyValueObserverRegistrationLock);
         
         id newValue = nil;
-        if (options & DSKeyValueObservingOptionNew) {
+        if (options & NSKeyValueObservingOptionNew) {
             newValue = [self valueForKeyPath:keyPath];
             if (!newValue) {
                 newValue = [NSNull null];
@@ -75,13 +71,13 @@ void DSKeyValueObservingAssertRegistrationLockNotHeld() {
         
         DSKeyValueChangeDictionary *changeDictionary = nil;
         DSKeyValueChangeDetails changeDetails = {0};
-        changeDetails.kind = DSKeyValueChangeSetting;
+        changeDetails.kind = NSKeyValueChangeSetting;
         changeDetails.oldValue = nil;
         changeDetails.newValue = newValue;
         changeDetails.indexes = nil;
         changeDetails.extraData = nil;
         
-        LOG_KVO(@"options contains DSKeyValueObservingOptionInitial， will notify observer, changeDetails: %@", NSStringFromKeyValueChangeDetails(&changeDetails));
+        LOG_KVO(@"options contains NSKeyValueObservingOptionInitial， will notify observer, changeDetails: %@", NSStringFromKeyValueChangeDetails(&changeDetails));
         DSKeyValueNotifyObserver(observer,keyPath, self, context, nil, NO,changeDetails, &changeDictionary);
         
         [changeDictionary release];

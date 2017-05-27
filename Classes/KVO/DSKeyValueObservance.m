@@ -25,14 +25,14 @@
 }
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
-    id originalObservable = change[DSKeyValueChangeOriginalObservableKey];
+    id originalObservable = change[NSKeyValueChangeOriginalObservableKey];
     LOG_KVO(@"observance: %@, _observer: %@, _property.keyPath: %@, receive kvo notify for keyPath: %@, of object: %@, change, context:%@, originalObservable: %@", simple_desc(self), simple_desc(_observer), _property.keyPath, keyPath, simple_desc(object), change, context ? simple_desc((id)context) : @"null", simple_desc(originalObservable));
     
     if(originalObservable) {
 		if (context) {
 			BOOL isASet = NO;
 			id dependentValueKeyOrKeys = [(DSKeyValueProperty *)context dependentValueKeyOrKeysIsASet: &isASet];
-            BOOL isPrior = [change[DSKeyValueChangeNotificationIsPriorKey] boolValue];
+            BOOL isPrior = [change[NSKeyValueChangeNotificationIsPriorKey] boolValue];
 			
             if(isPrior) {
 				DSKeyValueWillChangeForObservance(originalObservable, dependentValueKeyOrKeys, isASet, self);
@@ -49,10 +49,10 @@
 			else {
                 NSMutableDictionary *change_copy = [change mutableCopy];
                 if (_originalObservable) {
-                    change_copy[DSKeyValueChangeOriginalObservableKey] = _originalObservable;
+                    change_copy[NSKeyValueChangeOriginalObservableKey] = _originalObservable;
                 }
                 else {
-                    [change_copy removeObjectForKey:DSKeyValueChangeOriginalObservableKey];
+                    [change_copy removeObjectForKey:NSKeyValueChangeOriginalObservableKey];
                 }
                 DSKVONotify(_observer, [_property keyPath], originalObservable, change_copy, _context);
 			}
@@ -84,9 +84,9 @@
 }
 
 - (NSString *)description {
-	NSString *option_if_new = (_options & DSKeyValueObservingOptionNew ? @"YES": @"NO");
-	NSString *option_if_old = (_options & DSKeyValueObservingOptionOld ? @"YES": @"NO");
-	NSString *option_if_prior = (_options & DSKeyValueObservingOptionPrior ? @"YES" : @"NO");
+	NSString *option_if_new = (_options & NSKeyValueObservingOptionNew ? @"YES": @"NO");
+	NSString *option_if_old = (_options & NSKeyValueObservingOptionOld ? @"YES": @"NO");
+	NSString *option_if_prior = (_options & NSKeyValueObservingOptionPrior ? @"YES" : @"NO");
 	return [NSString stringWithFormat:@"<%@ %p: Observer: %p, Key path: %@, Options: <New: %@, Old: %@, Prior: %@> Context: %p, Property: %p, originalObservable: %@>",
 		self.class, self, _observer, _property.keyPath, option_if_new, option_if_old, option_if_prior, _context, _property, _originalObservable];
 }

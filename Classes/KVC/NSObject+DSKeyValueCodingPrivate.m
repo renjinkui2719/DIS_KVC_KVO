@@ -50,6 +50,7 @@ CFMutableSetRef DSKeyValueCachedSetters = NULL;
 CFMutableSetRef DSKeyValueCachedMutableArrayGetters = NULL;
 CFMutableSetRef DSKeyValueCachedMutableOrderedSetGetters = NULL;
 CFMutableSetRef DSKeyValueCachedMutableSetGetters = NULL;
+
 CFMutableSetRef DSKeyValueCachedPrimitiveSetters = NULL;
 CFMutableSetRef DSKeyValueCachedPrimitiveGetters = NULL;
 
@@ -385,6 +386,8 @@ void _DSKeyValueInvalidateAllCachesForContainerAndKey(Class containerClassID, NS
     OSSpinLockUnlock(&DSKeyValueCachedAccessorSpinLock);
 }
 
+
+
 @implementation NSObject (DSKeyValueCodingPrivate)
 
 + (DSKeyValueGetter *)_d_createValueGetterWithContainerClassID:(id)containerClassID key:(NSString *)key {
@@ -507,17 +510,19 @@ void _DSKeyValueInvalidateAllCachesForContainerAndKey(Class containerClassID, NS
 
 
 + (DSKeyValueSetter *)_d_createValueSetterWithContainerClassID:(id)containerClassID key:(NSString *)key {
-    
     DSKeyValueSetter *setter = nil;
     
     NSUInteger key_cstr_len = [key lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
+    
     char key_cstr_upfirst[key_cstr_len + 1];
     [key getCString:key_cstr_upfirst maxLength:key_cstr_len + 1 encoding:NSUTF8StringEncoding];
     if (key.length) {
         key_cstr_upfirst[0] = toupper(key_cstr_upfirst[0]);
     }
+    
     char key_cstr[key_cstr_len + 1];
     [key getCString:key_cstr maxLength:key_cstr_len + 1 encoding:NSUTF8StringEncoding];
+    
     Method method = NULL;
     if ((method = DSKeyValueMethodForPattern(self, "set%s:", key_cstr_upfirst)) ||
         (method = DSKeyValueMethodForPattern(self, "_set%s:", key_cstr_upfirst)) ||
@@ -610,14 +615,14 @@ void _DSKeyValueInvalidateAllCachesForContainerAndKey(Class containerClassID, NS
         finder.key = key;
         finder.hashValue = hashValue;
         
-        DSKeyValueGetter *getter = CFSetGetValue(DSKeyValueCachedMutableArrayGetters, finder);
-        if(!getter) {
-            getter = [originalClass _d_createMutableArrayValueGetterWithContainerClassID:originalClass key:key];
-            CFSetAddValue(DSKeyValueCachedMutableArrayGetters, getter);
-            [getter release];
+        DSKeyValueGetter *mutableArrayGetter = CFSetGetValue(DSKeyValueCachedMutableArrayGetters, finder);
+        if(!mutableArrayGetter) {
+            mutableArrayGetter = [originalClass _d_createMutableArrayValueGetterWithContainerClassID:originalClass key:key];
+            CFSetAddValue(DSKeyValueCachedMutableArrayGetters, mutableArrayGetter);
+            [mutableArrayGetter release];
         }
         
-        return [[DSKeyValueNotifyingMutableCollectionGetter alloc] initWithContainerClassID:containerClassID key:key mutableCollectionGetter:getter proxyClass:DSKeyValueNotifyingMutableArray.self];
+        return [[DSKeyValueNotifyingMutableCollectionGetter alloc] initWithContainerClassID:containerClassID key:key mutableCollectionGetter:mutableArrayGetter proxyClass:DSKeyValueNotifyingMutableArray.self];
     }
     else {
         NSUInteger keyLength = [key lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
@@ -672,12 +677,12 @@ void _DSKeyValueInvalidateAllCachesForContainerAndKey(Class containerClassID, NS
                 DSKeyValueCachedSetters = CFSetCreateMutable(NULL,0,&callbacks);
             }
             DSKeyValueSetter *finder = [DSKeyValueSetter new];
-            finder.containerClassID = self.class;
+            finder.containerClassID = self;
             finder.key = key;
             finder.hashValue = CFHash((CFTypeRef)key) ^ (NSUInteger)(self);
             DSKeyValueSetter *baseSetter =  CFSetGetValue(DSKeyValueCachedSetters, finder);
             if (!baseSetter) {
-                baseSetter = [self.class _d_createValueSetterWithContainerClassID:self.class key:key];
+                baseSetter = [self _d_createValueSetterWithContainerClassID:self key:key];
                 CFSetAddValue(DSKeyValueCachedSetters, baseSetter);
                 [baseSetter release];
             }
@@ -737,13 +742,13 @@ void _DSKeyValueInvalidateAllCachesForContainerAndKey(Class containerClassID, NS
         finder.key = key;
         finder.hashValue = hashValue;
         
-        DSKeyValueGetter *getter = CFSetGetValue(DSKeyValueCachedMutableSetGetters, finder);
-        if(!getter) {
-            getter = [originClass _d_createMutableSetValueGetterWithContainerClassID:originClass key:key];
-            CFSetAddValue(DSKeyValueCachedMutableSetGetters, getter);
-            [getter release];
+        DSKeyValueGetter *mutableSetGetter = CFSetGetValue(DSKeyValueCachedMutableSetGetters, finder);
+        if(!mutableSetGetter) {
+            mutableSetGetter = [originClass _d_createMutableSetValueGetterWithContainerClassID:originClass key:key];
+            CFSetAddValue(DSKeyValueCachedMutableSetGetters, mutableSetGetter);
+            [mutableSetGetter release];
         }
-        return [[DSKeyValueNotifyingMutableCollectionGetter alloc] initWithContainerClassID:containerClassID key:key mutableCollectionGetter:getter proxyClass:DSKeyValueNotifyingMutableSet.self];
+        return [[DSKeyValueNotifyingMutableCollectionGetter alloc] initWithContainerClassID:containerClassID key:key mutableCollectionGetter:mutableSetGetter proxyClass:DSKeyValueNotifyingMutableSet.self];
     }
     else {
         //loc_203A1
@@ -880,13 +885,13 @@ void _DSKeyValueInvalidateAllCachesForContainerAndKey(Class containerClassID, NS
         finder.key = key;
         finder.hashValue = hashValue;
         
-        DSKeyValueGetter *getter = CFSetGetValue(DSKeyValueCachedMutableOrderedSetGetters, finder);
-        if(!getter) {
-            getter = [originClass _d_createMutableOrderedValueGetterWithContainerClassID:originClass key:key];
-            CFSetAddValue(DSKeyValueCachedMutableOrderedSetGetters, getter);
-            [getter release];
+        DSKeyValueGetter *mutableOrderedSetGetter = CFSetGetValue(DSKeyValueCachedMutableOrderedSetGetters, finder);
+        if(!mutableOrderedSetGetter) {
+            mutableOrderedSetGetter = [originClass _d_createMutableOrderedSetValueGetterWithContainerClassID:originClass key:key];
+            CFSetAddValue(DSKeyValueCachedMutableOrderedSetGetters, mutableOrderedSetGetter);
+            [mutableOrderedSetGetter release];
         }
-        return [[DSKeyValueNotifyingMutableCollectionGetter alloc] initWithContainerClassID:containerClassID key:key mutableCollectionGetter:getter proxyClass:DSKeyValueNotifyingMutableOrderedSet.self];
+        return [[DSKeyValueNotifyingMutableCollectionGetter alloc] initWithContainerClassID:containerClassID key:key mutableCollectionGetter:mutableOrderedSetGetter proxyClass:DSKeyValueNotifyingMutableOrderedSet.self];
     }
     else {
         //loc_203A1

@@ -12,8 +12,10 @@
 
 @class DSKeyValueObservationInfo;
 
+extern NSString * const NSKeyValueChangeOriginalObservableKey;
+
 typedef struct {
-    DSKeyValueChange kind;//0
+    NSKeyValueChange kind;//0
     id oldValue;//4
     id newValue;//8
     NSIndexSet *indexes;//c
@@ -39,12 +41,12 @@ static inline NSString * NSStringFromKeyValueChangeDetails(const DSKeyValueChang
     }
     return [NSString stringWithFormat:
             BRACE(
-                LINE(@"kind: 0X%02X,")\
-                LINE(@"oldValue: %@,")\
-                LINE(@"newValue: %@,")\
-                LINE(@"indexes: %@,")\
-                LINE(@"extraData: %@")\
-            ),
+                  LINE(@"kind: 0X%02X,")\
+                  LINE(@"oldValue: %@,")\
+                  LINE(@"newValue: %@,")\
+                  LINE(@"indexes: %@,")\
+                  LINE(@"extraData: %@")\
+                  ),
             (uint8_t)details->kind,
             simple_desc(details->oldValue),
             simple_desc(details->newValue),

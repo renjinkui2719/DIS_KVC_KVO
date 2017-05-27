@@ -43,11 +43,12 @@ typedef struct {
 #define NSKeyValueObservingKeyPathTSDKey 0x20
 #define NSKeyValueObservingObjectTSDKey 0x1F
 
-#define DSKeyValueObservingTSDKey (NSKeyValueObservingTSDKey +1)
-#define DSKeyValueObservingKeyPathTSDKey (NSKeyValueObservingKeyPathTSDKey +1)
-#define DSKeyValueObservingObjectTSDKey (NSKeyValueObservingObjectTSDKey +1)
+#define DSKeyValueObservingTSDKey (NSKeyValueObservingTSDKey + 1)
+#define DSKeyValueObservingKeyPathTSDKey (NSKeyValueObservingKeyPathTSDKey + 1)
+#define DSKeyValueObservingObjectTSDKey (NSKeyValueObservingObjectTSDKey + 1)
 
 void DSKeyValueObservingTSDDestroy(void *data);
+
 ImplicitObservanceAdditionInfo *DSKeyValueGetImplicitObservanceAdditionInfo();
 ImplicitObservanceRemovalInfo *DSKeyValueGetImplicitObservanceRemovalInfo();
 
@@ -57,9 +58,6 @@ const void *DSKVOPendingNotificationRetain(CFAllocatorRef allocator, const void 
 void DSKVOPendingNotificationRelease(CFAllocatorRef allocator, const void *value);
 
 
-extern dispatch_once_t isVMWare_onceToken;
-extern BOOL isVMWare_doWorkarounds;
-
 @interface NSObject (DSKeyValueObservingPrivate)
 
 - (void)_d_changeValueForKey:(NSString *)key usingBlock:(void (^)())block;
@@ -67,9 +65,5 @@ extern BOOL isVMWare_doWorkarounds;
 - (void)_d_changeValueForKeys:(NSString * *)keys count:(NSUInteger)count maybeOldValuesDict:(id)oldValuesDict usingBlock:(void (^)(void))block;
 - (id)_d_implicitObservationInfo;
 - (CFMutableArrayRef)_d_pendingChangeNotificationsArrayForKey:(NSString *)key create:(BOOL)create;
-- (void)_d_notifyObserversOfChangeFromValuesForKeys:(NSDictionary *)fromValueForKeys toValuesForKeys:(NSDictionary *)toValueForKeys;
-- (void)_d_didChangeValuesForKeys:(id)keys;
-- (void)_d_willChangeValuesForKeys:(id)keys;
-+ (BOOL)_d_shouldAddObservationForwardersForKey:(NSString *)key;
 
 @end

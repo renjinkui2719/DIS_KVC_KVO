@@ -6,17 +6,17 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            shouldBeEnabled = "Yes"
+            shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "../Classes/kvc_kvo_test_main.m"
-            timestampString = "517482100.984975"
+            filePath = "../Classes/KVO/DSKeyValueUnnestedProperty.m"
+            timestampString = "517544338.952478"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "346"
-            endingLineNumber = "346"
-            landmarkName = "kvc_kvo_test_main()"
-            landmarkType = "9">
+            startingLineNumber = "17"
+            endingLineNumber = "17"
+            landmarkName = "-_initWithContainerClass:key:propertiesBeingInitialized:"
+            landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -25,29 +25,13 @@
             shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "../Classes/kvc_kvo_test_main.m"
-            timestampString = "517482135.252034"
+            filePath = "../Classes/KVO/NSObject+DSKeyValueObserverNotification.m"
+            timestampString = "517569529.758391"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "320"
-            endingLineNumber = "320"
-            landmarkName = "kvc_kvo_test_main()"
-            landmarkType = "9">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "Yes"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "../Classes/KVO/DSKeyValueContainerClass.m"
-            timestampString = "517486677.903789"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "393"
-            endingLineNumber = "393"
-            landmarkName = "_DSKVONotifyingEnableForInfoAndKey()"
+            startingLineNumber = "1022"
+            endingLineNumber = "1022"
+            landmarkName = "DSKeyValueNotifyObserver()"
             landmarkType = "9">
          </BreakpointContent>
       </BreakpointProxy>

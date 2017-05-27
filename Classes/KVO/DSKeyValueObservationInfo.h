@@ -8,6 +8,7 @@
 
 
 #import <Foundation/Foundation.h>
+#import <libkern/OSAtomic.h>
 
 @class DSKeyValueObservance;
 @class DSKeyValueProperty;
@@ -36,6 +37,14 @@ struct ObservationInfoWatcher;
 @property (nonatomic, assign) NSUInteger removalObservanceIndex;
 @property (nonatomic, assign) NSUInteger cachedHash;
 @end
+
+extern OSSpinLock DSKeyValueObservationInfoCreationSpinLock;
+extern OSSpinLock DSKeyValueObservationInfoSpinLock;
+
+extern NSHashTable *DSKeyValueShareableObservationInfos;
+extern Class DSKeyValueShareableObservationInfoKeyIsa;
+extern NSHashTable *DSKeyValueShareableObservances;
+
 
 DSKeyValueObservationInfo *_DSKeyValueObservationInfoCreateByAdding(DSKeyValueObservationInfo *baseObservationInfo, id observer, DSKeyValueProperty *property, int options, void *context, id originalObservable,  BOOL *cacheHit, DSKeyValueObservance **addedObservance);
 

@@ -7,14 +7,26 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "DSKeyValueObserverCommon.h"
-#import "DSKeyValueChangeDictionary.h"
 #import "DSKeyValueProperty.h"
-#import "NSObject+DSKeyValueObserverRegistration.h"
-
+#import "DSKeyValueChangeDictionary.h"
+#import "DSKeyValueObserverCommon.h"
 
 @class DSKeyValueObservationInfo;
 @class DSKeyValueObservance;
+
+@interface NSObject (DSKeyValueObserverNotification)
+
+- (void)d_willChangeValueForKey:(NSString *)key ;
+- (void)d_didChangeValueForKey:(NSString *)key;
+
+- (void)d_willChange:(NSKeyValueChange)changeKind valuesAtIndexes:(NSIndexSet *)indexes forKey:(NSString *)key;
+- (void)d_didChange:(NSKeyValueChange)changeKind valuesAtIndexes:(NSIndexSet *)indexes forKey:(NSString *)key;
+
+- (void)d_willChangeValueForKey:(NSString *)key withSetMutation:(NSKeyValueSetMutationKind)mutationKind usingObjects:(NSSet *)objects;
+- (void)d_didChangeValueForKey:(NSString *)key withSetMutation:(NSKeyValueSetMutationKind)mutationKind usingObjects:(NSSet *)objects;
+
+@end
+
 
 typedef struct {
     //引用计数
@@ -26,7 +38,7 @@ typedef struct {
     id keyOrKeys;//8
     DSKeyValueObservationInfo *observationInfo;//c
     DSKeyValueObservance *observance;//10
-    DSKeyValueChange kind;//14
+    NSKeyValueChange kind;//14
     id oldValue;//18
     id newValue;//1c
     NSIndexSet *indexes;//20
@@ -35,26 +47,110 @@ typedef struct {
     NSMutableDictionary *affectingValuesMap;//2c
 }DSKVOPendingChangeNotificationPerThread;
 
+typedef struct {
+    CFMutableArrayRef pendingArray;//0
+    BOOL beginningOfChange;//4
+    DSKeyValueObservationInfo *observationInfo;//8
+}DSKVOPushInfoPerThread;
+
+typedef struct {
+    CFMutableArrayRef pendingArray;//0
+    NSUInteger pendingCount;//4
+    DSKVOPendingChangeNotificationPerThread * lastPopedNotification;//8
+    NSInteger lastPopdIndex;//c
+    DSKeyValueObservance * observance;//10
+}DSKVOPopInfoPerThread;
+
+typedef union {
+    struct {
+        NSKeyValueChange changeKind;
+        NSIndexSet *indexes;
+    };
+    struct {
+        NSKeyValueSetMutationKind mutationKind;
+        NSSet *objects;
+    };
+}DSKVOCollectionWillChangeInfo;
+
+typedef struct {
+    DSKeyValueObservance *observance;
+    NSKeyValueChange kind;
+    id oldValue;
+    id newValue;
+    NSIndexSet *indexes;
+    NSMutableData * extraData;
+    id changingValue;
+    NSMutableDictionary * affectingValuesMap;
+    //??以下字段无法推断命名及含义，并且在KVO中无作用
+    BOOL unknow_1;
+    NSString *keyOrKeys;
+}DSKVOPendingChangeNotificationLocal;
+
+typedef struct {
+    NSUInteger capacity;
+    BOOL notificationsInStack;
+    DSKVOPendingChangeNotificationLocal *notifications;
+    NSUInteger notificationCount;
+     //??以下字段无法推断命名及含义，并且在KVO中无作用
+    BOOL unknow_1;
+    id unknow_2;
+}DSKVOPushInfoLocal;
+
+typedef struct {
+    DSKVOPendingChangeNotificationLocal *notifications;
+    NSUInteger notificationCount;
+    id observer;
+    id oldValue;
+    id lastChangingValue;
+    DSKeyValueObservationInfo *observationInfo;
+}DSKVOPopInfoLocal;
+
+typedef void (*DSKVOWillChangeDetailSetupFunc)(DSKeyValueChangeDetails *, id, NSString *, BOOL, int, void *, BOOL *);
+typedef void (*DSKVOWillChangeNotificationPushFunc)(id, id, DSKeyValueObservance *, DSKeyValueChangeDetails, DSKeyValuePropertyForwardingValues, void *);
+
+typedef void (*DSKVODidChangeDetailSetupFunc)(DSKeyValueChangeDetails *, id , NSString *, BOOL , int , DSKeyValueChangeDetails);
+typedef BOOL (*DSKVODidChangeNotificationPopFunc)(id,id,DSKeyValueObservance **, DSKeyValueChangeDetails *, DSKeyValuePropertyForwardingValues *, id *, void *);
+
+void DSKeyValueWillChange(id object, id keyOrKeys, BOOL isASet, DSKeyValueObservationInfo *observationInfo, DSKVOWillChangeDetailSetupFunc willChangeDetailSetupFunc, void *changeInfo, DSKVOWillChangeNotificationPushFunc willChangeNotificationPushFunc, void *pushInfo, DSKeyValueObservance *observance);
+void DSKeyValueDidChange(id object, id keyOrKeys, BOOL isASet,DSKVODidChangeDetailSetupFunc didChangeDetailSetupFunc, DSKVODidChangeNotificationPopFunc didChangeNotificationPopFunc, void *popInfo);
+
+void DSKeyValueNotifyObserver(id observer,NSString * keyPath, id object, void *context, id originalObservable, BOOL isPriorNotification, DSKeyValueChangeDetails changeDetails, DSKeyValueChangeDictionary **pChange);
+void DSKVONotify(id observer, NSString *keyPath, id object, NSDictionary *changeDictionary, void *context);
+
+void DSKeyValueWillChangeForObservance(id object, id keyOrKeys, BOOL keyOrKeysIsASet, DSKeyValueObservance * observance);
+void DSKeyValueDidChangeForObservance(id object, id keyOrKeys, BOOL keyOrKeysIsASet, DSKeyValueObservance * observance);
+
+void DSKeyValueWillChangeBySetting(DSKeyValueChangeDetails *changeDetails, id object, NSString *keyPath, BOOL keyPathExactMatch, int options, NSDictionary *oldValueDict, BOOL *detailsRetained);
+void DSKeyValueDidChangeBySetting(DSKeyValueChangeDetails *resultChangeDetails, id object, NSString *keyPath, BOOL keyPathExactMatch, int options, DSKeyValueChangeDetails changeDetails);
+void DSKeyValueWillChangeByOrderedToManyMutation(DSKeyValueChangeDetails *changeDetails, id object, NSString *keyPath, BOOL keyPathExactMatch, int options, DSKVOCollectionWillChangeInfo *changeInfo, BOOL *detailsRetained);
+void DSKeyValueDidChangeByOrderedToManyMutation(DSKeyValueChangeDetails *resultChangeDetails, id object, NSString *keyPath, BOOL keyPathExactMatch, int options, DSKeyValueChangeDetails changeDetails);
+void DSKeyValueWillChangeBySetMutation(DSKeyValueChangeDetails *changeDetails, id object, NSString *keyPath, BOOL keyPathExactMatch, int options, DSKVOCollectionWillChangeInfo *changeInfo, BOOL *detailsRetained);
+void DSKeyValueDidChangeBySetMutation(DSKeyValueChangeDetails *resultChangeDetails, id object, NSString *keyPath, BOOL keyPathExactMatch, int options, DSKeyValueChangeDetails changeDetails);
+void DSKeyValuePushPendingNotificationPerThread(id object, id keyOrKeys, DSKeyValueObservance *observance, DSKeyValueChangeDetails changeDetails , DSKeyValuePropertyForwardingValues forwardingValues, DSKVOPushInfoPerThread *pushInfo);
+BOOL DSKeyValuePopPendingNotificationPerThread(id object,id keyOrKeys, DSKeyValueObservance **popedObservance, DSKeyValueChangeDetails *popedChangeDetails,DSKeyValuePropertyForwardingValues *popedForwardValues,id *popedKeyOrKeys, DSKVOPopInfoPerThread* popInfo) ;
+void DSKeyValuePushPendingNotificationLocal(id object, id keyOrKeys, DSKeyValueObservance *observance, DSKeyValueChangeDetails changeDetails , DSKeyValuePropertyForwardingValues forwardingValues, DSKVOPushInfoLocal *pendingInfo);
+BOOL DSKeyValuePopPendingNotificationLocal(id object,id keyOrKeys, DSKeyValueObservance **popedObservance, DSKeyValueChangeDetails *popedChangeDetails,DSKeyValuePropertyForwardingValues *popedForwardValues,id *popedKeyOrKeys, DSKVOPopInfoLocal* pendingInfo) ;
+
 static inline NSString * NSStringFromPendingChangeNotificationPerThread(const DSKVOPendingChangeNotificationPerThread *notification) {
     if (!notification) {
         return @"null";
     }
     return [NSString stringWithFormat:
             BRACE(
-                 LINE(@"retainCount: %u,")\
-                 LINE(@"beginningOfChange: %@,")\
-                 LINE(@"object: %@,")\
-                 LINE(@"keyOrKeys: %@,")\
-                 LINE(@"observationInfo: %@,")\
-                 LINE(@"observance: %@,")\
-                 LINE(@"kind: 0X%02X,")\
-                 LINE(@"oldValue: %@,")\
-                 LINE(@"newValue: %@,")\
-                 LINE(@"indexes: %@,")\
-                 LINE(@"extraData: %@,")\
-                 LINE(@"changingValue: %@,")\
-                 LINE(@"affectingValuesMap: %@")\
-                 ),
+                  LINE(@"retainCount: %u,")\
+                  LINE(@"beginningOfChange: %@,")\
+                  LINE(@"object: %@,")\
+                  LINE(@"keyOrKeys: %@,")\
+                  LINE(@"observationInfo: %@,")\
+                  LINE(@"observance: %@,")\
+                  LINE(@"kind: 0X%02X,")\
+                  LINE(@"oldValue: %@,")\
+                  LINE(@"newValue: %@,")\
+                  LINE(@"indexes: %@,")\
+                  LINE(@"extraData: %@,")\
+                  LINE(@"changingValue: %@,")\
+                  LINE(@"affectingValuesMap: %@")\
+                  ),
             notification->retainCount,
             bool_desc(notification->beginningOfChange),
             simple_desc(notification->object),
@@ -68,38 +164,8 @@ static inline NSString * NSStringFromPendingChangeNotificationPerThread(const DS
             simple_desc(notification->extraData),
             simple_desc(notification->changingValue),
             simple_desc(notification->affectingValuesMap)
-        ];
-}
-
-typedef struct {
-    CFMutableArrayRef pendingArray;//0
-    BOOL beginningOfChange;//4
-    DSKeyValueObservationInfo *observationInfo;//8
-}DSKVOPushInfoPerThread;
-
-static inline NSString * NSStringFromPushInfoPerThread(const DSKVOPushInfoPerThread *info) {
-    if (!info) {
-        return @"null";
-    }
-    return [NSString stringWithFormat:
-            BRACE(
-                  LINE(@"pendingArray: (%zd) elems,")\
-                  LINE(@"beginningOfChange: %@,")\
-                  LINE(@"observationInfo: %@")\
-                  ),
-            CFArrayGetCount(info->pendingArray),
-            bool_desc(info->beginningOfChange),
-            simple_desc(info->observationInfo)
             ];
 }
-
-typedef struct {
-    CFMutableArrayRef pendingArray;//0
-    NSUInteger pendingCount;//4
-    DSKVOPendingChangeNotificationPerThread * lastPopedNotification;//8
-    NSInteger lastPopdIndex;//c
-    DSKeyValueObservance * observance;//10
-}DSKVOPopInfoPerThread;
 
 static inline NSString * NSStringFromPopInfoPerThread(const DSKVOPopInfoPerThread *info) {
     if (!info) {
@@ -121,93 +187,19 @@ static inline NSString * NSStringFromPopInfoPerThread(const DSKVOPopInfoPerThrea
             ];
 }
 
-
-typedef union {
-    struct {
-        DSKeyValueChange changeKind;
-        NSIndexSet *indexes;
-    };
-    struct {
-        DSKeyValueSetMutationKind mutationKind;
-        NSSet *objects;
-    };
-}DSKVOArrayOrSetWillChangeInfo;
-
-
-
-typedef struct {
-    DSKeyValueObservance *observance;//0
-    DSKeyValueChange kind;//4
-    id oldValue;//8
-    id newValue;//c
-    NSIndexSet *indexes;//10
-    NSMutableData * extraData;//14
-    id changingValue;//18
-    NSMutableDictionary * affectingValuesMap;//1c
-    BOOL p5;//20
-    NSString *keyOrKeys;//24
-}DSKVOPendingInfoLocalDetail;
-
-
-typedef struct {
-    NSUInteger capacity;//0
-    BOOL isStackBuff;//4
-    DSKVOPendingInfoLocalDetail *detailsBuff;//8
-    NSUInteger detailsCount;//c
-    BOOL p5;//10
-    id p6;//14
-}DSKVOPendingInfoLocalPush;
-
-
-typedef struct {
-    DSKVOPendingInfoLocalDetail *detailsBuff;//0
-    NSUInteger detailsCount;//4
-    id observer;//8
-    id oldValue;//c
-    id forwardValues_p1;//10
-    DSKeyValueObservationInfo *observationInfo;//14
-}DSKVOPendingInfoLocalPop;
-
-
-typedef void (*DSKeyValueWillChangeByCallback)(DSKeyValueChangeDetails *, id , NSString *, BOOL , int , NSDictionary *, BOOL *);
-typedef void (*DSKeyValuePushPendingNotificationCallback)(id , id , DSKeyValueObservance *, DSKeyValueChangeDetails  , DSKeyValuePropertyForwardingValues , void *);
-
-typedef void (*DSKeyValueDidChangeByCallback)(DSKeyValueChangeDetails *, id , NSString *, BOOL , int , DSKeyValueChangeDetails );
-typedef BOOL (*DSKeyValuePopPendingNotificationCallback)(id ,id , DSKeyValueObservance **, DSKeyValueChangeDetails *,DSKeyValuePropertyForwardingValues *,id *, void * );
-
-void DSKeyValueWillChange(id object, id keyOrKeys, BOOL isASet, DSKeyValueObservationInfo *observationInfo, DSKeyValueWillChangeByCallback willChangeByCallback, void *changeInfo, DSKeyValuePushPendingNotificationCallback pushPendingNotificationCallback, void *pendingInfo, DSKeyValueObservance *observance) ;
-void DSKeyValueDidChange(id object, id keyOrKeys, BOOL isASet,DSKeyValueDidChangeByCallback didChangeByCallback, DSKeyValuePopPendingNotificationCallback popPendingNotificationCallback, void *pendingInfo);
-
-void DSKeyValueNotifyObserver(id observer,NSString * keyPath, id object, void *context, id originalObservable, BOOL isPriorNotification, DSKeyValueChangeDetails changeDetails, DSKeyValueChangeDictionary **pChange);
-void DSKVONotify(id observer, NSString *keyPath, id object, NSDictionary *changeDictionary, void *context);
-
-void DSKeyValueDidChangeBySetting(DSKeyValueChangeDetails *resultChangeDetails, id object, NSString *keyPath, BOOL equal, int options, DSKeyValueChangeDetails changeDetails) ;
-BOOL DSKeyValuePopPendingNotificationLocal(id object,id keyOrKeys, DSKeyValueObservance **observance, DSKeyValueChangeDetails *changeDetails,DSKeyValuePropertyForwardingValues *forwardValues,id *findKeyOrKeys, DSKVOPendingInfoLocalPop* pendingInfo);
-BOOL DSKeyValuePopPendingNotificationPerThread(id object,id keyOrKeys, DSKeyValueObservance **observance, DSKeyValueChangeDetails *changeDetails,DSKeyValuePropertyForwardingValues *forwardValues,id *findKeyOrKeys, DSKVOPopInfoPerThread* pendingInfo);
-
-void DSKeyValueWillChangeBySetting(DSKeyValueChangeDetails *changeDetails, id object, NSString *affectedKeyPath, BOOL match, int options, NSDictionary *oldValueDict, BOOL *detailsRetained);
-void DSKeyValuePushPendingNotificationLocal(id object, id keyOrKeys, DSKeyValueObservance *observance, DSKeyValueChangeDetails changeDetails , DSKeyValuePropertyForwardingValues forwardingValues, DSKVOPendingInfoLocalPush *pendingInfo);
-void DSKeyValuePushPendingNotificationPerThread(id object, id keyOrKeys, DSKeyValueObservance *observance, DSKeyValueChangeDetails changeDetails , DSKeyValuePropertyForwardingValues forwardingValues, DSKVOPushInfoPerThread *pendingInfo) ;
-
-BOOL _DSKeyValueCheckObservationInfoForPendingNotification(id object, DSKeyValueObservance *observance, DSKeyValueObservationInfo * observationInfo);
-void DSKeyValueWillChangeBySetMutation(DSKeyValueChangeDetails *changeDetails, id object, NSString *keyPath, BOOL keyPathExactMatch, int options, DSKVOArrayOrSetWillChangeInfo *changeInfo, BOOL *detailsRetained);
-void DSKeyValueWillChangeByOrderedToManyMutation(DSKeyValueChangeDetails *changeDetails, id object, NSString *keyPath, BOOL keyPathExactMatch, int options, DSKVOArrayOrSetWillChangeInfo *changeInfo, BOOL *detailsRetained);
-void DSKeyValueWillChangeBySetMutation(DSKeyValueChangeDetails *changeDetails, id object, NSString *keyPath, BOOL keyPathExactMatch, int options, DSKVOArrayOrSetWillChangeInfo *changeInfo, BOOL *detailsRetained);
-
-void DSKeyValueDidChangeByOrderedToManyMutation(DSKeyValueChangeDetails *resultChangeDetails, id object, NSString *keyPath, BOOL exactMatch, int options, DSKeyValueChangeDetails changeDetails);
-void DSKeyValueDidChangeBySetMutation(DSKeyValueChangeDetails *resultChangeDetails, id object, NSString *keyPath, BOOL keyPathExactMatch, int options, DSKeyValueChangeDetails changeDetails);
-
-void DSKeyValueWillChangeForObservance(id object, id keyOrKeys, BOOL keyOrKeysIsASet, DSKeyValueObservance * observance);
-void DSKeyValueDidChangeForObservance(id object, id keyOrKeys, BOOL keyOrKeysIsASet, DSKeyValueObservance * observance);
-
-@interface NSObject (DSKeyValueObserverNotification)
-
-- (void)d_willChangeValueForKey:(NSString *)key ;
-- (void)d_didChangeValueForKey:(NSString *)key;
-- (void)d_willChange:(DSKeyValueChange)changeKind valuesAtIndexes:(NSIndexSet *)indexes forKey:(NSString *)key;
-- (void)d_didChange:(DSKeyValueChange)changeKind valuesAtIndexes:(NSIndexSet *)indexes forKey:(NSString *)key;
-- (void)d_willChangeValueForKey:(NSString *)key withSetMutation:(DSKeyValueSetMutationKind)mutationKind usingObjects:(NSSet *)objects;
-- (void)d_didChangeValueForKey:(NSString *)key withSetMutation:(DSKeyValueSetMutationKind)mutationKind usingObjects:(NSSet *)objects;
-@end
-
+static inline NSString * NSStringFromPushInfoPerThread(const DSKVOPushInfoPerThread *info) {
+    if (!info) {
+        return @"null";
+    }
+    return [NSString stringWithFormat:
+            BRACE(
+                  LINE(@"pendingArray: (%zd) elems,")\
+                  LINE(@"beginningOfChange: %@,")\
+                  LINE(@"observationInfo: %@")\
+                  ),
+            CFArrayGetCount(info->pendingArray),
+            bool_desc(info->beginningOfChange),
+            simple_desc(info->observationInfo)
+            ];
+}
 

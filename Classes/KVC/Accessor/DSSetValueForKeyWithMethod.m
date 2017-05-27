@@ -6,8 +6,11 @@
 //  Copyright © 2017年 JK. All rights reserved.
 //
 
+#import <Foundation/Foundation.h>
+#if TARGET_OS_IPHONE
+#import <UIKit/UIKit.h>
+#endif
 #import "DSSetValueForKeyWithMethod.h"
-
 
 #define __DSSetPrimitiveValueForKeyWithMethod(object, selector, value, key, method, valueType, valueGetSelectorName) do {\
     if (value) {\
@@ -67,12 +70,25 @@ void _DSSetShortValueForKeyWithMethod(id object, SEL selector,id value, NSString
     __DSSetPrimitiveValueForKeyWithMethod(object, selector, value, key, method, short, shortValue);
 }
 
-void _DSSetPointValueForKeyWithMethod(id object, SEL selector,id value, NSString *key, Method method) {
-    __DSSetPrimitiveValueForKeyWithMethod(object, selector, value, key, method, NSPoint, pointValue);
-}
-
 void _DSSetRangeValueForKeyWithMethod(id object, SEL selector,id value, NSString *key, Method method) {
     __DSSetPrimitiveValueForKeyWithMethod(object, selector, value, key, method, NSRange, rangeValue);
+}
+
+#if TARGET_OS_IPHONE
+void _DSSetPointValueForKeyWithMethod(id object, SEL selector,id value, NSString *key, Method method) {
+    __DSSetPrimitiveValueForKeyWithMethod(object, selector, value, key, method, CGPoint, CGPointValue);
+}
+
+void _DSSetRectValueForKeyWithMethod(id object, SEL selector,id value, NSString *key, Method method) {
+    __DSSetPrimitiveValueForKeyWithMethod(object, selector, value, key, method, CGRect, CGRectValue);
+}
+
+void _DSSetSizeValueForKeyWithMethod(id object, SEL selector,id value, NSString *key, Method method) {
+    __DSSetPrimitiveValueForKeyWithMethod(object, selector, value, key, method, CGSize, CGSizeValue);
+}
+#else
+void _DSSetPointValueForKeyWithMethod(id object, SEL selector,id value, NSString *key, Method method) {
+    __DSSetPrimitiveValueForKeyWithMethod(object, selector, value, key, method, NSPoint, pointValue);
 }
 
 void _DSSetRectValueForKeyWithMethod(id object, SEL selector,id value, NSString *key, Method method) {
@@ -82,6 +98,7 @@ void _DSSetRectValueForKeyWithMethod(id object, SEL selector,id value, NSString 
 void _DSSetSizeValueForKeyWithMethod(id object, SEL selector,id value, NSString *key, Method method) {
     __DSSetPrimitiveValueForKeyWithMethod(object, selector, value, key, method, NSSize, sizeValue);
 }
+#endif
 
 void _DSSetValueWithMethod(id object, SEL selector,id value, NSString *key, __unused Method method) {
     if (value) {
