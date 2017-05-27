@@ -37,14 +37,14 @@
 
 - (NSString *)_keyPathIfAffectedByValueForKey:(NSString *)key exactMatch:(BOOL *)exactMatch {
     if(exactMatch) *exactMatch = NO;
-    if([self.operationArgumentProperty _keyPathIfAffectedByValueForKey:key exactMatch:NULL]) {
+    if([self.operationArgumentProperty keyPathIfAffectedByValueForKey:key exactMatch:NULL]) {
         return self.keyPath;
     }
     return nil;
 }
 
 - (NSString *)_keyPathIfAffectedByValueForMemberOfKeys:(id)keys {
-    if([self.operationArgumentProperty _keyPathIfAffectedByValueForMemberOfKeys:keys]) {
+    if([self.operationArgumentProperty keyPathIfAffectedByValueForMemberOfKeys:keys]) {
         return self.keyPath;
     }
     return nil;

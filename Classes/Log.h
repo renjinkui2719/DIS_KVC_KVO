@@ -20,7 +20,7 @@ static inline void log_without_time(NSString *fmt, ...) {
     va_end(ap);
 }
 
-#define LOG_ON 1
+#define LOG_ON 0
 
 #if LOG_ON
 #define LOG_VERBOSE(fmt, tag, ...) log_without_time(@"%s file: \"%s>\" line: (%d) function: \"%s\" ==> \n<< \n\t"fmt@"\n>>\n",tag,__FILE_NAME__,__LINE__, __func__, ##__VA_ARGS__)

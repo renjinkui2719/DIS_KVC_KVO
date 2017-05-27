@@ -151,6 +151,13 @@ static inline NSString *random_string(size_t len) {
     return [super keyPathsForValuesAffectingValueForKey:key];
 }
 
+//- (id)valueForKey:(NSString *)key {
+//    if ([key isEqualToString:@"@integer_sum"]) {
+//        return @20;
+//    }
+//    return [self valueForKey:key];
+//}
+
 #if NSArray_MutByContainer
 
 - (void)insertObject:(A *)object inNSArray_fieldAtIndex:(NSUInteger)index {
@@ -237,19 +244,10 @@ static inline NSString *random_string(size_t len) {
 @implementation D
 @end
 
-
-static inline A* orderRandomA_1() {
-    static int order = 0;
-    return [A randomWithIdentifier:[NSString stringWithFormat:@"%06d", order ++]];
-}
-
-static inline A* orderRandomA_2() {
-    static int order = 0;
-    return [A randomWithIdentifier:[NSString stringWithFormat:@"%06d", order ++]];
-}
-
-#define OrderedA_1 (orderRandomA_1())
-#define OrderedA_2 (orderRandomA_2())
+static inline A * nextRandomA_1() {static int index = 0; return [A randomWithIdentifier:[NSString stringWithFormat:@"%06d", index]];}
+static inline A * nextRandomA_2() {static int index = 0; return [A randomWithIdentifier:[NSString stringWithFormat:@"%06d", index]];}
+#define NextRandomA_1 nextRandomA_1()
+#define NextRandomA_2 nextRandomA_2()
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -295,11 +293,13 @@ int kvc_kvo_test_main(int argc, const char * argv[]) {
 }
 
 void test_kvo() {
-    A *a = A.random;
-    a.NSArray_field = [NSMutableArray arrayWithArray:@[A.random, A.random, A.random, A.random]];
-    [a d_addObserver:[ObserverA new] forKeyPath:@"@integer_sum.int_field" options:NSKeyValueObservingOptionNew context:NULL];
-    a.int_field = 20;
-    //[a.NSArray_field removeLastObject];
+    Observer *obserVerA = [Observer new];
+    
+    A *a = NextRandomA_1;
+    [a d_addObserver:obserVerA forKeyPath:@"char_field" options:NSKeyValueObservingOptionNew context:"context 1"];
+    TEST(a.class == NSClassFromString(@"A") && object_getClass(a) == NSClassFromString(@"DSKVONotifying_A"));
+    [a d_removeObserver:obserVerA forKeyPath:@"char_field"];
+    TEST(a.class == NSClassFromString(@"A") && object_getClass(a) == NSClassFromString(@"A"));
 }
 
 
@@ -934,7 +934,7 @@ void test_kvc() {
             {
                 NSException *catchException = nil;
                 @try {
-                    [mutArray_a addObject:OrderedA_1];
+                    [mutArray_a addObject:NextRandomA_1];
                 } @catch (NSException *exception) {
                     catchException = exception;
                 } @finally {
@@ -943,7 +943,7 @@ void test_kvc() {
                 
                 catchException = nil;
                 @try {
-                    [mutArray_b addObject:OrderedA_2];
+                    [mutArray_b addObject:NextRandomA_2];
                 } @catch (NSException *exception) {
                     catchException = exception;
                 } @finally {
@@ -954,20 +954,20 @@ void test_kvc() {
             a.NSArray_field = [NSMutableArray array];
             b.NSArray_field = [NSMutableArray array];
             
-            [mutArray_a addObject:OrderedA_1];
-            [mutArray_b addObject:OrderedA_2];
+            [mutArray_a addObject:NextRandomA_1];
+            [mutArray_b addObject:NextRandomA_2];
             TEST([mutArray_a isEqualToArray:mutArray_b] && [a.NSArray_field isEqualToArray:b.NSArray_field]);
             
-            [mutArray_a insertObject:OrderedA_1 atIndex:0];
-            [mutArray_b insertObject:OrderedA_2 atIndex:0];
+            [mutArray_a insertObject:NextRandomA_1 atIndex:0];
+            [mutArray_b insertObject:NextRandomA_2 atIndex:0];
             TEST([mutArray_a isEqualToArray:mutArray_b] && [a.NSArray_field isEqualToArray:b.NSArray_field]);
             
-            [mutArray_a insertObject:OrderedA_1 atIndex:2];
-            [mutArray_b insertObject:OrderedA_2 atIndex:2];
+            [mutArray_a insertObject:NextRandomA_1 atIndex:2];
+            [mutArray_b insertObject:NextRandomA_2 atIndex:2];
             TEST([mutArray_a isEqualToArray:mutArray_b] && [a.NSArray_field isEqualToArray:b.NSArray_field]);
             
-            [mutArray_a insertObjects:@[OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1] atIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(3, 9)]];
-            [mutArray_b insertObjects:@[OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2] atIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(3, 9)]];
+            [mutArray_a insertObjects:@[NextRandomA_1,NextRandomA_1,NextRandomA_1,NextRandomA_1,NextRandomA_1,NextRandomA_1,NextRandomA_1,NextRandomA_1,NextRandomA_1] atIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(3, 9)]];
+            [mutArray_b insertObjects:@[NextRandomA_2,NextRandomA_2,NextRandomA_2,NextRandomA_2,NextRandomA_2,NextRandomA_2,NextRandomA_2,NextRandomA_2,NextRandomA_2] atIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(3, 9)]];
             TEST([mutArray_a isEqualToArray:mutArray_b] && [a.NSArray_field isEqualToArray:b.NSArray_field]);
             
             [mutArray_a removeObjectAtIndex:0];
@@ -986,20 +986,20 @@ void test_kvc() {
             [mutArray_b removeLastObject];
             TEST([mutArray_a isEqualToArray:mutArray_b] && [a.NSArray_field isEqualToArray:b.NSArray_field]);
             
-            [mutArray_a replaceObjectAtIndex:0 withObject:OrderedA_1];
-            [mutArray_b replaceObjectAtIndex:0 withObject:OrderedA_2];
+            [mutArray_a replaceObjectAtIndex:0 withObject:NextRandomA_1];
+            [mutArray_b replaceObjectAtIndex:0 withObject:NextRandomA_2];
             TEST([mutArray_a isEqualToArray:mutArray_b] && [a.NSArray_field isEqualToArray:b.NSArray_field]);
             
-            [mutArray_a replaceObjectAtIndex:mutArray_a.count - 1 withObject:OrderedA_1];
-            [mutArray_b replaceObjectAtIndex:mutArray_b.count - 1 withObject:OrderedA_2];
+            [mutArray_a replaceObjectAtIndex:mutArray_a.count - 1 withObject:NextRandomA_1];
+            [mutArray_b replaceObjectAtIndex:mutArray_b.count - 1 withObject:NextRandomA_2];
             TEST([mutArray_a isEqualToArray:mutArray_b] && [a.NSArray_field isEqualToArray:b.NSArray_field]);
             
-            [mutArray_a replaceObjectAtIndex:3 withObject:OrderedA_1];
-            [mutArray_b replaceObjectAtIndex:3 withObject:OrderedA_2];
+            [mutArray_a replaceObjectAtIndex:3 withObject:NextRandomA_1];
+            [mutArray_b replaceObjectAtIndex:3 withObject:NextRandomA_2];
             TEST([mutArray_a isEqualToArray:mutArray_b] && [a.NSArray_field isEqualToArray:b.NSArray_field]);
             
-            [mutArray_a replaceObjectsAtIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(3, 3)] withObjects:@[OrderedA_1,OrderedA_1,OrderedA_1]];
-            [mutArray_b replaceObjectsAtIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(3, 3)] withObjects:@[OrderedA_2,OrderedA_2,OrderedA_2]];
+            [mutArray_a replaceObjectsAtIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(3, 3)] withObjects:@[NextRandomA_1,NextRandomA_1,NextRandomA_1]];
+            [mutArray_b replaceObjectsAtIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(3, 3)] withObjects:@[NextRandomA_2,NextRandomA_2,NextRandomA_2]];
             TEST([mutArray_a isEqualToArray:mutArray_b] && [a.NSArray_field isEqualToArray:b.NSArray_field]);
             
             SEP_LINE
@@ -1022,7 +1022,7 @@ void test_kvc() {
                 
                 NSException *catchException = nil;
                 @try {
-                    [mutArray_a addObject:OrderedA_1];
+                    [mutArray_a addObject:NextRandomA_1];
                 } @catch (NSException *exception) {
                     catchException = exception;
                 } @finally {
@@ -1031,7 +1031,7 @@ void test_kvc() {
                 
                 catchException = nil;
                 @try {
-                    [mutArray_b addObject:OrderedA_2];
+                    [mutArray_b addObject:NextRandomA_2];
                 } @catch (NSException *exception) {
                     catchException = exception;
                 } @finally {
@@ -1042,23 +1042,23 @@ void test_kvc() {
             a.NSArray_field = @[];
             b.NSArray_field = @[];
             
-            [mutArray_a addObject:OrderedA_1];
-            [mutArray_b addObject:OrderedA_2];
+            [mutArray_a addObject:NextRandomA_1];
+            [mutArray_b addObject:NextRandomA_2];
             TEST([mutArray_a isEqualToArray:mutArray_b] && [a.NSArray_field isEqualToArray:b.NSArray_field]);
             
             //在代理Array的操作下, NSArray_field 由原来的NSArray对象变为 NSMutableArray对象
             TEST([a.NSArray_field isKindOfClass:NSMutableArray.self] && [b.NSArray_field isKindOfClass:NSMutableArray.self])
             
-            [mutArray_a insertObject:OrderedA_1 atIndex:0];
-            [mutArray_b insertObject:OrderedA_2 atIndex:0];
+            [mutArray_a insertObject:NextRandomA_1 atIndex:0];
+            [mutArray_b insertObject:NextRandomA_2 atIndex:0];
             TEST([mutArray_a isEqualToArray:mutArray_b] && [a.NSArray_field isEqualToArray:b.NSArray_field]);
             
-            [mutArray_a insertObject:OrderedA_1 atIndex:2];
-            [mutArray_b insertObject:OrderedA_2 atIndex:2];
+            [mutArray_a insertObject:NextRandomA_1 atIndex:2];
+            [mutArray_b insertObject:NextRandomA_2 atIndex:2];
             TEST([mutArray_a isEqualToArray:mutArray_b] && [a.NSArray_field isEqualToArray:b.NSArray_field]);
             
-            [mutArray_a insertObjects:@[OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1] atIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(3, 9)]];
-            [mutArray_b insertObjects:@[OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2] atIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(3, 9)]];
+            [mutArray_a insertObjects:@[NextRandomA_1,NextRandomA_1,NextRandomA_1,NextRandomA_1,NextRandomA_1,NextRandomA_1,NextRandomA_1,NextRandomA_1,NextRandomA_1] atIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(3, 9)]];
+            [mutArray_b insertObjects:@[NextRandomA_2,NextRandomA_2,NextRandomA_2,NextRandomA_2,NextRandomA_2,NextRandomA_2,NextRandomA_2,NextRandomA_2,NextRandomA_2] atIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(3, 9)]];
             TEST([mutArray_a isEqualToArray:mutArray_b] && [a.NSArray_field isEqualToArray:b.NSArray_field]);
             
             [mutArray_a removeObjectAtIndex:0];
@@ -1077,20 +1077,20 @@ void test_kvc() {
             [mutArray_b removeLastObject];
             TEST([mutArray_a isEqualToArray:mutArray_b] && [a.NSArray_field isEqualToArray:b.NSArray_field]);
             
-            [mutArray_a replaceObjectAtIndex:0 withObject:OrderedA_1];
-            [mutArray_b replaceObjectAtIndex:0 withObject:OrderedA_2];
+            [mutArray_a replaceObjectAtIndex:0 withObject:NextRandomA_1];
+            [mutArray_b replaceObjectAtIndex:0 withObject:NextRandomA_2];
             TEST([mutArray_a isEqualToArray:mutArray_b] && [a.NSArray_field isEqualToArray:b.NSArray_field]);
             
-            [mutArray_a replaceObjectAtIndex:mutArray_a.count - 1 withObject:OrderedA_1];
-            [mutArray_b replaceObjectAtIndex:mutArray_b.count - 1 withObject:OrderedA_2];
+            [mutArray_a replaceObjectAtIndex:mutArray_a.count - 1 withObject:NextRandomA_1];
+            [mutArray_b replaceObjectAtIndex:mutArray_b.count - 1 withObject:NextRandomA_2];
             TEST([mutArray_a isEqualToArray:mutArray_b] && [a.NSArray_field isEqualToArray:b.NSArray_field]);
             
-            [mutArray_a replaceObjectAtIndex:3 withObject:OrderedA_1];
-            [mutArray_b replaceObjectAtIndex:3 withObject:OrderedA_2];
+            [mutArray_a replaceObjectAtIndex:3 withObject:NextRandomA_1];
+            [mutArray_b replaceObjectAtIndex:3 withObject:NextRandomA_2];
             TEST([mutArray_a isEqualToArray:mutArray_b] && [a.NSArray_field isEqualToArray:b.NSArray_field]);
             
-            [mutArray_a replaceObjectsAtIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(3, 3)] withObjects:@[OrderedA_1,OrderedA_1,OrderedA_1]];
-            [mutArray_b replaceObjectsAtIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(3, 3)] withObjects:@[OrderedA_2,OrderedA_2,OrderedA_2]];
+            [mutArray_a replaceObjectsAtIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(3, 3)] withObjects:@[NextRandomA_1,NextRandomA_1,NextRandomA_1]];
+            [mutArray_b replaceObjectsAtIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(3, 3)] withObjects:@[NextRandomA_2,NextRandomA_2,NextRandomA_2]];
             TEST([mutArray_a isEqualToArray:mutArray_b] && [a.NSArray_field isEqualToArray:b.NSArray_field]);
             
             SEP_LINE
@@ -1118,7 +1118,7 @@ void test_kvc() {
                 //代理Array不会把NSArray替换为NSMutableArray,因此报NSInvalidArgumentException异常
                 NSException *catchException = nil;
                 @try {
-                    [mutArray_a addObject:OrderedA_1];
+                    [mutArray_a addObject:NextRandomA_1];
                 } @catch (NSException *exception) {
                     catchException = exception;
                 } @finally {
@@ -1127,7 +1127,7 @@ void test_kvc() {
                 
                 catchException = nil;
                 @try {
-                    [mutArray_b addObject:OrderedA_2];
+                    [mutArray_b addObject:NextRandomA_2];
                 } @catch (NSException *exception) {
                     catchException = exception;
                 } @finally {
@@ -1140,8 +1140,8 @@ void test_kvc() {
             mutArray_a = [a d_mutableArrayValueForKey:@"_NSArray_field"];
             mutArray_b = [b mutableArrayValueForKey:@"_NSArray_field"];
             
-            [mutArray_a addObject:OrderedA_1];
-            [mutArray_b addObject:OrderedA_2];
+            [mutArray_a addObject:NextRandomA_1];
+            [mutArray_b addObject:NextRandomA_2];
             
             //如果原Array为nil，代理Array会创建NSMUtableArray替换原Array
             TEST([a.NSArray_field isKindOfClass:NSMutableArray.self] && [b.NSArray_field isKindOfClass:NSMutableArray.self])
@@ -1153,20 +1153,20 @@ void test_kvc() {
             mutArray_a = [a d_mutableArrayValueForKey:@"_NSArray_field"];
             mutArray_b = [b mutableArrayValueForKey:@"_NSArray_field"];
             
-            [mutArray_a addObject:OrderedA_1];
-            [mutArray_b addObject:OrderedA_2];
+            [mutArray_a addObject:NextRandomA_1];
+            [mutArray_b addObject:NextRandomA_2];
             TEST([mutArray_a isEqualToArray:mutArray_b] && [a.NSArray_field isEqualToArray:b.NSArray_field]);
             
-            [mutArray_a insertObject:OrderedA_1 atIndex:0];
-            [mutArray_b insertObject:OrderedA_2 atIndex:0];
+            [mutArray_a insertObject:NextRandomA_1 atIndex:0];
+            [mutArray_b insertObject:NextRandomA_2 atIndex:0];
             TEST([mutArray_a isEqualToArray:mutArray_b] && [a.NSArray_field isEqualToArray:b.NSArray_field]);
             
-            [mutArray_a insertObject:OrderedA_1 atIndex:2];
-            [mutArray_b insertObject:OrderedA_2 atIndex:2];
+            [mutArray_a insertObject:NextRandomA_1 atIndex:2];
+            [mutArray_b insertObject:NextRandomA_2 atIndex:2];
             TEST([mutArray_a isEqualToArray:mutArray_b] && [a.NSArray_field isEqualToArray:b.NSArray_field]);
             
-            [mutArray_a insertObjects:@[OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1] atIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(3, 9)]];
-            [mutArray_b insertObjects:@[OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2] atIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(3, 9)]];
+            [mutArray_a insertObjects:@[NextRandomA_1,NextRandomA_1,NextRandomA_1,NextRandomA_1,NextRandomA_1,NextRandomA_1,NextRandomA_1,NextRandomA_1,NextRandomA_1] atIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(3, 9)]];
+            [mutArray_b insertObjects:@[NextRandomA_2,NextRandomA_2,NextRandomA_2,NextRandomA_2,NextRandomA_2,NextRandomA_2,NextRandomA_2,NextRandomA_2,NextRandomA_2] atIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(3, 9)]];
             TEST([mutArray_a isEqualToArray:mutArray_b] && [a.NSArray_field isEqualToArray:b.NSArray_field]);
             
             [mutArray_a removeObjectAtIndex:0];
@@ -1185,20 +1185,20 @@ void test_kvc() {
             [mutArray_b removeLastObject];
             TEST([mutArray_a isEqualToArray:mutArray_b] && [a.NSArray_field isEqualToArray:b.NSArray_field]);
             
-            [mutArray_a replaceObjectAtIndex:0 withObject:OrderedA_1];
-            [mutArray_b replaceObjectAtIndex:0 withObject:OrderedA_2];
+            [mutArray_a replaceObjectAtIndex:0 withObject:NextRandomA_1];
+            [mutArray_b replaceObjectAtIndex:0 withObject:NextRandomA_2];
             TEST([mutArray_a isEqualToArray:mutArray_b] && [a.NSArray_field isEqualToArray:b.NSArray_field]);
             
-            [mutArray_a replaceObjectAtIndex:mutArray_a.count - 1 withObject:OrderedA_1];
-            [mutArray_b replaceObjectAtIndex:mutArray_b.count - 1 withObject:OrderedA_2];
+            [mutArray_a replaceObjectAtIndex:mutArray_a.count - 1 withObject:NextRandomA_1];
+            [mutArray_b replaceObjectAtIndex:mutArray_b.count - 1 withObject:NextRandomA_2];
             TEST([mutArray_a isEqualToArray:mutArray_b] && [a.NSArray_field isEqualToArray:b.NSArray_field]);
             
-            [mutArray_a replaceObjectAtIndex:3 withObject:OrderedA_1];
-            [mutArray_b replaceObjectAtIndex:3 withObject:OrderedA_2];
+            [mutArray_a replaceObjectAtIndex:3 withObject:NextRandomA_1];
+            [mutArray_b replaceObjectAtIndex:3 withObject:NextRandomA_2];
             TEST([mutArray_a isEqualToArray:mutArray_b] && [a.NSArray_field isEqualToArray:b.NSArray_field]);
             
-            [mutArray_a replaceObjectsAtIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(3, 3)] withObjects:@[OrderedA_1,OrderedA_1,OrderedA_1]];
-            [mutArray_b replaceObjectsAtIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(3, 3)] withObjects:@[OrderedA_2,OrderedA_2,OrderedA_2]];
+            [mutArray_a replaceObjectsAtIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(3, 3)] withObjects:@[NextRandomA_1,NextRandomA_1,NextRandomA_1]];
+            [mutArray_b replaceObjectsAtIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(3, 3)] withObjects:@[NextRandomA_2,NextRandomA_2,NextRandomA_2]];
             TEST([mutArray_a isEqualToArray:mutArray_b] && [a.NSArray_field isEqualToArray:b.NSArray_field]);
             
             SEP_LINE
@@ -1226,7 +1226,7 @@ void test_kvc() {
                 //NSSet_field为不可变，修改应当报异常
                 NSException *catchException = nil;
                 @try {
-                    [mutSet_a addObject:OrderedA_1];
+                    [mutSet_a addObject:NextRandomA_1];
                 } @catch (NSException *exception) {
                     catchException = exception;
                 } @finally {
@@ -1235,7 +1235,7 @@ void test_kvc() {
                 
                 catchException = nil;
                 @try {
-                    [mutSet_b addObject:OrderedA_2];
+                    [mutSet_b addObject:NextRandomA_2];
                 } @catch (NSException *exception) {
                     catchException = exception;
                 } @finally {
@@ -1246,19 +1246,19 @@ void test_kvc() {
             a.NSSet_field = [NSMutableSet set];
             b.NSSet_field = [NSMutableSet set];
             
-            [mutSet_a addObject:OrderedA_1];
-            [mutSet_b addObject:OrderedA_2];
+            [mutSet_a addObject:NextRandomA_1];
+            [mutSet_b addObject:NextRandomA_2];
             TEST([mutSet_a isEqualToSet:mutSet_b]);
             
-            [mutSet_a addObjectsFromArray:@[OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1]];
-            [mutSet_b addObjectsFromArray:@[OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2]];
+            [mutSet_a addObjectsFromArray:@[NextRandomA_1,NextRandomA_1,NextRandomA_1,NextRandomA_1,NextRandomA_1,NextRandomA_1,NextRandomA_1]];
+            [mutSet_b addObjectsFromArray:@[NextRandomA_2,NextRandomA_2,NextRandomA_2,NextRandomA_2,NextRandomA_2,NextRandomA_2,NextRandomA_2]];
             TEST([mutSet_a isEqualToSet:mutSet_b]);
             
             TEST(mutSet_a.count == mutSet_b.count);
             
             {
-                id finder_a = OrderedA_1;
-                id finder_b = OrderedA_2;
+                id finder_a = NextRandomA_1;
+                id finder_b = NextRandomA_2;
                 
                 [mutSet_a addObject:finder_a];
                 [mutSet_b addObject:finder_b];
@@ -1274,8 +1274,8 @@ void test_kvc() {
             }
             
             {
-                id remove_a = OrderedA_1;
-                id remove_b = OrderedA_2;
+                id remove_a = NextRandomA_1;
+                id remove_b = NextRandomA_2;
                 
                 [mutSet_a addObject:remove_a];
                 [mutSet_b addObject:remove_b];
@@ -1299,8 +1299,8 @@ void test_kvc() {
             [mutSet_b removeAllObjects];
             TEST(mutSet_a.count == 0 && mutSet_b.count == 0);
             
-            [mutSet_a setSet:[NSMutableSet setWithArray:@[OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1]]];
-            [mutSet_b setSet:[NSMutableSet setWithArray:@[OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2]]];
+            [mutSet_a setSet:[NSMutableSet setWithArray:@[NextRandomA_1,NextRandomA_1,NextRandomA_1,NextRandomA_1,NextRandomA_1]]];
+            [mutSet_b setSet:[NSMutableSet setWithArray:@[NextRandomA_2,NextRandomA_2,NextRandomA_2,NextRandomA_2,NextRandomA_2]]];
             TEST([mutSet_a isEqualToSet:mutSet_b]);
             
             {
@@ -1357,7 +1357,7 @@ void test_kvc() {
                 
                 NSException *catchException = nil;
                 @try {
-                    [mutSet_a addObject:OrderedA_1];
+                    [mutSet_a addObject:NextRandomA_1];
                 } @catch (NSException *exception) {
                     catchException = exception;
                 } @finally {
@@ -1366,7 +1366,7 @@ void test_kvc() {
                 
                 catchException = nil;
                 @try {
-                    [mutSet_b addObject:OrderedA_2];
+                    [mutSet_b addObject:NextRandomA_2];
                 } @catch (NSException *exception) {
                     catchException = exception;
                 } @finally {
@@ -1377,21 +1377,21 @@ void test_kvc() {
             a.NSSet_field = [NSSet set];
             b.NSSet_field = [NSSet set];
             
-            [mutSet_a addObject:OrderedA_1];
-            [mutSet_b addObject:OrderedA_2];
+            [mutSet_a addObject:NextRandomA_1];
+            [mutSet_b addObject:NextRandomA_2];
             //代理将NSSet_field 由NSSet 变更为 NSMutableSet
             TEST([a.NSSet_field isKindOfClass:NSMutableSet.self] && [b.NSSet_field isKindOfClass:NSMutableSet.self]);
             TEST([mutSet_a isEqualToSet:mutSet_b]);
             
-            [mutSet_a addObjectsFromArray:@[OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1]];
-            [mutSet_b addObjectsFromArray:@[OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2]];
+            [mutSet_a addObjectsFromArray:@[NextRandomA_1,NextRandomA_1,NextRandomA_1,NextRandomA_1,NextRandomA_1,NextRandomA_1,NextRandomA_1]];
+            [mutSet_b addObjectsFromArray:@[NextRandomA_2,NextRandomA_2,NextRandomA_2,NextRandomA_2,NextRandomA_2,NextRandomA_2,NextRandomA_2]];
             TEST([mutSet_a isEqualToSet:mutSet_b]);
             
             TEST(mutSet_a.count == mutSet_b.count);
             
             {
-                id finder_a = OrderedA_1;
-                id finder_b = OrderedA_2;
+                id finder_a = NextRandomA_1;
+                id finder_b = NextRandomA_2;
                 
                 [mutSet_a addObject:finder_a];
                 [mutSet_b addObject:finder_b];
@@ -1407,8 +1407,8 @@ void test_kvc() {
             }
             
             {
-                id remove_a = OrderedA_1;
-                id remove_b = OrderedA_2;
+                id remove_a = NextRandomA_1;
+                id remove_b = NextRandomA_2;
                 
                 [mutSet_a addObject:remove_a];
                 [mutSet_b addObject:remove_b];
@@ -1432,8 +1432,8 @@ void test_kvc() {
             [mutSet_b removeAllObjects];
             TEST(mutSet_a.count == 0 && mutSet_b.count == 0);
             
-            [mutSet_a setSet:[NSSet setWithArray:@[OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1]]];
-            [mutSet_b setSet:[NSSet setWithArray:@[OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2]]];
+            [mutSet_a setSet:[NSSet setWithArray:@[NextRandomA_1,NextRandomA_1,NextRandomA_1,NextRandomA_1,NextRandomA_1]]];
+            [mutSet_b setSet:[NSSet setWithArray:@[NextRandomA_2,NextRandomA_2,NextRandomA_2,NextRandomA_2,NextRandomA_2]]];
             TEST([mutSet_a isEqualToSet:mutSet_b]);
             
             {
@@ -1494,7 +1494,7 @@ void test_kvc() {
                 
                 NSException *catchException = nil;
                 @try {
-                    [mutSet_a addObject:OrderedA_1];
+                    [mutSet_a addObject:NextRandomA_1];
                 } @catch (NSException *exception) {
                     catchException = exception;
                 } @finally {
@@ -1503,7 +1503,7 @@ void test_kvc() {
                 
                 catchException = nil;
                 @try {
-                    [mutSet_b addObject:OrderedA_2];
+                    [mutSet_b addObject:NextRandomA_2];
                 } @catch (NSException *exception) {
                     catchException = exception;
                 } @finally {
@@ -1515,26 +1515,26 @@ void test_kvc() {
             a.NSSet_field = nil;
             b.NSSet_field = nil;
             
-            [mutSet_a addObject:OrderedA_1];
-            [mutSet_b addObject:OrderedA_2];
+            [mutSet_a addObject:NextRandomA_1];
+            [mutSet_b addObject:NextRandomA_2];
             //代理会主动为NSSet_field创建NSMutableSet
             TEST([a.NSSet_field isKindOfClass:NSMutableSet.self] && [a.NSSet_field  isEqualToSet:b.NSSet_field]);
             
-            [mutSet_a addObject:OrderedA_1];
-            [mutSet_b addObject:OrderedA_2];
+            [mutSet_a addObject:NextRandomA_1];
+            [mutSet_b addObject:NextRandomA_2];
             //代理将NSSet_field 由NSSet 变更为 NSMutableSet
             TEST([a.NSSet_field isKindOfClass:NSMutableSet.self] && [b.NSSet_field isKindOfClass:NSMutableSet.self]);
             TEST([mutSet_a isEqualToSet:mutSet_b]);
             
-            [mutSet_a addObjectsFromArray:@[OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1]];
-            [mutSet_b addObjectsFromArray:@[OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2]];
+            [mutSet_a addObjectsFromArray:@[NextRandomA_1,NextRandomA_1,NextRandomA_1,NextRandomA_1,NextRandomA_1,NextRandomA_1,NextRandomA_1]];
+            [mutSet_b addObjectsFromArray:@[NextRandomA_2,NextRandomA_2,NextRandomA_2,NextRandomA_2,NextRandomA_2,NextRandomA_2,NextRandomA_2]];
             TEST([mutSet_a isEqualToSet:mutSet_b]);
             
             TEST(mutSet_a.count == mutSet_b.count);
             
             {
-                id finder_a = OrderedA_1;
-                id finder_b = OrderedA_2;
+                id finder_a = NextRandomA_1;
+                id finder_b = NextRandomA_2;
                 
                 [mutSet_a addObject:finder_a];
                 [mutSet_b addObject:finder_b];
@@ -1550,8 +1550,8 @@ void test_kvc() {
             }
             
             {
-                id remove_a = OrderedA_1;
-                id remove_b = OrderedA_2;
+                id remove_a = NextRandomA_1;
+                id remove_b = NextRandomA_2;
                 
                 [mutSet_a addObject:remove_a];
                 [mutSet_b addObject:remove_b];
@@ -1575,8 +1575,8 @@ void test_kvc() {
             [mutSet_b removeAllObjects];
             TEST(mutSet_a.count == 0 && mutSet_b.count == 0);
             
-            [mutSet_a setSet:[NSSet setWithArray:@[OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1]]];
-            [mutSet_b setSet:[NSSet setWithArray:@[OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2]]];
+            [mutSet_a setSet:[NSSet setWithArray:@[NextRandomA_1,NextRandomA_1,NextRandomA_1,NextRandomA_1,NextRandomA_1]]];
+            [mutSet_b setSet:[NSSet setWithArray:@[NextRandomA_2,NextRandomA_2,NextRandomA_2,NextRandomA_2,NextRandomA_2]]];
             TEST([mutSet_a isEqualToSet:mutSet_b]);
             
             {
@@ -1634,8 +1634,8 @@ void test_kvc() {
             
             TEST((mutOrderSet_a.class == NSClassFromString(@"DSKeyValueFastMutableOrderedSet2")) && (mutOrderSet_b.class == NSClassFromString(@"NSKeyValueFastMutableOrderedSet2")));
             
-            [mutOrderSet_a insertObject:OrderedA_1 atIndex:0];
-            [mutOrderSet_b insertObject:OrderedA_2 atIndex:0];
+            [mutOrderSet_a insertObject:NextRandomA_1 atIndex:0];
+            [mutOrderSet_b insertObject:NextRandomA_2 atIndex:0];
             //NSOrderedSet_field为nil，insertObject无影响
             TEST(a.NSOrderedSet_field == nil && b.NSOrderedSet_field == nil);
             
@@ -1647,7 +1647,7 @@ void test_kvc() {
                 
                 NSException *catchException = nil;
                 @try {
-                    [mutOrderSet_a insertObject:OrderedA_1 atIndex:0];
+                    [mutOrderSet_a insertObject:NextRandomA_1 atIndex:0];
                 } @catch (NSException *exception) {
                     catchException = exception;
                 } @finally {
@@ -1656,7 +1656,7 @@ void test_kvc() {
                 
                 catchException = nil;
                 @try {
-                    [mutOrderSet_b insertObject:OrderedA_2 atIndex:0];
+                    [mutOrderSet_b insertObject:NextRandomA_2 atIndex:0];
                 } @catch (NSException *exception) {
                     catchException = exception;
                 } @finally {
@@ -1667,12 +1667,12 @@ void test_kvc() {
             a.NSOrderedSet_field = [NSMutableOrderedSet orderedSet];
             b.NSOrderedSet_field = [NSMutableOrderedSet orderedSet];
             
-            [mutOrderSet_a insertObject:OrderedA_1 atIndex:0];
-            [mutOrderSet_b insertObject:OrderedA_2 atIndex:0];
+            [mutOrderSet_a insertObject:NextRandomA_1 atIndex:0];
+            [mutOrderSet_b insertObject:NextRandomA_2 atIndex:0];
             TEST([mutOrderSet_a isEqualToOrderedSet:mutOrderSet_b]);
             
-            [mutOrderSet_a insertObjects:@[OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1] atIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, 15)]];
-            [mutOrderSet_b insertObjects:@[OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2] atIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, 15)]];
+            [mutOrderSet_a insertObjects:@[NextRandomA_1,NextRandomA_1,NextRandomA_1,NextRandomA_1,NextRandomA_1,NextRandomA_1,NextRandomA_1,NextRandomA_1,NextRandomA_1,NextRandomA_1,NextRandomA_1,NextRandomA_1,NextRandomA_1,NextRandomA_1,NextRandomA_1] atIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, 15)]];
+            [mutOrderSet_b insertObjects:@[NextRandomA_2,NextRandomA_2,NextRandomA_2,NextRandomA_2,NextRandomA_2,NextRandomA_2,NextRandomA_2,NextRandomA_2,NextRandomA_2,NextRandomA_2,NextRandomA_2,NextRandomA_2,NextRandomA_2,NextRandomA_2,NextRandomA_2] atIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, 15)]];
             TEST([mutOrderSet_a isEqualToOrderedSet:mutOrderSet_b]);
             
             TEST(mutOrderSet_a.count == mutOrderSet_b.count);
@@ -1689,12 +1689,12 @@ void test_kvc() {
             [mutOrderSet_b removeObjectsAtIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(3, 4)]];
             TEST([mutOrderSet_a isEqualToOrderedSet:mutOrderSet_b]);
             
-            [mutOrderSet_a replaceObjectAtIndex:2 withObject:OrderedA_1];
-            [mutOrderSet_b replaceObjectAtIndex:2 withObject:OrderedA_2];
+            [mutOrderSet_a replaceObjectAtIndex:2 withObject:NextRandomA_1];
+            [mutOrderSet_b replaceObjectAtIndex:2 withObject:NextRandomA_2];
             TEST([mutOrderSet_a isEqualToOrderedSet:mutOrderSet_b]);
             
-            [mutOrderSet_a replaceObjectsAtIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(4, 5)] withObjects:@[OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1]];
-            [mutOrderSet_b replaceObjectsAtIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(4, 5)] withObjects:@[OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2]];
+            [mutOrderSet_a replaceObjectsAtIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(4, 5)] withObjects:@[NextRandomA_1,NextRandomA_1,NextRandomA_1,NextRandomA_1,NextRandomA_1]];
+            [mutOrderSet_b replaceObjectsAtIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(4, 5)] withObjects:@[NextRandomA_2,NextRandomA_2,NextRandomA_2,NextRandomA_2,NextRandomA_2]];
             TEST([mutOrderSet_a isEqualToOrderedSet:mutOrderSet_b]);
             
             {
@@ -1716,8 +1716,8 @@ void test_kvc() {
             }
             
             {
-                id finder_a = OrderedA_1;
-                id finder_b = OrderedA_2;
+                id finder_a = NextRandomA_1;
+                id finder_b = NextRandomA_2;
                 
                 [mutOrderSet_a insertObject:finder_a atIndex:4];
                 [mutOrderSet_b insertObject:finder_b atIndex:4];
@@ -1747,7 +1747,7 @@ void test_kvc() {
                 
                 NSException *catchException = nil;
                 @try {
-                    [mutOrderSet_a insertObject:OrderedA_1 atIndex:0];
+                    [mutOrderSet_a insertObject:NextRandomA_1 atIndex:0];
                 } @catch (NSException *exception) {
                     catchException = exception;
                 } @finally {
@@ -1756,7 +1756,7 @@ void test_kvc() {
                 
                 catchException = nil;
                 @try {
-                    [mutOrderSet_b insertObject:OrderedA_2 atIndex:0];
+                    [mutOrderSet_b insertObject:NextRandomA_2 atIndex:0];
                 } @catch (NSException *exception) {
                     catchException = exception;
                 } @finally {
@@ -1767,14 +1767,14 @@ void test_kvc() {
             a.NSOrderedSet_field = [NSOrderedSet orderedSet];
             b.NSOrderedSet_field = [NSOrderedSet orderedSet];
             
-            [mutOrderSet_a insertObject:OrderedA_1 atIndex:0];
-            [mutOrderSet_b insertObject:OrderedA_2 atIndex:0];
+            [mutOrderSet_a insertObject:NextRandomA_1 atIndex:0];
+            [mutOrderSet_b insertObject:NextRandomA_2 atIndex:0];
             
             //代理将NSOrderedSet_field 由不可变类型更改为可变类型
             TEST([a.NSOrderedSet_field isKindOfClass:NSMutableOrderedSet.self] && [b.NSOrderedSet_field isKindOfClass:NSMutableOrderedSet.self] && [mutOrderSet_a isEqualToOrderedSet:mutOrderSet_b]);
             
-            [mutOrderSet_a insertObjects:@[OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1] atIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, 15)]];
-            [mutOrderSet_b insertObjects:@[OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2] atIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, 15)]];
+            [mutOrderSet_a insertObjects:@[NextRandomA_1,NextRandomA_1,NextRandomA_1,NextRandomA_1,NextRandomA_1,NextRandomA_1,NextRandomA_1,NextRandomA_1,NextRandomA_1,NextRandomA_1,NextRandomA_1,NextRandomA_1,NextRandomA_1,NextRandomA_1,NextRandomA_1] atIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, 15)]];
+            [mutOrderSet_b insertObjects:@[NextRandomA_2,NextRandomA_2,NextRandomA_2,NextRandomA_2,NextRandomA_2,NextRandomA_2,NextRandomA_2,NextRandomA_2,NextRandomA_2,NextRandomA_2,NextRandomA_2,NextRandomA_2,NextRandomA_2,NextRandomA_2,NextRandomA_2] atIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, 15)]];
             TEST([mutOrderSet_a isEqualToOrderedSet:mutOrderSet_b]);
             
             TEST(mutOrderSet_a.count == mutOrderSet_b.count);
@@ -1791,12 +1791,12 @@ void test_kvc() {
             [mutOrderSet_b removeObjectsAtIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(3, 4)]];
             TEST([mutOrderSet_a isEqualToOrderedSet:mutOrderSet_b]);
             
-            [mutOrderSet_a replaceObjectAtIndex:2 withObject:OrderedA_1];
-            [mutOrderSet_b replaceObjectAtIndex:2 withObject:OrderedA_2];
+            [mutOrderSet_a replaceObjectAtIndex:2 withObject:NextRandomA_1];
+            [mutOrderSet_b replaceObjectAtIndex:2 withObject:NextRandomA_2];
             TEST([mutOrderSet_a isEqualToOrderedSet:mutOrderSet_b]);
             
-            [mutOrderSet_a replaceObjectsAtIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(4, 5)] withObjects:@[OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1]];
-            [mutOrderSet_b replaceObjectsAtIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(4, 5)] withObjects:@[OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2]];
+            [mutOrderSet_a replaceObjectsAtIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(4, 5)] withObjects:@[NextRandomA_1,NextRandomA_1,NextRandomA_1,NextRandomA_1,NextRandomA_1]];
+            [mutOrderSet_b replaceObjectsAtIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(4, 5)] withObjects:@[NextRandomA_2,NextRandomA_2,NextRandomA_2,NextRandomA_2,NextRandomA_2]];
             TEST([mutOrderSet_a isEqualToOrderedSet:mutOrderSet_b]);
             
             {
@@ -1818,8 +1818,8 @@ void test_kvc() {
             }
             
             {
-                id finder_a = OrderedA_1;
-                id finder_b = OrderedA_2;
+                id finder_a = NextRandomA_1;
+                id finder_b = NextRandomA_2;
                 
                 [mutOrderSet_a insertObject:finder_a atIndex:4];
                 [mutOrderSet_b insertObject:finder_b atIndex:4];
@@ -1843,8 +1843,8 @@ void test_kvc() {
             
             TEST((mutOrderSet_a.class == NSClassFromString(@"DSKeyValueIvarMutableOrderedSet")) && (mutOrderSet_b.class == NSClassFromString(@"NSKeyValueIvarMutableOrderedSet")));
             
-            [mutOrderSet_a insertObject:OrderedA_1 atIndex:0];
-            [mutOrderSet_b insertObject:OrderedA_2 atIndex:0];
+            [mutOrderSet_a insertObject:NextRandomA_1 atIndex:0];
+            [mutOrderSet_b insertObject:NextRandomA_2 atIndex:0];
             //NSOrderedSet_field为nil， 代理为NSOrderedSet_field创建新的NSMutableOrderedSet
             TEST([a.NSOrderedSet_field isKindOfClass:NSMutableOrderedSet.self] && [b.NSOrderedSet_field isKindOfClass:NSMutableOrderedSet.self] && [mutOrderSet_a isEqualToOrderedSet:mutOrderSet_b]);
             
@@ -1856,7 +1856,7 @@ void test_kvc() {
                 
                 NSException *catchException = nil;
                 @try {
-                    [mutOrderSet_a insertObject:OrderedA_1 atIndex:0];
+                    [mutOrderSet_a insertObject:NextRandomA_1 atIndex:0];
                 } @catch (NSException *exception) {
                     catchException = exception;
                 } @finally {
@@ -1865,7 +1865,7 @@ void test_kvc() {
                 
                 catchException = nil;
                 @try {
-                    [mutOrderSet_b insertObject:OrderedA_2 atIndex:0];
+                    [mutOrderSet_b insertObject:NextRandomA_2 atIndex:0];
                 } @catch (NSException *exception) {
                     catchException = exception;
                 } @finally {
@@ -1876,12 +1876,12 @@ void test_kvc() {
             a.NSOrderedSet_field  = [NSMutableOrderedSet orderedSet];
             b.NSOrderedSet_field  = [NSMutableOrderedSet orderedSet];
             
-            [mutOrderSet_a insertObject:OrderedA_1 atIndex:0];
-            [mutOrderSet_b insertObject:OrderedA_2 atIndex:0];
+            [mutOrderSet_a insertObject:NextRandomA_1 atIndex:0];
+            [mutOrderSet_b insertObject:NextRandomA_2 atIndex:0];
             TEST([mutOrderSet_a isEqualToOrderedSet:mutOrderSet_b]);
             
-            [mutOrderSet_a insertObjects:@[OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1] atIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, 15)]];
-            [mutOrderSet_b insertObjects:@[OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2] atIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, 15)]];
+            [mutOrderSet_a insertObjects:@[NextRandomA_1,NextRandomA_1,NextRandomA_1,NextRandomA_1,NextRandomA_1,NextRandomA_1,NextRandomA_1,NextRandomA_1,NextRandomA_1,NextRandomA_1,NextRandomA_1,NextRandomA_1,NextRandomA_1,NextRandomA_1,NextRandomA_1] atIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, 15)]];
+            [mutOrderSet_b insertObjects:@[NextRandomA_2,NextRandomA_2,NextRandomA_2,NextRandomA_2,NextRandomA_2,NextRandomA_2,NextRandomA_2,NextRandomA_2,NextRandomA_2,NextRandomA_2,NextRandomA_2,NextRandomA_2,NextRandomA_2,NextRandomA_2,NextRandomA_2] atIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, 15)]];
             TEST([mutOrderSet_a isEqualToOrderedSet:mutOrderSet_b]);
             
             TEST(mutOrderSet_a.count == mutOrderSet_b.count);
@@ -1898,12 +1898,12 @@ void test_kvc() {
             [mutOrderSet_b removeObjectsAtIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(3, 4)]];
             TEST([mutOrderSet_a isEqualToOrderedSet:mutOrderSet_b]);
             
-            [mutOrderSet_a replaceObjectAtIndex:2 withObject:OrderedA_1];
-            [mutOrderSet_b replaceObjectAtIndex:2 withObject:OrderedA_2];
+            [mutOrderSet_a replaceObjectAtIndex:2 withObject:NextRandomA_1];
+            [mutOrderSet_b replaceObjectAtIndex:2 withObject:NextRandomA_2];
             TEST([mutOrderSet_a isEqualToOrderedSet:mutOrderSet_b]);
             
-            [mutOrderSet_a replaceObjectsAtIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(4, 5)] withObjects:@[OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1,OrderedA_1]];
-            [mutOrderSet_b replaceObjectsAtIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(4, 5)] withObjects:@[OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2,OrderedA_2]];
+            [mutOrderSet_a replaceObjectsAtIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(4, 5)] withObjects:@[NextRandomA_1,NextRandomA_1,NextRandomA_1,NextRandomA_1,NextRandomA_1]];
+            [mutOrderSet_b replaceObjectsAtIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(4, 5)] withObjects:@[NextRandomA_2,NextRandomA_2,NextRandomA_2,NextRandomA_2,NextRandomA_2]];
             TEST([mutOrderSet_a isEqualToOrderedSet:mutOrderSet_b]);
             
             {
@@ -1925,8 +1925,8 @@ void test_kvc() {
             }
             
             {
-                id finder_a = OrderedA_1;
-                id finder_b = OrderedA_2;
+                id finder_a = NextRandomA_1;
+                id finder_b = NextRandomA_2;
                 
                 [mutOrderSet_a insertObject:finder_a atIndex:4];
                 [mutOrderSet_b insertObject:finder_b atIndex:4];
