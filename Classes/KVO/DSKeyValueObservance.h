@@ -16,10 +16,10 @@
     int _cachedIsShareable:1;
 }
 
-@property (nonatomic, strong) id observer;
-@property (nonatomic, strong) DSKeyValueProperty * property;
+@property (nonatomic, unsafe_unretained) id observer;
+@property (nonatomic, unsafe_unretained) DSKeyValueProperty * property;
 @property (nonatomic, assign) void * context;
-@property (nonatomic, strong) id originalObservable;
+@property (nonatomic, unsafe_unretained) id originalObservable;
 @property (nonatomic, assign) int options;
 @property (nonatomic, assign) int cachedIsShareable;
 

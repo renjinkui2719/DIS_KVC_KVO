@@ -72,7 +72,7 @@
     _DSKeyValueObserverRegistrationLockOwner = pthread_self();
     
     TSD->implicitObservanceRemovalInfo.context = context;
-    TSD->implicitObservanceRemovalInfo.flag = YES;
+    TSD->implicitObservanceRemovalInfo.shouldCompareContext = YES;
     
     for(NSUInteger index = [indexes firstIndex]; index != NSNotFound; index = [indexes indexGreaterThanIndex:index]) {
         id object = [self objectAtIndex:index];

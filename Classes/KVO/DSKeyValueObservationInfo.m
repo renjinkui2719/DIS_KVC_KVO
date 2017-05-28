@@ -450,7 +450,7 @@ DSKeyValueObservationInfo *_DSKeyValueObservationInfoCreateByAdding(DSKeyValueOb
 }
 
 
-DSKeyValueObservationInfo *_DSKeyValueObservationInfoCreateByRemoving(DSKeyValueObservationInfo *baseObservationInfo, id observer, DSKeyValueProperty *property, void *context, BOOL flag,  id originalObservable,  BOOL *cacheHit, DSKeyValueObservance **removalObservance) {
+DSKeyValueObservationInfo *_DSKeyValueObservationInfoCreateByRemoving(DSKeyValueObservationInfo *baseObservationInfo, id observer, DSKeyValueProperty *property, void *context, BOOL shouldCompareContext,  id originalObservable,  BOOL *cacheHit, DSKeyValueObservance **removalObservance) {
     DSKeyValueObservationInfo *createdObservationInfo = nil;
     
     NSUInteger observanceCount = CFArrayGetCount((CFArrayRef)baseObservationInfo.observances);
@@ -462,7 +462,7 @@ DSKeyValueObservationInfo *_DSKeyValueObservationInfoCreateByRemoving(DSKeyValue
     for (NSInteger i = observanceCount - 1; i >= 0; --i) {
         DSKeyValueObservance *observance = observancesBuff[i];
         if (observance.property == property && observance.observer == observer) {
-            if (!flag || observance.context == context) {
+            if (!shouldCompareContext || observance.context == context) {
                 if (!originalObservable || observance.originalObservable == originalObservable) {
                     *removalObservance = observance;
                     removalObservanceIndex = i;
@@ -509,7 +509,7 @@ DSKeyValueObservationInfo *_DSKeyValueObservationInfoCreateByRemoving(DSKeyValue
             shareableObservationInfoKey.cachedHash = 0;
             
             if (!existsObservationInfo) {
-                memmove(observancesBuff + removalObservanceIndex, observancesBuff + removalObservanceIndex + 1, observanceCount - (removalObservanceIndex + 1));
+                memmove(observancesBuff + removalObservanceIndex, observancesBuff + removalObservanceIndex + 1, (observanceCount - (removalObservanceIndex + 1)) * sizeof(DSKeyValueObservance *));
                 createdObservationInfo = [[DSKeyValueObservationInfo alloc] _initWithObservances:observancesBuff count:observanceCount - 1 hashValue:cachedHash];
                 if (createdObservationInfo.cachedIsShareable) {
                     [DSKeyValueShareableObservationInfos addObject:createdObservationInfo];

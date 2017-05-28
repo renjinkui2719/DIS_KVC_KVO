@@ -95,7 +95,7 @@ void DSKeyValueObservingAssertRegistrationLockNotHeld() {
     if((options >> 8) & 0x01) {
         DSKeyValueObservingTSD *TSD = _CFGetTSD(DSKeyValueObservingTSDKey);
         if (TSD) {
-            originalObservable = TSD->implicitObservanceAdditionInfo.object;
+            originalObservable = TSD->implicitObservanceAdditionInfo.originalObservable;
         }
     }
     
@@ -129,8 +129,13 @@ void DSKeyValueObservingAssertRegistrationLockNotHeld() {
     }
 
     DSKeyValueObservingTSD backTSD = *(TSD);
+    
+    TSD->implicitObservanceRemovalInfo.removingObject = self;
+    TSD->implicitObservanceRemovalInfo.observer = observer;
+    TSD->implicitObservanceRemovalInfo.keyPath = keyPath;
+    TSD->implicitObservanceRemovalInfo.originalObservable = nil;
     TSD->implicitObservanceRemovalInfo.context = context;
-    TSD->implicitObservanceRemovalInfo.flag = YES;
+    TSD->implicitObservanceRemovalInfo.shouldCompareContext = YES;
     
     [self d_removeObserver:observer forKeyPath:keyPath];
     
@@ -154,19 +159,22 @@ void DSKeyValueObservingAssertRegistrationLockNotHeld() {
     DSKeyValueObservationInfo *oldObservationInfo = _DSKeyValueRetainedObservationInfoForObject(self, property.containerClass);
     if (oldObservationInfo) {
         void *context = NULL;
-        BOOL flag = NO;
+        BOOL shouldCompareContext = NO;
         id originalObservable = nil;
         BOOL cacheHit = NO;
         DSKeyValueObservance *removalObservance = nil;
         
         DSKeyValueObservingTSD *TSD = _CFGetTSD(DSKeyValueObservingTSDKey);
-        if (TSD && TSD->implicitObservanceRemovalInfo.relationshipObject == self && TSD->implicitObservanceRemovalInfo.observer == observer && [TSD->implicitObservanceRemovalInfo.keyPathFromRelatedObject isEqualToString:property.keyPath]) {
-            originalObservable = TSD->implicitObservanceRemovalInfo.object;
+        if (TSD &&
+            TSD->implicitObservanceRemovalInfo.removingObject == self &&
+            TSD->implicitObservanceRemovalInfo.observer == observer &&
+            [TSD->implicitObservanceRemovalInfo.keyPath isEqualToString:property.keyPath]) {
+            originalObservable = TSD->implicitObservanceRemovalInfo.originalObservable;
             context = TSD->implicitObservanceRemovalInfo.context;
-            flag = TSD->implicitObservanceRemovalInfo.flag;
+            shouldCompareContext = TSD->implicitObservanceRemovalInfo.shouldCompareContext;
         }
         
-        DSKeyValueObservationInfo *newObservationInfo = _DSKeyValueObservationInfoCreateByRemoving(oldObservationInfo, observer, property, context, flag, originalObservable, &cacheHit, &removalObservance);
+        DSKeyValueObservationInfo *newObservationInfo = _DSKeyValueObservationInfoCreateByRemoving(oldObservationInfo, observer, property, context, shouldCompareContext, originalObservable, &cacheHit, &removalObservance);
         
         if (removalObservance) {
             [removalObservance retain];

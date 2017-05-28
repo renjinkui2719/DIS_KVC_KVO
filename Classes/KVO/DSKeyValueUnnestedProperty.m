@@ -7,6 +7,7 @@
 #import "DSKeyValueMutatingSetMethodSet.h"
 #import "NSObject+DSKeyValueCoding.h"
 #import "NSObject+DSKeyValueCodingPrivate.h"
+#import "NSObject+DSKeyValueObservingCustomization.h"
 #import "DSKeyValuePropertyCreate.h"
 #import "DSSetValueAndNotify.h"
 
@@ -67,7 +68,7 @@
 }
 
 - (Class)_isaForAutonotifying {
-    BOOL autoNotify = [self.containerClass.originalClass automaticallyNotifiesObserversForKey:self.keyPath];
+    BOOL autoNotify = [self.containerClass.originalClass d_automaticallyNotifiesObserversForKey:self.keyPath];
     if(autoNotify) {
         DSKeyValueNotifyingInfo *info = _DSKeyValueContainerClassGetNotifyingInfo(self.containerClass);
         if (info) {
@@ -92,7 +93,7 @@
     }
     else {
         //获取当前keyPath依赖的其他keyPath
-        NSSet<NSString *>* keyPaths = [self.containerClass.originalClass keyPathsForValuesAffectingValueForKey:self.keyPath];
+        NSSet<NSString *>* keyPaths = [self.containerClass.originalClass d_keyPathsForValuesAffectingValueForKey:self.keyPath];
         for (NSString *eachKeyPath in keyPaths) {
             //某个依赖的keyPath和当前keyPath相同，出现“自己依赖自己”，非法
             if ([eachKeyPath isEqualToString: self.keyPath]) {

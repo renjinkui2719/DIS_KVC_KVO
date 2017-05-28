@@ -72,7 +72,7 @@
         ImplicitObservanceAdditionInfo *info = DSKeyValueGetImplicitObservanceAdditionInfo();
         ImplicitObservanceAdditionInfo backInfo = *info;
         
-        info->object = object;
+        info->originalObservable = object;
         info->observance = observance;
         
         DSKeyValueObserverRegistrationLockUnlock();
@@ -103,12 +103,12 @@
         ImplicitObservanceRemovalInfo *info =  DSKeyValueGetImplicitObservanceRemovalInfo();
         ImplicitObservanceRemovalInfo backInfo = *info;
         
-        info->relationshipObject = relationshipValue;
+        info->removingObject = relationshipValue;
         info->observer = observance;
-        info->keyPathFromRelatedObject = _keyPathFromRelatedObject;
-        info->object = object;
+        info->keyPath = _keyPathFromRelatedObject;
+        info->originalObservable = object;
         info->context  = (observance.property == self ? nil : self);
-        info->flag = YES;
+        info->shouldCompareContext = YES;
         
         LOG_KVO(@"in property: %@, will remove observer: %@ from it's relationshipValue: %@, with keypath: %@", simple_desc(self), simple_desc(observance), simple_desc(relationshipValue), _keyPathFromRelatedObject);
         [relationshipValue d_removeObserver:observance forKeyPath:_keyPathFromRelatedObject];
@@ -133,7 +133,7 @@
 
 - (BOOL)object:(id)object withObservance:(DSKeyValueObservance *)observance willChangeValueForKeyOrKeys:(id)keyOrKeys recurse:(BOOL)recurse forwardingValues:(DSKeyValuePropertyForwardingValues *)forwardingValues {
     ImplicitObservanceAdditionInfo *info = DSKeyValueGetImplicitObservanceAdditionInfo();
-    if(info->object != object || info->observance !=  observance) {
+    if(info->originalObservable != object || info->observance !=  observance) {
         forwardingValues->changingValue = nil;
         forwardingValues->affectingValuesMap = nil;
         
@@ -173,12 +173,12 @@
         
         id changingRelationshipObject = (forwardingValues.changingValue != [NSNull null] ? forwardingValues.changingValue : nil);
         
-        removalinfo->relationshipObject = changingRelationshipObject;
+        removalinfo->removingObject = changingRelationshipObject;
         removalinfo->observer = observance;
-        removalinfo->keyPathFromRelatedObject = _keyPathFromRelatedObject;
-        removalinfo->object = object;
+        removalinfo->keyPath = _keyPathFromRelatedObject;
+        removalinfo->originalObservable = object;
         removalinfo->context  = context;
-        removalinfo->flag = YES;
+        removalinfo->shouldCompareContext = YES;
 
         LOG_KVO(@"in property: %@, will remove observer: %@ from changingRelationshipObject: %@, with keypath: %@", simple_desc(self), simple_desc(observance), simple_desc(changingRelationshipObject), _keyPathFromRelatedObject);
         [changingRelationshipObject d_removeObserver:observance forKeyPath:_keyPathFromRelatedObject];
@@ -188,7 +188,7 @@
         ImplicitObservanceAdditionInfo *additionInfo = DSKeyValueGetImplicitObservanceAdditionInfo();
         ImplicitObservanceAdditionInfo backAdditionInfo = *additionInfo;
         
-        additionInfo->object = object;
+        additionInfo->originalObservable = object;
         additionInfo->observance = observance;
 
         id newRelationshipObject = [object valueForKey:_relationshipKey];

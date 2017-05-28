@@ -13,17 +13,17 @@
 @class DSKeyValueObservationInfo;
 
 typedef struct {
-    id object;//8
+    id originalObservable;//8
     DSKeyValueObservance *observance;//c
 }ImplicitObservanceAdditionInfo;
 
 typedef struct {
-    id relationshipObject;//10
+    id removingObject;//10
     id observer;//14
-    NSString *keyPathFromRelatedObject;//18
-    id object;//1c
+    NSString *keyPath;//18
+    id originalObservable;//1c
     void *context;//20
-    BOOL flag;//24
+    BOOL shouldCompareContext;//24
 }ImplicitObservanceRemovalInfo;
 
 typedef struct ObservationInfoWatcher{
