@@ -44,6 +44,11 @@ NSHashTable *DSKeyValueShareableObservances;
     return self;
 }
 
+- (void)dealloc {
+    [_observances release];
+    [super dealloc];
+}
+
 - (DSKeyValueObservationInfo *)_copyByAddingObservance:(DSKeyValueObservance *)observance {
 
     DSKeyValueObservationInfo *copied = [[DSKeyValueObservationInfo alloc] init];

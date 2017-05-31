@@ -65,7 +65,6 @@
     }
     else {
         arrayValue = [[NSMutableArray alloc] initWithObjects:&anObject count:1];
-        id o = arrayValue[0];
         object_setIvarDirectly(self.container, _ivar, arrayValue);
     }
 }

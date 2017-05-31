@@ -49,5 +49,9 @@ BOOL DSKeyValueAccessorIsEqual(DSKeyValueAccessor *lhs, DSKeyValueAccessor *rhs)
     return self;
 }
 
+- (void)dealloc {
+    [_key release];
+    [super dealloc];
+}
 
 @end

@@ -15,11 +15,11 @@
 extern NSString * const NSKeyValueChangeOriginalObservableKey;
 
 typedef struct {
-    NSKeyValueChange kind;//0
-    id oldValue;//4
-    id newValue;//8
-    NSIndexSet *indexes;//c
-    id extraData;//10
+    NSKeyValueChange kind;
+    id oldValue;
+    id newValue;
+    NSIndexSet *indexes;
+    id extraData;
 }DSKeyValueChangeDetails;
 
 @interface DSKeyValueChangeDictionary : NSDictionary

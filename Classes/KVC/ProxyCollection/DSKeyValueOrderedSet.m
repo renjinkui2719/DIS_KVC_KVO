@@ -51,12 +51,12 @@
 }
 
 - (NSUInteger)count {
-    return ((NSUInteger (*)(id,Method,...))method_invoke)(self.container, _methods.count);
+    return ((NSUInteger (*)(id,Method))method_invoke)(self.container, _methods.count);
 }
 
 - (void)getObjects:(id  _Nonnull *)objects range:(NSRange)range {
     if (_methods.getObjectsRange) {
-        ((void (*)(id,Method,...))method_invoke)(self.container, _methods.getObjectsRange, objects, range);
+        ((void (*)(id,Method,id *,NSRange))method_invoke)(self.container, _methods.getObjectsRange, objects, range);
     }
     else {
         [super getObjects:objects range:range];
@@ -64,16 +64,16 @@
 }
 
 - (NSUInteger)indexOfObject:(id)object {
-    return ((NSUInteger (*)(id,Method,...))method_invoke)(self.container, _methods.indexOfObject, object);
+    return ((NSUInteger (*)(id,Method,id))method_invoke)(self.container, _methods.indexOfObject, object);
 }
 
 - (id)objectAtIndex:(NSUInteger)idx {
     if (_methods.objectAtIndex) {
-         return ((id (*)(id,Method,...))method_invoke)(self.container, _methods.objectAtIndex, idx);
+         return ((id (*)(id,Method,NSUInteger))method_invoke)(self.container, _methods.objectAtIndex, idx);
     }
     else {
         NSIndexSet *indexes = [[NSIndexSet alloc] initWithIndex:idx];
-        NSArray *objects = ((NSArray * (*)(id,Method,...))method_invoke)(self.container, _methods.objectsAtIndexes, indexes);
+        NSArray *objects = ((NSArray * (*)(id,Method,NSIndexSet *))method_invoke)(self.container, _methods.objectsAtIndexes, indexes);
         [indexes release];
         return [objects objectAtIndex:0];
     }
@@ -81,7 +81,7 @@
 
 - (NSArray<id> *)objectsAtIndexes:(NSIndexSet *)indexes {
     if (_methods.objectsAtIndexes) {
-        return ((NSArray * (*)(id,Method,...))method_invoke)(self.container, _methods.objectsAtIndexes, indexes);
+        return ((NSArray * (*)(id,Method,NSIndexSet *))method_invoke)(self.container, _methods.objectsAtIndexes, indexes);
     }
     else {
         return [super objectsAtIndexes:indexes];

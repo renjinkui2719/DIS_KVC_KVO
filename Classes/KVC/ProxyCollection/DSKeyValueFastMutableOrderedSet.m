@@ -31,12 +31,12 @@
 
 - (void)insertObject:(id)object atIndex:(NSUInteger)idx {
     if (_mutatingMethods.insertObjectAtIndex) {
-        ((void (*)(id,Method,...))method_invoke)(self.container, _mutatingMethods.insertObjectAtIndex, object, idx);
+        ((void (*)(id,Method,id,NSUInteger))method_invoke)(self.container, _mutatingMethods.insertObjectAtIndex, object, idx);
     }
     else {
         NSArray *objects = [[NSArray alloc] initWithObjects:&object count:1];
         NSIndexSet *indexes = [[NSIndexSet alloc] initWithIndex:idx];
-        ((void (*)(id,Method,...))method_invoke)(self.container, _mutatingMethods.insertObjectsAtIndexes, objects, indexes);
+        ((void (*)(id,Method,NSArray *,NSIndexSet *indexes))method_invoke)(self.container, _mutatingMethods.insertObjectsAtIndexes, objects, indexes);
         [objects release];
         [indexes release];
     }
@@ -44,7 +44,7 @@
 
 - (void)insertObjects:(NSArray *)objects atIndexes:(NSIndexSet *)indexes {
     if (_mutatingMethods.insertObjectsAtIndexes) {
-        ((void (*)(id,Method,...))method_invoke)(self.container, _mutatingMethods.insertObjectsAtIndexes, objects, indexes);
+        ((void (*)(id,Method,NSArray *,NSIndexSet *))method_invoke)(self.container, _mutatingMethods.insertObjectsAtIndexes, objects, indexes);
     }
     else {
         [super insertObjects:objects atIndexes:indexes];
@@ -53,18 +53,18 @@
 
 - (void)removeObjectAtIndex:(NSUInteger)idx {
     if (_mutatingMethods.removeObjectAtIndex) {
-        ((void (*)(id,Method,...))method_invoke)(self.container, _mutatingMethods.removeObjectAtIndex, idx);
+        ((void (*)(id,Method,NSUInteger))method_invoke)(self.container, _mutatingMethods.removeObjectAtIndex, idx);
     }
     else {
         NSIndexSet *indexes = [[NSIndexSet alloc] initWithIndex:idx];
-        ((void (*)(id,Method,...))method_invoke)(self.container, _mutatingMethods.removeObjectsAtIndexes, indexes);
+        ((void (*)(id,Method,NSIndexSet *))method_invoke)(self.container, _mutatingMethods.removeObjectsAtIndexes, indexes);
         [indexes release];
     }
 }
 
 - (void)removeObjectsAtIndexes:(NSIndexSet *)indexes {
     if (_mutatingMethods.removeObjectsAtIndexes) {
-        ((void (*)(id,Method,...))method_invoke)(self.container, _mutatingMethods.removeObjectsAtIndexes, indexes);
+        ((void (*)(id,Method,NSIndexSet *))method_invoke)(self.container, _mutatingMethods.removeObjectsAtIndexes, indexes);
     }
     else {
         [super removeObjectsAtIndexes:indexes];
@@ -73,12 +73,12 @@
 
 - (void)replaceObjectAtIndex:(NSUInteger)idx withObject:(id)object {
     if (_mutatingMethods.replaceObjectAtIndex) {
-        ((void (*)(id,Method,...))method_invoke)(self.container, _mutatingMethods.replaceObjectAtIndex, idx, object);
+        ((void (*)(id,Method,NSUInteger,id))method_invoke)(self.container, _mutatingMethods.replaceObjectAtIndex, idx, object);
     }
     else if (_mutatingMethods.replaceObjectsAtIndexes){
         NSArray *objects = [[NSArray alloc] initWithObjects:&objects count:1];
         NSIndexSet *indexes = [[NSIndexSet alloc] initWithIndex:idx];
-        ((void (*)(id,Method,...))method_invoke)(self.container, _mutatingMethods.replaceObjectsAtIndexes, indexes);
+        ((void (*)(id,Method,NSIndexSet *, NSArray *))method_invoke)(self.container, _mutatingMethods.replaceObjectsAtIndexes, indexes, objects);
         [objects release];
         [indexes release];
     }
@@ -90,7 +90,7 @@
 
 - (void)replaceObjectsAtIndexes:(NSIndexSet *)indexes withObjects:(NSArray *)objects {
     if (_mutatingMethods.replaceObjectsAtIndexes) {
-        ((void (*)(id,Method,...))method_invoke)(self.container, _mutatingMethods.replaceObjectsAtIndexes, indexes,objects);
+        ((void (*)(id,Method,NSIndexSet *,NSArray *))method_invoke)(self.container, _mutatingMethods.replaceObjectsAtIndexes, indexes, objects);
     }
     else {
         [super replaceObjectsAtIndexes:indexes withObjects:objects];
@@ -120,12 +120,12 @@
 }
 
 - (NSUInteger)count {
-    return ((NSUInteger (*)(id,Method,...))method_invoke)(self.container, _nonmutatingMethods.count);
+    return ((NSUInteger (*)(id,Method))method_invoke)(self.container, _nonmutatingMethods.count);
 }
 
 - (void)getObjects:(id  _Nonnull *)objects range:(NSRange)range {
     if(_nonmutatingMethods.getObjectsRange) {
-        ((void (*)(id,Method,...))method_invoke)(self.container, _nonmutatingMethods.getObjectsRange, objects,range);
+        ((void (*)(id,Method,id *,NSRange))method_invoke)(self.container, _nonmutatingMethods.getObjectsRange, objects,range);
     }
     else {
         [super getObjects:objects range:range];
@@ -133,16 +133,16 @@
 }
 
 - (NSUInteger)indexOfObject:(id)object {
-    return ((NSUInteger (*)(id,Method,...))method_invoke)(self.container, _nonmutatingMethods.indexOfObject, object);
+    return ((NSUInteger (*)(id,Method,id))method_invoke)(self.container, _nonmutatingMethods.indexOfObject, object);
 }
 
 - (id)objectAtIndex:(NSUInteger)idx {
     if(_nonmutatingMethods.objectAtIndex) {
-        return ((id (*)(id,Method,...))method_invoke)(self.container, _nonmutatingMethods.objectAtIndex, idx);
+        return ((id (*)(id,Method,NSUInteger))method_invoke)(self.container, _nonmutatingMethods.objectAtIndex, idx);
     }
     else {
         NSIndexSet *indexes = [[NSIndexSet alloc] initWithIndex:idx];
-        NSArray *objects = ((NSArray * (*)(id,Method,...))method_invoke)(self.container, _nonmutatingMethods.objectsAtIndexes, idx);
+        NSArray *objects = ((NSArray * (*)(id,Method,NSIndexSet *))method_invoke)(self.container, _nonmutatingMethods.objectsAtIndexes, indexes);
         [indexes release];
         return [objects objectAtIndex:0];
     }
@@ -150,7 +150,7 @@
 
 - (NSArray<id> *)objectsAtIndexes:(NSIndexSet *)indexes {
     if(_nonmutatingMethods.objectsAtIndexes) {
-        return ((NSArray * (*)(id,Method,...))method_invoke)(self.container, _nonmutatingMethods.objectsAtIndexes, indexes);
+        return ((NSArray * (*)(id,Method,NSIndexSet *))method_invoke)(self.container, _nonmutatingMethods.objectsAtIndexes, indexes);
     }
     else {
         return [super objectsAtIndexes:indexes];

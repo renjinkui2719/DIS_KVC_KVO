@@ -40,7 +40,7 @@
                         operatorMethod = DSKeyValueMethodForPattern(self.class, "_d_%sForKeyPath:", operatorCStr);
                     }
                     if(operatorMethod) {
-                        return ((id (*)(id,Method,...))method_invoke)(self, operatorMethod, keyPathForOperator);
+                        return ((id (*)(id,Method,NSString *))method_invoke)(self, operatorMethod, keyPathForOperator);
                     }
                     else {
                         [NSException raise:NSInvalidArgumentException format:@"[<%@ %p> valueForKeyPath:]: this class does not implement the %@ operation.", self.class, self, operator];

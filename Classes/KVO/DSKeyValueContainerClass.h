@@ -17,7 +17,7 @@
 typedef struct DSKeyValueNotifyingInfo {
     Class originalClass;
     Class newSubClass;
-    CFMutableSetRef keys;
+    CFMutableSetRef notifyingKeys;
     CFMutableDictionaryRef selKeyMap;
     pthread_mutex_t mutex;
     //originalClass类是否覆写了 willChangeValueForKey: 或  didChangeValueForKey:

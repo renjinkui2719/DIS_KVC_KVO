@@ -8,8 +8,9 @@
 
 #import <Foundation/Foundation.h>
 
-extern int kvc_kvo_test_main(int argc, const char * argv[]);
 
 int main(int argc, const char * argv[]) {
-    return kvc_kvo_test_main(argc, argv);
+    void tests_main();
+    tests_main();
+    return 0;
 }

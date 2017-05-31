@@ -49,15 +49,15 @@
 }
 
 - (NSUInteger)count {
-    return ((NSInteger (*)(id,Method,...))method_invoke)(self.container, _methods.count);
+    return ((NSInteger (*)(id,Method))method_invoke)(self.container, _methods.count);
 }
 
 - (id)member:(id)object {
-    return ((id (*)(id,Method,...))method_invoke)(self.container, _methods.member,object);
+    return ((id (*)(id,Method,id))method_invoke)(self.container, _methods.member,object);
 }
 
 - (NSEnumerator<id> *)objectEnumerator {
-    return ((NSEnumerator<id> * (*)(id,Method,...))method_invoke)(self.container, _methods.enumerator);
+    return ((NSEnumerator<id> * (*)(id,Method))method_invoke)(self.container, _methods.enumerator);
 }
 
 - (void)dealloc {

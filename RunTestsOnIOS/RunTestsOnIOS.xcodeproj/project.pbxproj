@@ -70,7 +70,6 @@
 		9127A4091ED6F7030069CD54 /* DSKeyValueSlowMutableArray.m in Sources */ = {isa = PBXBuildFile; fileRef = 9127A3A11ED6F7030069CD54 /* DSKeyValueSlowMutableArray.m */; };
 		9127A40A1ED6F7030069CD54 /* DSKeyValueSlowMutableOrderedSet.m in Sources */ = {isa = PBXBuildFile; fileRef = 9127A3A31ED6F7030069CD54 /* DSKeyValueSlowMutableOrderedSet.m */; };
 		9127A40B1ED6F7030069CD54 /* DSKeyValueSlowMutableSet.m in Sources */ = {isa = PBXBuildFile; fileRef = 9127A3A51ED6F7030069CD54 /* DSKeyValueSlowMutableSet.m */; };
-		9127A40C1ED6F7030069CD54 /* kvc_kvo_test_main.m in Sources */ = {isa = PBXBuildFile; fileRef = 9127A3A61ED6F7030069CD54 /* kvc_kvo_test_main.m */; };
 		9127A40D1ED6F7030069CD54 /* DSKeyValueChangeDictionary.m in Sources */ = {isa = PBXBuildFile; fileRef = 9127A3A91ED6F7030069CD54 /* DSKeyValueChangeDictionary.m */; };
 		9127A40E1ED6F7030069CD54 /* DSKeyValueComputedProperty.m in Sources */ = {isa = PBXBuildFile; fileRef = 9127A3AB1ED6F7030069CD54 /* DSKeyValueComputedProperty.m */; };
 		9127A40F1ED6F7030069CD54 /* DSKeyValueContainerClass.m in Sources */ = {isa = PBXBuildFile; fileRef = 9127A3AD1ED6F7030069CD54 /* DSKeyValueContainerClass.m */; };
@@ -89,6 +88,10 @@
 		9127A41C1ED6F7030069CD54 /* NSOrderedSet+DSKeyValueObserverRegistration.m in Sources */ = {isa = PBXBuildFile; fileRef = 9127A3C81ED6F7030069CD54 /* NSOrderedSet+DSKeyValueObserverRegistration.m */; };
 		9127A41D1ED6F7030069CD54 /* NSSet+DSKeyValueObserverRegistration.m in Sources */ = {isa = PBXBuildFile; fileRef = 9127A3CA1ED6F7030069CD54 /* NSSet+DSKeyValueObserverRegistration.m */; };
 		9127A41E1ED6F7030069CD54 /* NSURL+DSKeyValueObservingCustomization.m in Sources */ = {isa = PBXBuildFile; fileRef = 9127A3CC1ED6F7030069CD54 /* NSURL+DSKeyValueObservingCustomization.m */; };
+		919007891EDE59E0004C3B10 /* kvc_tests_main.m in Sources */ = {isa = PBXBuildFile; fileRef = 919007841EDE59E0004C3B10 /* kvc_tests_main.m */; };
+		9190078A1EDE59E0004C3B10 /* kvo_tests_main.m in Sources */ = {isa = PBXBuildFile; fileRef = 919007851EDE59E0004C3B10 /* kvo_tests_main.m */; };
+		9190078B1EDE59E0004C3B10 /* tests_define.m in Sources */ = {isa = PBXBuildFile; fileRef = 919007871EDE59E0004C3B10 /* tests_define.m */; };
+		9190078D1EDE59FE004C3B10 /* tests_main.m in Sources */ = {isa = PBXBuildFile; fileRef = 9190078C1EDE59FE004C3B10 /* tests_main.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -220,7 +223,6 @@
 		9127A3A31ED6F7030069CD54 /* DSKeyValueSlowMutableOrderedSet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DSKeyValueSlowMutableOrderedSet.m; sourceTree = "<group>"; };
 		9127A3A41ED6F7030069CD54 /* DSKeyValueSlowMutableSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DSKeyValueSlowMutableSet.h; sourceTree = "<group>"; };
 		9127A3A51ED6F7030069CD54 /* DSKeyValueSlowMutableSet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DSKeyValueSlowMutableSet.m; sourceTree = "<group>"; };
-		9127A3A61ED6F7030069CD54 /* kvc_kvo_test_main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = kvc_kvo_test_main.m; sourceTree = "<group>"; };
 		9127A3A81ED6F7030069CD54 /* DSKeyValueChangeDictionary.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DSKeyValueChangeDictionary.h; sourceTree = "<group>"; };
 		9127A3A91ED6F7030069CD54 /* DSKeyValueChangeDictionary.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DSKeyValueChangeDictionary.m; sourceTree = "<group>"; };
 		9127A3AA1ED6F7030069CD54 /* DSKeyValueComputedProperty.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DSKeyValueComputedProperty.h; sourceTree = "<group>"; };
@@ -259,6 +261,13 @@
 		9127A3CB1ED6F7030069CD54 /* NSURL+DSKeyValueObservingCustomization.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSURL+DSKeyValueObservingCustomization.h"; sourceTree = "<group>"; };
 		9127A3CC1ED6F7030069CD54 /* NSURL+DSKeyValueObservingCustomization.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSURL+DSKeyValueObservingCustomization.m"; sourceTree = "<group>"; };
 		9127A3CD1ED6F7030069CD54 /* Log.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Log.h; sourceTree = "<group>"; };
+		919007841EDE59E0004C3B10 /* kvc_tests_main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = kvc_tests_main.m; sourceTree = "<group>"; };
+		919007851EDE59E0004C3B10 /* kvo_tests_main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = kvo_tests_main.m; sourceTree = "<group>"; };
+		919007861EDE59E0004C3B10 /* tests_define.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = tests_define.h; sourceTree = "<group>"; };
+		919007871EDE59E0004C3B10 /* tests_define.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = tests_define.m; sourceTree = "<group>"; };
+		9190078C1EDE59FE004C3B10 /* tests_main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = tests_main.m; sourceTree = "<group>"; };
+		919007B31EDE9726004C3B10 /* KVC.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = KVC.h; sourceTree = "<group>"; };
+		919007B41EDE979A004C3B10 /* KVO.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = KVO.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -309,7 +318,7 @@
 		9127A3221ED6F7030069CD54 /* Classes */ = {
 			isa = PBXGroup;
 			children = (
-				9127A3A61ED6F7030069CD54 /* kvc_kvo_test_main.m */,
+				919007821EDE59E0004C3B10 /* Tests */,
 				9127A3CD1ED6F7030069CD54 /* Log.h */,
 				9127A3231ED6F7030069CD54 /* KVC */,
 				9127A3A71ED6F7030069CD54 /* KVO */,
@@ -321,6 +330,7 @@
 		9127A3231ED6F7030069CD54 /* KVC */ = {
 			isa = PBXGroup;
 			children = (
+				919007B31EDE9726004C3B10 /* KVC.h */,
 				9127A3531ED6F7030069CD54 /* DSKeyValueCodingCommon.h */,
 				9127A3241ED6F7030069CD54 /* Accessor */,
 				9127A3541ED6F7030069CD54 /* MethodSet */,
@@ -493,6 +503,8 @@
 		9127A3A71ED6F7030069CD54 /* KVO */ = {
 			isa = PBXGroup;
 			children = (
+				919007B41EDE979A004C3B10 /* KVO.h */,
+				9127A3B41ED6F7030069CD54 /* DSKeyValueObserverCommon.h */,
 				91EF5AF01ED7DB5900CB4F07 /* Property */,
 				9127A3A81ED6F7030069CD54 /* DSKeyValueChangeDictionary.h */,
 				9127A3A91ED6F7030069CD54 /* DSKeyValueChangeDictionary.m */,
@@ -502,7 +514,6 @@
 				9127A3B11ED6F7030069CD54 /* DSKeyValueObservance.m */,
 				9127A3B21ED6F7030069CD54 /* DSKeyValueObservationInfo.h */,
 				9127A3B31ED6F7030069CD54 /* DSKeyValueObservationInfo.m */,
-				9127A3B41ED6F7030069CD54 /* DSKeyValueObserverCommon.h */,
 				9127A3BB1ED6F7030069CD54 /* DSSetValueAndNotify.h */,
 				9127A3BC1ED6F7030069CD54 /* DSSetValueAndNotify.m */,
 				9127A3C11ED6F7030069CD54 /* NSObject+DSKeyValueObserverRegistration.h */,
@@ -523,6 +534,18 @@
 				9127A3CC1ED6F7030069CD54 /* NSURL+DSKeyValueObservingCustomization.m */,
 			);
 			path = KVO;
+			sourceTree = "<group>";
+		};
+		919007821EDE59E0004C3B10 /* Tests */ = {
+			isa = PBXGroup;
+			children = (
+				9190078C1EDE59FE004C3B10 /* tests_main.m */,
+				919007841EDE59E0004C3B10 /* kvc_tests_main.m */,
+				919007851EDE59E0004C3B10 /* kvo_tests_main.m */,
+				919007861EDE59E0004C3B10 /* tests_define.h */,
+				919007871EDE59E0004C3B10 /* tests_define.m */,
+			);
+			path = Tests;
 			sourceTree = "<group>";
 		};
 		91EF5AF01ED7DB5900CB4F07 /* Property */ = {
@@ -655,7 +678,6 @@
 				9127A3F91ED6F7030069CD54 /* DSKeyValueFastMutableOrderedSet.m in Sources */,
 				9127A3FD1ED6F7030069CD54 /* DSKeyValueIvarMutableSet.m in Sources */,
 				9127A3EB1ED6F7030069CD54 /* DSKeyValueNonmutatingSetMethodSet.m in Sources */,
-				9127A40C1ED6F7030069CD54 /* kvc_kvo_test_main.m in Sources */,
 				9127A3D61ED6F7030069CD54 /* DSKeyValueGetter.m in Sources */,
 				9127A4181ED6F7030069CD54 /* NSObject+DSKeyValueObserverNotification.m in Sources */,
 				9127A40D1ED6F7030069CD54 /* DSKeyValueChangeDictionary.m in Sources */,
@@ -663,12 +685,14 @@
 				9127A4061ED6F7030069CD54 /* DSKeyValueProxyCaching.m in Sources */,
 				9127A2FA1ED6F6010069CD54 /* main.m in Sources */,
 				9127A3FB1ED6F7030069CD54 /* DSKeyValueIvarMutableArray.m in Sources */,
+				9190078D1EDE59FE004C3B10 /* tests_main.m in Sources */,
 				9127A4191ED6F7030069CD54 /* NSObject+DSKeyValueObserverRegistration.m in Sources */,
 				9127A4041ED6F7030069CD54 /* DSKeyValueNotifyingMutableSet.m in Sources */,
 				9127A3FC1ED6F7030069CD54 /* DSKeyValueIvarMutableOrderedSet.m in Sources */,
 				9127A41D1ED6F7030069CD54 /* NSSet+DSKeyValueObserverRegistration.m in Sources */,
 				9127A4081ED6F7030069CD54 /* DSKeyValueSet.m in Sources */,
 				9127A3F81ED6F7030069CD54 /* DSKeyValueFastMutableArray.m in Sources */,
+				9190078A1EDE59E0004C3B10 /* kvo_tests_main.m in Sources */,
 				9127A3E51ED6F7030069CD54 /* DSKeyValueMutatingCollectionMethodSet.m in Sources */,
 				9127A3D31ED6F7030069CD54 /* DSKeyValueCollectionGetter.m in Sources */,
 				9127A3E91ED6F7030069CD54 /* DSKeyValueNonmutatingCollectionMethodSet.m in Sources */,
@@ -680,10 +704,12 @@
 				9127A3E01ED6F7030069CD54 /* DSKeyValueMethodSetter.m in Sources */,
 				9127A3DB1ED6F7030069CD54 /* DSKeyValueProxyGetter.m in Sources */,
 				9127A3DA1ED6F7030069CD54 /* DSKeyValueNotifyingMutableCollectionGetter.m in Sources */,
+				919007891EDE59E0004C3B10 /* kvc_tests_main.m in Sources */,
 				9127A4161ED6F7030069CD54 /* DSSetValueAndNotify.m in Sources */,
 				9127A3F41ED6F7030069CD54 /* NSOrderedSet+DSKeyValueCodingPrivate.m in Sources */,
 				9127A40F1ED6F7030069CD54 /* DSKeyValueContainerClass.m in Sources */,
 				9127A4141ED6F7030069CD54 /* DSKeyValuePropertyCreate.m in Sources */,
+				9190078B1EDE59E0004C3B10 /* tests_define.m in Sources */,
 				9127A3CF1ED6F7030069CD54 /* DSGetValueWithMethod.m in Sources */,
 				9127A40E1ED6F7030069CD54 /* DSKeyValueComputedProperty.m in Sources */,
 				9127A41B1ED6F7030069CD54 /* NSObject+DSKeyValueObservingPrivate.m in Sources */,
@@ -804,7 +830,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.seeme.RunTestsOnIOS;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
-				VALID_ARCHS = "armv7 armv7s";
+				VALID_ARCHS = "armv7 armv7s arm64";
 			};
 			name = Debug;
 		};
@@ -822,7 +848,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.seeme.RunTestsOnIOS;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
-				VALID_ARCHS = "armv7 armv7s";
+				VALID_ARCHS = "armv7 armv7s arm64";
 			};
 			name = Release;
 		};

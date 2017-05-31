@@ -38,7 +38,7 @@ static inline NSUInteger _DSKVOPointersHash(NSInteger count,...) {
     va_start(ap, count);
     for (NSInteger i=0; i < count; ++i) {
         void *p = va_arg(ap, void *);
-        hash += (NSUInteger)p;
+        hash ^= (NSUInteger)p;
     }
     va_end(ap);
     return hash;

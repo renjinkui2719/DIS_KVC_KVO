@@ -4,13 +4,13 @@
 @implementation DSKeyValueProperty
 
 - (NSString *)restOfKeyPathIfContainedByValueForKeyPath:(NSString *)keyPath {
-    if(keyPath != self.keyPath &&
+    if(keyPath != _keyPath &&
        !CFEqual(keyPath,_keyPath) &&
-       [self.keyPath hasPrefix:keyPath] &&
-       self.keyPath.length > keyPath.length &&
-       [self.keyPath characterAtIndex:keyPath.length] == '.'
+       [_keyPath hasPrefix:keyPath] &&
+       _keyPath.length > keyPath.length &&
+       [_keyPath characterAtIndex:keyPath.length] == '.'
        ) {
-        return [self.keyPath substringFromIndex:keyPath.length + 1];
+        return [_keyPath substringFromIndex:keyPath.length + 1];
     }
     return @"";
 }
@@ -53,15 +53,15 @@
 }
 
 - (void)dealloc {
-    [self.keyPath release];
-    [self.containerClass release];
+    [_keyPath release];
+    [_containerClass release];
     [super dealloc];
 }
 
 - (id)_initWithContainerClass:(DSKeyValueContainerClass *)containerClass keyPath:(id)keyPath propertiesBeingInitialized:(CFMutableSetRef)propertiesBeingInitialized {
 	if(self = [super init]) {
-        self.containerClass = [containerClass retain];
-        self.keyPath = [keyPath copy];
+        _containerClass = [containerClass retain];
+        _keyPath = [keyPath copy];
         CFSetAddValue(propertiesBeingInitialized,self);
 	}
 	return self;

@@ -87,29 +87,36 @@ void DSKVODeallocate(id object, SEL selector) {
     Method originDellocMethod = class_getInstanceMethod(notifyInfo->originalClass, selector);
     ((id (*)(id,Method))method_invoke)(object, originDellocMethod);
     
-    if(observationInfo) {
-        BOOL keyExistsAndHasValidFormat = false;
-        BOOL cleansUpBeforeThrowing = false;
-        
-        cleansUpBeforeThrowing = (BOOL)CFPreferencesGetAppBooleanValue(CFSTR("NSKVODeallocateCleansUpBeforeThrowing"), kCFPreferencesCurrentApplication, (Boolean *)&keyExistsAndHasValidFormat);
-        
-        cleansUpBeforeThrowing = cleansUpBeforeThrowing && keyExistsAndHasValidFormat;
-        
-        if (dyld_get_program_sdk_version() > 0x7FFFF || cleansUpBeforeThrowing) {
-            if (cleansUpBeforeThrowing) {
-                _DSKeyValueRemoveObservationInfoForObject(object, observationInfo);
+    @try {
+        if(watcher.observationInfo) {
+            BOOL keyExistsAndHasValidFormat = false;
+            BOOL cleansUpBeforeThrowing = false;
+            
+            cleansUpBeforeThrowing = (BOOL)CFPreferencesGetAppBooleanValue(CFSTR("NSKVODeallocateCleansUpBeforeThrowing"), kCFPreferencesCurrentApplication, (Boolean *)&keyExistsAndHasValidFormat);
+            
+            cleansUpBeforeThrowing = cleansUpBeforeThrowing && keyExistsAndHasValidFormat;
+            
+            if (dyld_get_program_sdk_version() > 0x7FFFF || cleansUpBeforeThrowing) {
+                if (cleansUpBeforeThrowing) {
+                    _DSKeyValueRemoveObservationInfoForObject(object, watcher.observationInfo);
+                }
+                [NSException raise:NSInternalInconsistencyException format:@"An instance %p of class %@ was deallocated while key value observers were still registered with it. Current observation info: %@", object, notifyInfo->originalClass, watcher.observationInfo];
             }
-            [NSException raise:NSInternalInconsistencyException format:@"An instance %p of class %@ was deallocated while key value observers were still registered with it. Current observation info: %@", object, notifyInfo->originalClass, observationInfo];
+            else {
+                NSLog(@"An instance %p of class %@ was deallocated while key value observers were still registered with it. Observation info was leaked, and may even become mistakenly attached to some other object. Set a breakpoint on NSKVODeallocateBreak to stop here in the debugger. Here's the current observation info:\n%@", object, notifyInfo->originalClass, watcher.observationInfo);
+                DSKVODeallocateBreak(object);
+            }
         }
-        else {
-            NSLog(@"An instance %p of class %@ was deallocated while key value observers were still registered with it. Observation info was leaked, and may even become mistakenly attached to some other object. Set a breakpoint on NSKVODeallocateBreak to stop here in the debugger. Here's the current observation info:\n%@", object, notifyInfo->originalClass, observationInfo);
-            DSKVODeallocateBreak(object);
-        }
-    }
 
-    _DSKeyValueRemoveObservationInfoWatcher(&watcher);
-    
-    [observationInfo release];
+    }
+    @catch (NSException *exception) {
+        [exception raise];
+    }
+    @finally {
+        _DSKeyValueRemoveObservationInfoWatcher(&watcher);
+        
+        [watcher.observationInfo release];
+    }    
 }
 
 void DSKVONotifyingSetMethodImplementation(DSKeyValueNotifyingInfo *info, SEL sel, IMP imp, NSString *key) {
@@ -150,7 +157,7 @@ DSKeyValueNotifyingInfo *_DSKVONotifyingCreateInfoWithOriginalClass(Class origin
     DSKeyValueNotifyingInfo *notifyingInfo = (DSKeyValueNotifyingInfo *)ivars;
     notifyingInfo->originalClass = originalClass;
     notifyingInfo->newSubClass = newSubClass;
-    notifyingInfo->keys = CFSetCreateMutable(NULL, 0, &kCFCopyStringSetCallBacks);
+    notifyingInfo->notifyingKeys = CFSetCreateMutable(NULL, 0, &kCFCopyStringSetCallBacks);
     notifyingInfo->selKeyMap = CFDictionaryCreateMutable(NULL, 0, NULL, &kCFTypeDictionaryValueCallBacks);
     
     pthread_mutexattr_t mutexattr;
@@ -199,7 +206,7 @@ BOOL _DSKVONotifyingMutatorsShouldNotifyForIsaAndKey(Class isa, NSString *key) {
     if(class_getMethodImplementation(isa, ISKVOA_SELECTOR) == (IMP)DSKVOIsAutonotifying) {
         DSKeyValueNotifyingInfo *info = (DSKeyValueNotifyingInfo *)object_getIndexedIvars(isa);
         pthread_mutex_lock(&info->mutex);
-        BOOL containsKey = CFSetContainsValue(info->keys, (CFTypeRef)key);
+        BOOL containsKey = CFSetContainsValue(info->notifyingKeys, (CFTypeRef)key);
         pthread_mutex_unlock(&info->mutex);
         return containsKey;
     }
@@ -240,7 +247,7 @@ void DSKVOForwardInvocation(id object, SEL selector, void *param) {
 
 void _DSKVONotifyingEnableForInfoAndKey(DSKeyValueNotifyingInfo *info, NSString *key) {
     pthread_mutex_lock(&info->mutex);
-    CFSetAddValue(info->keys, (CFStringRef)key);
+    CFSetAddValue(info->notifyingKeys, (CFStringRef)key);
     pthread_mutex_unlock(&info->mutex);
     
     DSKeyValueSetter * setter = _DSKeyValueSetterForClassAndKey(info->originalClass, key, info->originalClass);

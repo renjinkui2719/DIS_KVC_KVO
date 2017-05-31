@@ -124,7 +124,7 @@
     if(exactMatch) {
         *exactMatch = NO;
     }
-    NSString *keyPath = [self.relationshipProperty keyPathIfAffectedByValueForKey:key exactMatch:NULL];
+    NSString *keyPath = [_relationshipProperty keyPathIfAffectedByValueForKey:key exactMatch:NULL];
     if(keyPath) {
         return self.keyPath;
     }
@@ -138,7 +138,7 @@
         forwardingValues->affectingValuesMap = nil;
         
         if(_isAllowedToResultInForwarding) {
-            id relationshipObject = [object valueForKey:self.relationshipKey];
+            id relationshipObject = [object valueForKey:_relationshipKey];
             forwardingValues->changingValue = relationshipObject;
             if(!relationshipObject) {
                 forwardingValues->changingValue = [NSNull null];
@@ -205,7 +205,7 @@
 }
 
 - (BOOL)matchesWithoutOperatorComponentsKeyPath:(NSString *)keyPath {
-    NSString *key = self.keyPathWithoutOperatorComponents;
+    NSString *key = _keyPathWithoutOperatorComponents;
     if(!key) {
         key = self.keyPath;
     }
