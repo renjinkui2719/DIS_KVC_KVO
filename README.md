@@ -197,7 +197,7 @@ typedef struct {
 
 #### 再举个细节例子
 
-如果被监听对象自己覆写了`willChangeValueForKey:`或者`didChangeValueForKey:`方法，整个通知路径走的就会是另一条，这个特征apportable没有实现,有兴趣的朋友可以打个断点测试一下
+在自动通知模式下,如果被监听对象自己覆写了`willChangeValueForKey:`或者`didChangeValueForKey:`方法，整个通知路径走的就会是另一条，这个特征apportable没有实现,有兴趣的朋友可以打个断点测试一下
 
 #### 最后举一个Apportable没有解决的BUG，我帮他找出了没能解决的原因
 
