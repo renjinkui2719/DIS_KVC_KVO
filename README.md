@@ -19,4 +19,186 @@ Category `NSObject+NSKeyValueCoding`, 在工程实现中改名为`NSObject+DSKey
 类`NSKeyValueChangeDictionary` ==> `DSKeyValueChangeDictionary`  
 
 ...
+  
+  
+//////////////补充说明 2017-06-01 18:10//////////////   
+有位兄弟说我的这份代码是盗用Apportable的，为了证明清白，也针对对他的质疑做如下说明:   
 
+(0).我今天才知道Apportable这份开源代码,我不确定能不能跑得起来测试  
+
+(1).借助IDA，Hopper等反汇编工具，任何人都可以从OC二进制文件中清晰看出类的继承体系，方法列表(不带参数命名)，Protocol列表，ivar和property列表  
+
+(2).逆向编程的一个基本过程就是翻译,汇编怎么写，就怎么翻译，变量命名不一样，编程风格不同，但是逻辑一定相同  
+
+(3).假设有个selector叫"-(void)setName:age:sex",很容易推出带参数的版本:"-(void)setName:(NSString *)name age:(int)age sex:(int)sex"  
+  
+真正体现难度的是c函数，结构体及结构体成员，指针含义的推测。
+
+以我的实现和Apportable实现做几点对比: 
+#### 举几个结构体的例子
+
+Apportable对几个重要结构体的定义:
+```
+typedef struct {
+    id _field1;
+    NSMutableDictionary *recursedMutableDictionary;
+} NSKeyValueForwardingValues;
+
+typedef struct {
+    NSKeyValueChange _changeKind;
+    NSIndexSet *_indexes;
+} NSKeyValueChangeByOrderedToManyMutation;
+
+typedef struct {
+    NSKeyValueSetMutationKind _mutationKind;
+    NSSet *_objects;
+} NSKeyValueChangeBySetMutation;
+
+typedef struct {
+    Class _originalClass;
+    Class _notifyingClass;
+    CFMutableSetRef _field3;
+    CFMutableDictionaryRef _cachedKeys;
+} NSKVONotifyingInfo;
+
+typedef struct {
+    Class alwaysNilFakeIsa;
+    NSKeyValueContainerClass *containerClass;
+    NSString *keyPath;
+} NSKVOFakeProperty;
+
+typedef struct {
+    NSObject *originalObservable;
+    NSKeyValueObservance *observance;
+} NSKeyValueImplicitObservanceAdditionInfo;
+
+typedef struct {
+    NSObject *nextObject;
+    NSKeyValueObservance *observingObservance;
+    NSString *keyPath;
+    NSObject *originalObservable;
+    NSKeyValueProperty *property;
+    BOOL isRecursing; //?
+} NSKeyValueImplicitObservanceRemovalInfo;
+
+typedef struct {
+    CFMutableArrayRef pendingNotifications;
+    BOOL nextIsObservationInfo;
+    union {
+        NSKeyValueImplicitObservanceAdditionInfo implicitObservanceAdditionInfo;
+        NSKeyValueObservationInfo *observationInfo;
+    } implicitObservanceAdditionInfoOrObservationInfo;
+    NSKeyValueImplicitObservanceRemovalInfo implicitObservanceRemovalInfo;
+    NSInteger recursionLevel;
+} NSKeyValueObservingTSD;
+
+typedef struct {
+    short retainCount;
+    BOOL reserved;
+    NSObject *originalObservable;
+    NSObject *observer;
+    id keyOrKeys;
+    NSKeyValueObservationInfo *observationInfo;
+    NSKeyValueObservance *observance;
+    NSKeyValueChangeDetails changeDetails;
+    NSKeyValueForwardingValues forwardingValues;
+    NSInteger recursionLevel;
+} NSKVOPendingNotificationInfo;
+
+typedef struct {
+    CFMutableArrayRef pendingNotifications;
+    NSInteger pendingNotificationCount;
+    NSKVOPendingNotificationInfo *relevantNotification;
+    NSInteger relevantNotificationIndex;
+    NSKeyValueObservance *observance;
+    NSInteger recursionLevel;
+} NSKVOPopNotificationResult;
+```
+我的定义
+```
+typedef struct {
+    //引用计数
+    uint16_t retainCount;
+    //是否是一次change的起始
+    BOOL beginningOfChange;
+    
+    id object;//4
+    id keyOrKeys;//8
+    DSKeyValueObservationInfo *observationInfo;//c
+    DSKeyValueObservance *observance;//10
+    NSKeyValueChange kind;//14
+    id oldValue;//18
+    id newValue;//1c
+    NSIndexSet *indexes;//20
+    NSMutableData * extraData;//24
+    id changingValue;//28
+    NSMutableDictionary *affectingValuesMap;//2c
+}DSKVOPendingChangeNotificationPerThread;
+
+typedef struct {
+    CFMutableArrayRef pendingArray;//0
+    BOOL beginningOfChange;//4
+    DSKeyValueObservationInfo *observationInfo;//8
+}DSKVOPushInfoPerThread;
+
+typedef struct {
+    CFMutableArrayRef pendingArray;//0
+    NSUInteger pendingCount;//4
+    DSKVOPendingChangeNotificationPerThread * lastPopedNotification;//8
+    NSInteger lastPopdIndex;//c
+    DSKeyValueObservance * observance;//10
+}DSKVOPopInfoPerThread;
+
+typedef union {
+    struct {
+        NSKeyValueChange changeKind;
+        NSIndexSet *indexes;
+    };
+    struct {
+        NSKeyValueSetMutationKind mutationKind;
+        NSSet *objects;
+    };
+}DSKVOCollectionWillChangeInfo;
+
+typedef struct {
+    DSKeyValueObservance *observance;
+    NSKeyValueChange kind;
+    id oldValue;
+    id newValue;
+    NSIndexSet *indexes;
+    NSMutableData * extraData;
+    id changingValue;
+    NSMutableDictionary * affectingValuesMap;
+    //??以下字段无法推断命名及含义，并且在KVO中无作用
+    BOOL unknow_1;
+    NSString *keyOrKeys;
+}DSKVOPendingChangeNotificationLocal;
+
+typedef struct {
+    NSUInteger capacity;
+    BOOL notificationsInStack;
+    DSKVOPendingChangeNotificationLocal *notifications;
+    NSUInteger notificationCount;
+     //??以下字段无法推断命名及含义，并且在KVO中无作用
+    BOOL unknow_1;
+    id unknow_2;
+}DSKVOPushInfoLocal;
+
+typedef struct {
+    DSKVOPendingChangeNotificationLocal *notifications;
+    NSUInteger notificationCount;
+    id observer;
+    id oldValue;
+    id lastChangingValue;
+    DSKeyValueObservationInfo *observationInfo;
+}DSKVOPopInfoLocal;
+```
+两种实现都有些字段含义无法推断出，其次大部分结构体结构(含义，内存布局)完全不相同
+
+#### 再举个细节例子
+
+如果被监听对象自己覆写了`willChangeValueForKey:`或者`didChangeValueForKey:`方法，整个通知路径走的就会是另一条，这个特征apportable没有实现,有兴趣的朋友可以打个断点测试一下
+
+#### 最后举一个Apportable没有解决的BUG，我帮他找出了没能解决的原因
+
+![image](http://oem96wx6v.bkt.clouddn.com/apportable_bug.png)
