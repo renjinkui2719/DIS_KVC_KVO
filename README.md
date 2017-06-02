@@ -215,5 +215,7 @@ typedef struct {
 在自动通知模式下,如果被监听对象自己覆写了`willChangeValueForKey:`或者`didChangeValueForKey:`方法，整个通知路径走的就会是另一条，这个特征Apportable没有实现,有兴趣的朋友可以打个断点测试一下
 
 #### 最后举一个Apportable没有解决的BUG，我帮他找出了没能解决的原因
-
 ![image](http://oem96wx6v.bkt.clouddn.com/apportable_bug.png)
+
+这个bug的基本原理就是:  
+当手动或自动调用`willChangeValueForKey:`时，会PUSH和监听者对象数目相同的待触发通知到一个队列(其实是当栈用)，调用`didChangeValueForKey:`时，会POP这些通知，然后做相应组装之后一一回调给监听者。但是这个队列是线程本地存储的，也就是相对当前线程来说，是个全局变量，队列里很有可能存有其他和本次`will/didChange`操作不想关的通知，因此POP时需要一个"边界"，指示何时POP结束，这个“边界”就是一个BOOL标志，Apportable叫它`reserved`,我叫它`beginningOfChange`，在一次`willChange`引起的PUSH中，第一次PUSH进去的通知，这个标志总是为YES,而后续PUSH进来的通知，这个标志就必定会为NO,这个标志的控制是由`NSKeyValuePushPendingNotificationPerThread`函数的最后一条MOV指令来设置的，以Apportale的实现来举例，在`DSKVOPendingNotificationRelease`之后，应当还有一条赋值语句"kvoTSD->nextIsObservationInfo = NO".(而且这个字段命名为`nextIsObservationInfo`明显是不合理的)，这样的话，后续PUSH进来的通知，它的`reserved`标志就会为NO。Apportable之所以强行注释掉上图标示的`return NO`,就是因为没找到这个标志为何“总为YES”的原因，如果这个BUG不解决，那么当多个监听者添加到一个对象上之后，当对象发生改变，只有最后一个添加的监听者能收到通知.
