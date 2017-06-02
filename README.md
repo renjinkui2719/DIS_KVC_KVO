@@ -30,7 +30,7 @@ Category `NSObject+NSKeyValueCoding`, 在工程实现中改名为`NSObject+DSKey
 
 (2).逆向编程的一个基本过程就是翻译,汇编怎么写，就怎么翻译，变量命名不一样，编程风格不同，但是逻辑一定相同  
 
-(3).假设有个selector叫"-(void)setName:age:sex",很容易推出带参数的版本:"-(void)setName:(NSString *)name age:(int)age sex:(int)sex"  
+(3).假设有个selector叫`-(void)setName:age:sex`,很容易推出带参数的版本:`-(void)setName:(NSString *)name age:(int)age sex:(char)sex`  
   
 真正体现难度的是c函数，结构体及结构体成员，指针含义的推测。
 
@@ -149,6 +149,16 @@ typedef struct {
     DSKeyValueObservance * observance;//10
 }DSKVOPopInfoPerThread;
 
+typedef struct DSKeyValueNotifyingInfo {
+    Class originalClass;
+    Class newSubClass;
+    CFMutableSetRef notifyingKeys;
+    CFMutableDictionaryRef selKeyMap;
+    pthread_mutex_t mutex;
+    //originalClass类是否覆写了 willChangeValueForKey: 或  didChangeValueForKey:
+    BOOL overrideWillOrDidChange;
+}DSKeyValueNotifyingInfo;
+
 typedef union {
     struct {
         NSKeyValueChange changeKind;
@@ -193,11 +203,11 @@ typedef struct {
     DSKeyValueObservationInfo *observationInfo;
 }DSKVOPopInfoLocal;
 ```
-两种实现都有些字段含义无法推断出，其次大部分结构体结构(含义，内存布局)完全不相同
+两种实现都有些字段含义无法推断出，其次大部分相同用途的结构体字段含义，内存布局，完全不同
 
 #### 再举个细节例子
 
-在自动通知模式下,如果被监听对象自己覆写了`willChangeValueForKey:`或者`didChangeValueForKey:`方法，整个通知路径走的就会是另一条，这个特征apportable没有实现,有兴趣的朋友可以打个断点测试一下
+在自动通知模式下,如果被监听对象自己覆写了`willChangeValueForKey:`或者`didChangeValueForKey:`方法，整个通知路径走的就会是另一条，这个特征Apportable没有实现,有兴趣的朋友可以打个断点测试一下
 
 #### 最后举一个Apportable没有解决的BUG，我帮他找出了没能解决的原因
 
