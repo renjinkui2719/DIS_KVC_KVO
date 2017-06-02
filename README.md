@@ -33,7 +33,7 @@ Category `NSObject+NSKeyValueCoding`, 在工程实现中改名为`NSObject+DSKey
 (3).假设有个selector叫`-(void)setName:age:sex`,很容易推出带参数的版本:`-(void)setName:(NSString *)name age:(int)age sex:(char)sex`  而且90%的人推出来的结果必定相同，因为这是明摆摆的。  
  
  
-这位兄弟以我的实现和Apportable实现函数的逻辑相同，oc方法的参数命名相同来断定我是抄袭，就好像说怡宝和百岁山矿泉水的水分子结构完全相同，因此断定怡宝在矿泉水生产技术上抄袭百岁山一样。
+这位兄弟以我的实现和Apportable实现部分函数的逻辑相同，部分oc方法的参数命名相同来断定我是抄袭，就好像说怡宝和百岁山矿泉水的水分子结构完全相同，因此断定怡宝在矿泉水生产技术上抄袭百岁山一样。
 
 真正体现难度的是c函数，结构体及结构体成员，指针含义的推测。
 
