@@ -117,6 +117,11 @@ typedef struct {
 我的定义
 ```
 typedef struct {
+    id changingValue;
+    NSMutableDictionary *affectingValuesMap;
+}DSKeyValuePropertyForwardingValues;
+
+typedef struct {
     //引用计数
     uint16_t retainCount;
     //是否是一次change的起始
