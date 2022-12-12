@@ -34,7 +34,7 @@ NSHashTable *DSKeyValueShareableObservances;
             for (NSUInteger i = 0; i < count; ++i) {
                 DSKeyValueObservance *observance = observances[i];
                 NSUInteger hash = _DSKVOPointersHash(4, (void *)observance.observer, (void *)observance.property,(void *)observance.context,(void *)observance.originalObservable);
-                _cachedHash = (hash << (i & 0x1F)) | (hash >> (i & 0x1F));
+                _cachedHash ^= (hash << (i & 0x1F)) | (hash >> (i & 0x1F));
                 if (!observance.cachedIsShareable) {
                     _cachedIsShareable = NO;
                 }
@@ -53,7 +53,7 @@ NSHashTable *DSKeyValueShareableObservances;
 
     DSKeyValueObservationInfo *copied = [[DSKeyValueObservationInfo alloc] init];
 
-    NSUInteger hash = _DSKVOPointersHash(4, (void *)observance.observer, (void *)observance.property,  (void *)_observances.count, (void *)observance.context);
+    NSUInteger hash = _DSKVOPointersHash(4, (void *)observance.observer, (void *)observance.property,(void *)observance.context,(void *)observance.originalObservable);
 
     unsigned char shift = (_observances.count & 0x1F);
     copied.cachedHash = (hash >> shift | hash << shift) ^ _cachedHash;
